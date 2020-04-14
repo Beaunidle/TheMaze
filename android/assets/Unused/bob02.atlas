@@ -1,0 +1,48 @@
+
+bob02.png
+size: 512,512
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+block
+  rotate: false
+  xy: 2, 100
+  size: 70, 63
+  orig: 70, 63
+  offset: 0, 0
+  index: -1
+bob02-01
+  rotate: false
+  xy: 2, 165
+  size: 130, 334
+  orig: 130, 334
+  offset: 0, 0
+  index: -1
+bob02-02
+  rotate: false
+  xy: 298, 248
+  size: 147, 251
+  orig: 147, 251
+  offset: 0, 0
+  index: -1
+bob02-03
+  rotate: false
+  xy: 134, 14
+  size: 166, 217
+  orig: 166, 217
+  offset: 0, 0
+  index: -1
+bob02-04
+  rotate: false
+  xy: 134, 233
+  size: 162, 266
+  orig: 162, 266
+  offset: 0, 0
+  index: -1
+bob02-05
+  rotate: false
+  xy: 302, 2
+  size: 152, 244
+  orig: 152, 244
+  offset: 0, 0
+  index: -1

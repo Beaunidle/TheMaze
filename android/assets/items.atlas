@@ -1,0 +1,178 @@
+
+items.png
+size: 2048,2048
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+block
+  rotate: false
+  xy: 95, 1973
+  size: 70, 63
+  orig: 70, 63
+  offset: 0, 0
+  index: -1
+bullet
+  rotate: false
+  xy: 2, 2023
+  size: 37, 13
+  orig: 37, 13
+  offset: 0, 0
+  index: -1
+bullet180
+  rotate: false
+  xy: 41, 2023
+  size: 37, 13
+  orig: 37, 13
+  offset: 0, 0
+  index: -1
+bullet90
+  rotate: false
+  xy: 80, 1999
+  size: 13, 37
+  orig: 13, 37
+  offset: 0, 0
+  index: -1
+explodingBlockRed
+  rotate: false
+  xy: 167, 1973
+  size: 70, 63
+  orig: 70, 63
+  offset: 0, 0
+  index: -1
+explodingBlockYellow
+  rotate: false
+  xy: 239, 1973
+  size: 70, 63
+  orig: 70, 63
+  offset: 0, 0
+  index: -1
+gunPistol
+  rotate: false
+  xy: 383, 1396
+  size: 640, 640
+  orig: 640, 640
+  offset: 0, 0
+  index: -1
+gunRocket
+  rotate: false
+  xy: 2, 754
+  size: 640, 640
+  orig: 640, 640
+  offset: 0, 0
+  index: -1
+gunSMG
+  rotate: false
+  xy: 644, 754
+  size: 640, 640
+  orig: 640, 640
+  offset: 0, 0
+  index: -1
+gunShotgun
+  rotate: false
+  xy: 1025, 1396
+  size: 640, 640
+  orig: 640, 640
+  offset: 0, 0
+  index: -1
+heart
+  rotate: false
+  xy: 2, 2
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+rubbleBlock
+  rotate: false
+  xy: 311, 1973
+  size: 70, 63
+  orig: 70, 63
+  offset: 0, 0
+  index: -1
+sprite-01
+  rotate: false
+  xy: 1004, 2
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+
+items2.png
+size: 2048,2048
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+dead
+  rotate: false
+  xy: 1004, 2
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+injured-03
+  rotate: false
+  xy: 1004, 754
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+sprite-02
+  rotate: false
+  xy: 2, 754
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+sprite-03
+  rotate: false
+  xy: 2, 2
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+
+items3.png
+size: 2048,2048
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+explode-01
+  rotate: false
+  xy: 2, 754
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+explode-02
+  rotate: false
+  xy: 2, 2
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+explode-03
+  rotate: false
+  xy: 1004, 754
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+injured-01
+  rotate: false
+  xy: 1004, 2
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+
+items4.png
+size: 1024,1024
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+injured-02
+  rotate: false
+  xy: 2, 2
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
