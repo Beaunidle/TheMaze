@@ -11,27 +11,27 @@ public class Gun {
         PISTOL, SMG, SHOTGUN, ROCKET
     }
 
-    private float damage;
+//    private float damage;
     private float firingRate;
     private Type type;
 
-    public Gun(Gun.Type type) {
+    Gun(Gun.Type type) {
         this.type = type;
-        damage = 20;
+//        damage = 20;
         setType(type);
     }
 
-    public float getDamage() {
-        return damage;
-    }
+//    public float getDamage() {
+//        return damage;
+//   }
 
-    public float getFiringRate() {
+    float getFiringRate() {
         return firingRate;
     }
 
-    public Type getType() {
-        return type;
-    }
+//    public Type getType() {
+//        return type;
+//    }
 
     public void setType(Type type) {
         this.type = type;
@@ -51,39 +51,25 @@ public class Gun {
         }
     }
 
-    public List<Bullet> fire(Vector2 position, Vector2 direction, float WIDTH, float HEIGHT, String playerName) {
+    List<Bullet> fire(Vector2 position, float rotation, float WIDTH, float HEIGHT, String playerName) {
         List<Bullet> bullets = new ArrayList<>();
         Vector2 bulletPosition = new Vector2(position);
-        if (direction.y < 0) {
-            bulletPosition.x += WIDTH/2 + 0.2;
-        } else if (direction.y > 0) {
-            bulletPosition.y += HEIGHT/2;
-            bulletPosition.x -= 0.2;
-        }
-        if (direction.x > 0) {
-            bulletPosition.x += WIDTH/2;
-            bulletPosition.y += HEIGHT/2;
-        }
+
         if (type.equals(Type.ROCKET)) {
-            Bullet bullet = new Bullet(bulletPosition, direction, playerName);
-            bullet.setExplosive(true);
+            Bullet bullet = new Bullet(bulletPosition, rotation, playerName);
+            bullet.setExplosive();
             bullets.add(bullet);
         } else {
-            bullets.add( new Bullet(bulletPosition, direction, playerName));
+            bullets.add( new Bullet(bulletPosition, rotation, playerName));
         }
         if (type.equals(Type.SHOTGUN)) {
-           if (direction.x != 0 && direction.y == 0) {
-               bullets.add(new Bullet(bulletPosition, new Vector2(direction.x, 1), playerName ));
-               bullets.add(new Bullet(bulletPosition, new Vector2(direction.x, -1), playerName ));
-           }
-           if (direction.x == 0 && direction.y != 0) {
-               bullets.add(new Bullet(bulletPosition, new Vector2(1, direction.y), playerName ));
-               bullets.add(new Bullet(bulletPosition, new Vector2(-1, direction.y), playerName ));
-           }
-           if (direction.x != 0 && direction.y != 0) {
-               bullets.add(new Bullet(bulletPosition, new Vector2(0, direction.y), playerName ));
-               bullets.add(new Bullet(bulletPosition, new Vector2(direction.x, 0), playerName ));
-           }
+           float bulletRot1 = rotation - 15;
+           if (bulletRot1 < 0) bulletRot1 = 360 + bulletRot1;
+           float bulletRot2 = rotation + 15;
+           if (bulletRot2 > 360) bulletRot2 = bulletRot2 - 360;
+
+            bullets.add(new Bullet(bulletPosition, bulletRot1, playerName));
+            bullets.add(new Bullet(bulletPosition, bulletRot2, playerName));
         }
 
         return bullets;

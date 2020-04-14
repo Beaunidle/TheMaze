@@ -1,7 +1,6 @@
 package com.mygdx.game.model;
 
 import com.badlogic.gdx.math.Polygon;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Timer;
 
@@ -17,13 +16,14 @@ public class Player {
     public static final float HEIGHT = 0.9F;
     public static final float WIDTH = HEIGHT/2;
 
-    private Vector2 position = new Vector2();
-    Vector2 acceleration = new Vector2();
-    Vector2 velocity = new Vector2();
-    Polygon bounds = new Polygon();
-    State	state = State.IDLE;
-    Vector2  direction;
-    float	stateTime = 0;
+    private Vector2 position;
+    private Float acceleration;
+    private Vector2 velocity = new Vector2();
+    private Polygon bounds;
+    private State state = State.IDLE;
+    private float rotation;
+    private final float rotationSpeed;
+    private float stateTime = 0;
     private final String name;
     private int lives = 5;
     private Gun gun;
@@ -39,22 +39,27 @@ public class Player {
     private boolean bulletTimerOn;
     private boolean injured;
 
-    public Player(Vector2 position, String name) {
+    Player(Vector2 position, String name) {
         this.position = position;
         bounds = new Polygon(new float[]{0, 0 ,WIDTH, HEIGHT ,WIDTH ,0, 0,HEIGHT});
         bounds.setPosition(position.x, position.y);
         bounds.setOrigin(WIDTH/2, HEIGHT/2);
-        direction = new Vector2(1,0);
+        rotation = 45;
+        rotationSpeed = 3.5F;
         this.name = name;
-        gun = new Gun(Gun.Type.PISTOL);
+        gun = new Gun(Gun.Type.ROCKET);
     }
 
     public Vector2 getPosition() {
         return position;
     }
 
-    public Vector2 getAcceleration() {
+    public Float getAcceleration() {
         return acceleration;
+    }
+
+    public void setAcceleration(Float acceleration) {
+        this.acceleration = acceleration;
     }
 
     public Vector2 getVelocity() {
@@ -77,8 +82,16 @@ public class Player {
         return stateTime;
     }
 
-    public Vector2 getDirection() {
-        return direction;
+    public float getRotation() {
+        return rotation;
+    }
+
+    public void setRotation(float rotation) {
+        this.rotation = rotation;
+    }
+
+    public float getRotationSpeed() {
+        return rotationSpeed;
     }
 
     public String getName() {
@@ -89,34 +102,22 @@ public class Player {
         return lives;
     }
 
-    public void setLives(int lives) {
-        this.lives = lives;
-    }
+//    public void setLives(int lives) {
+//        this.lives = lives;
+//    }
 
-    public void setDirection(Vector2 direction) {
-        this.direction = direction;
-    }
-
-    public void setPosition(Vector2 position) {
-        this.position = position;
-        this.bounds.setPosition(position.x, position.y);
-    }
-
-    public void setAcceleration(Vector2 acceleration) {
-        this.acceleration = acceleration;
-    }
+//    public void setPosition(Vector2 position) {
+//        this.position = position;
+//        this.bounds.setPosition(position.x, position.y);
+//    }
 
     public void setVelocity(Vector2 velocity) {
         this.velocity = velocity;
     }
 
-    public void setBounds(Polygon bounds) {
-        this.bounds = bounds;
-    }
-
-    public void setStateTime(float stateTime) {
-        this.stateTime = stateTime;
-    }
+//    public void setBounds(Polygon bounds) {
+//        this.bounds = bounds;
+//    }
 
     public Gun getGun() {
         return gun;
@@ -126,11 +127,11 @@ public class Player {
         return injured;
     }
 
-    public List<Bullet> fireBullet(float delta) {
+    public List<Bullet> fireBullet() {
         List<Bullet> bullets = new ArrayList<>();
         if (!bulletTimerOn) {
             startBulletTimer(gun.getFiringRate() * 0.25F);
-            bullets.addAll(gun.fire(position, direction, WIDTH, HEIGHT, name));
+            bullets.addAll(gun.fire(position, rotation, WIDTH, HEIGHT, name));
         }
         return bullets;
     }
@@ -150,7 +151,7 @@ public class Player {
         injured = false;
     }
 
-    public void isShot(float delta, String name) {
+    public void isShot(String name) {
         if (!injured) {
             injuredTimer = new Timer.Task() {
                 @Override
@@ -169,7 +170,7 @@ public class Player {
         }
     }
 
-    public void dead() {
+    private void dead() {
         setState(State.DEAD);
     }
 
@@ -178,34 +179,5 @@ public class Player {
 //		bounds.x = position.x;
 //		bounds.y = position.y;
         stateTime += delta;
-    }
-
-    public int calcRotate(Vector2 direction) {
-
-        if (direction.x > 0 && direction.y > 0) {
-            return 45;
-        }
-        if (direction.x == 0 && direction.y > 0) {
-            return 90;
-        }
-        if (direction.x < 0 && direction.y > 0) {
-            return 135;
-        }
-        if (direction.x < 0 && direction.y == 0) {
-            return 180;
-        }
-        if (direction.x < 0 && direction.y < 0) {
-            return 225;
-        }
-        if (direction.x == 0 && direction.y < 0) {
-            return 270;
-        }
-        if (direction.x > 0 && direction.y < 0) {
-            return 315;
-        }
-        if (direction.x > 0 && direction.y == 0) {
-            return 0;
-        }
-        return 90;
     }
 }

@@ -1,7 +1,6 @@
 package com.mygdx.game.model;
 
 import com.badlogic.gdx.math.Polygon;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Timer;
 
@@ -13,8 +12,9 @@ public class Bullet {
     private float stateTime = 0;
     private float height = 0.04F;
     private float width = 0.15f;
+    private float rotation;
     private Vector2 velocity;
-    private Timer.Task explodeTimer = new Timer.Task() {
+    private Timer.Task explodeTimer =  new Timer.Task() {
         @Override
         public void run() {
             stopExplodeTimer();
@@ -23,18 +23,14 @@ public class Bullet {
     private boolean exploding = false;
     private float explodeTime = 0.5f;
     private final String playerName;
-    private boolean explosive;
+    private boolean explosive = false;
 
-    public Bullet(Vector2 position, Vector2 velocity, String playerName) {
+    Bullet(Vector2 position, float rotation, String playerName) {
         this.position.x = position.x;
         this.position.y = position.y + 0.25F;
         bounds = new Polygon(new float[]{0, 0, width, height, width, 0, 0, height});
         bounds.setPosition(position.x, position.y);
-        this.velocity = new Vector2(0,1);
-        if (!velocity.equals(new Vector2(0,0))) {
-            this.velocity.x = velocity.x;
-            this.velocity.y = velocity.y;
-        }
+        this.rotation = rotation;
         this.playerName = playerName;
     }
 
@@ -44,6 +40,14 @@ public class Bullet {
 
     public Vector2 getVelocity() {
         return velocity;
+    }
+
+    public void setVelocity(Vector2 velocity) {
+        this.velocity = velocity;
+    }
+
+    public float getRotation() {
+        return rotation;
     }
 
     public Polygon getBounds() {
@@ -78,11 +82,6 @@ public class Bullet {
         return playerName;
     }
 
-    public void setPosition(Vector2 position) {
-        this.position = position;
-        this.bounds.setPosition(position.x, position.y);
-    }
-
     public boolean isExploding() {
         return exploding;
     }
@@ -91,43 +90,14 @@ public class Bullet {
         return explosive;
     }
 
-    public void setExplosive(boolean explosive) {
-        this.explosive = explosive;
+    void setExplosive() {
+        this.explosive = true;
     }
 
     public void update(float delta) {
 //		position.add(velocity.x * delta, velocity.y * delta);
         this.bounds.setPosition(position.x, position.y);
         stateTime += delta;
-    }
-
-    public int calcRotate(Vector2 direction) {
-
-        if (direction.x > 0 && direction.y > 0) {
-            return 45;
-        }
-        if (direction.x == 0 && direction.y > 0) {
-            return 90;
-        }
-        if (direction.x < 0 && direction.y > 0) {
-            return 135;
-        }
-        if (direction.x < 0 && direction.y == 0) {
-            return 180;
-        }
-        if (direction.x < 0 && direction.y < 0) {
-            return 225;
-        }
-        if (direction.x == 0 && direction.y < 0) {
-            return 270;
-        }
-        if (direction.x > 0 && direction.y < 0) {
-            return 315;
-        }
-        if (direction.x > 0 && direction.y == 0) {
-            return 0;
-        }
-        return 90;
     }
 
     public void startExplodeTimer() {
