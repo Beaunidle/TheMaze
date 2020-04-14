@@ -12,9 +12,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.model.AIPlayer;
 import com.mygdx.game.model.Block;
 import com.mygdx.game.model.BloodStain;
@@ -53,20 +51,17 @@ public class WorldRenderer {
     private OrthographicCamera cam;
 
     /** for debug rendering **/
-    ShapeRenderer debugRenderer = new ShapeRenderer();
+    private ShapeRenderer debugRenderer = new ShapeRenderer();
 
     private SpriteBatch spriteBatch;
-    private boolean debug = false;
-    private int width;
-    private int height;
-    private float ppuX; // pixels per unit on the X axis
-    private float ppuY; // pixels per unit on the Y axis
-    public void setSize (int w, int h) {
-        this.width = w;
-        this.height = h;
-        ppuX = (float)width / CAMERA_WIDTH;
-        ppuY = (float)height / CAMERA_HEIGHT;
-    }
+    private boolean debug;
+
+//    public void setSize (int w, int h) {
+//         pixels per unit on the X axis
+//        float ppuX = (float) w / CAMERA_WIDTH;
+//         pixels per unit on the Y axis
+//        float ppuY = (float) h / CAMERA_HEIGHT;
+//    }
 
     public WorldRenderer(World world, boolean debug) {
         this.world = world;
@@ -203,10 +198,10 @@ public class WorldRenderer {
             if (bullet.isExploding()) {
                 bulletFrame = (TextureRegion) (explodeAnimation.getKeyFrame(bullet.getStateTime(), true));
                 spriteBatch.draw(bulletFrame, bullet.getPosition().x, bullet.getPosition().y, bullet.getWidth()/2, bullet.getHeight()/2,
-                        bullet.getWidth(), bullet.getHeight(), 2.5F, 5, bullet.calcRotate(bullet.getVelocity()), true);
+                        bullet.getWidth(), bullet.getHeight(), 2.5F, 5, bullet.getRotation(), true);
             } else {
                 spriteBatch.draw(bulletFrame, bullet.getPosition().x, bullet.getPosition().y, bullet.getWidth()/2, bullet.getHeight()/2,
-                        bullet.getWidth(), bullet.getHeight(), 1, 1, bullet.calcRotate(bullet.getVelocity()), true);
+                        bullet.getWidth(), bullet.getHeight(), 1, 1, bullet.getRotation(), true);
             }
         }
     }
@@ -227,7 +222,7 @@ public class WorldRenderer {
             }
         }
         spriteBatch.draw(bobFrame, bob.getPosition().x, bob.getPosition().y, Player.WIDTH/2, Player.HEIGHT/2, Player.WIDTH, Player.HEIGHT,
-        1, 1, bob.calcRotate(bob.getDirection()), true);
+        1, 1, bob.getRotation(), true);
         //todo make injured sprites
     }
 
@@ -242,7 +237,7 @@ public class WorldRenderer {
                 }
             }
             spriteBatch.draw(aiFrame, aiPlayer.getPosition().x, aiPlayer.getPosition().y, Player.WIDTH/2, Player.HEIGHT/2, Player.WIDTH, Player.HEIGHT,
-                    1, 1, aiPlayer.calcRotate(aiPlayer.getDirection()), true);
+                    1, 1, aiPlayer.getRotation(), true);
         }
     }
 
@@ -259,26 +254,22 @@ public class WorldRenderer {
         }
         // render Bob
         Player bob = world.getBob();
-        Polygon rect = bob.getBounds();
-        float x1 = bob.getPosition().x + rect.getX();
-        float y1 = bob.getPosition().y + rect.getY();
         debugRenderer.setColor(Color.BLACK);
         debugRenderer.polygon(bob.getBounds().getTransformedVertices());
         debugRenderer.end();
     }
 
-    public void setDebug() {
-        debug = !debug;
-    }
+//    public void setDebug() {
+//        debug = !debug;
+//    }
 
-    private void drawCollisionBlocks() {
-        debugRenderer.setProjectionMatrix(cam.combined);
-        debugRenderer.begin(ShapeType.Filled);
-        debugRenderer.setColor(Color.WHITE);
-        for (Polygon rect : world.getCollisionRects()) {
-            debugRenderer.polygon(rect.getTransformedVertices());
-        }
-        debugRenderer.end();
-
-    }
+//    private void drawCollisionBlocks() {
+//        debugRenderer.setProjectionMatrix(cam.combined);
+//        debugRenderer.begin(ShapeType.Filled);
+//        debugRenderer.setColor(Color.WHITE);
+//        for (Polygon rect : world.getCollisionRects()) {
+//            debugRenderer.polygon(rect.getTransformedVertices());
+//        }
+//        debugRenderer.end();
+//    }
 }

@@ -1,13 +1,8 @@
 package com.mygdx.game.controller;
 
 import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Pool;
-import com.badlogic.gdx.utils.Timer;
 import com.mygdx.game.model.AIPlayer;
-import com.mygdx.game.model.Block;
 import com.mygdx.game.model.BloodStain;
 import com.mygdx.game.model.Bullet;
 import com.mygdx.game.model.ExplodableBlock;
@@ -16,7 +11,6 @@ import com.mygdx.game.model.GunPad;
 import com.mygdx.game.model.Player;
 import com.mygdx.game.model.World;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -28,28 +22,15 @@ public class WorldController {
         LEFT, RIGHT, UP, DOWN, USE, FIRE
     }
 
-    private static final long LONG_JUMP_PRESS = 150l;
-    private static final float ACCELERATION = 20f;
-    private static final float GRAVITY = -20f;
-    private static final float MAX_JUMP_SPEED = 7f;
     private static final float DAMP = 0.90f;
     private static final float MAX_VEL = 4f;
 
     private World world;
     private Player bob;
-    private List<AIPlayer> aiPlayers = new ArrayList<>();
+    private List<AIPlayer> aiPlayers;
     private CollisionDetector collisionDetector;
 
-    // This is the rectangle pool used in collision detection
-    // Good to avoid instantiation each frame
-    private Pool<Polygon> rectPool = new Pool<Polygon>() {
-        @Override
-        protected Polygon newObject() {
-            return new Polygon();
-        }
-    };
-
-    static Map<Keys, Boolean> keys = new HashMap<WorldController.Keys, Boolean>();
+    private static Map<Keys, Boolean> keys = new HashMap<>();
 
     static {
         keys.put(Keys.LEFT, false);
@@ -59,34 +40,6 @@ public class WorldController {
         keys.put(Keys.USE, false);
         keys.put(Keys.FIRE, false);
     }
-
-
-    //key release timers
-    private Timer.Task leftTimer = new Timer.Task() {
-        @Override
-        public void run() {
-            this.cancel();
-        }
-    };
-    private Timer.Task rightTimer = new Timer.Task() {
-        @Override
-        public void run() {
-            this.cancel();
-        }
-    };
-    private Timer.Task upTimer = new Timer.Task() {
-        @Override
-        public void run() {
-            this.cancel();
-        }
-    };
-    private Timer.Task downTimer = new Timer.Task() {
-        @Override
-        public void run() {
-            this.cancel();
-        }
-    };
-
 
     public WorldController(World world) {
         this.world = world;
@@ -123,22 +76,18 @@ public class WorldController {
 
     public void leftReleased() {
         keys.get(keys.put(Keys.LEFT, false));
-        Timer.schedule(leftTimer, 0.05F);
     }
 
     public void rightReleased() {
         keys.get(keys.put(Keys.RIGHT, false));
-        Timer.schedule(rightTimer, 0.05F);
     }
 
     public void upReleased() {
         keys.get(keys.put(Keys.UP, false));
-        Timer.schedule(upTimer, 0.05F);
     }
 
     public void downReleased() {
         keys.get(keys.put(Keys.DOWN, false));
-        Timer.schedule(downTimer, 0.05F);
     }
 
     public void useReleased() {
@@ -155,24 +104,24 @@ public class WorldController {
     public void update(float delta) {
         // Processing the input - setting the states of Bob
         if (!bob.getState().equals(Player.State.DEAD)) {
-            processInput(delta);
+            processInput();
         }
         for (AIPlayer aiPlayer : aiPlayers) {
             if (!aiPlayer.getState().equals(Player.State.DEAD)) {
-                processAIInput(aiPlayer, delta);
+                processAIInput(aiPlayer);
             }
         }
 
         if (!bob.getState().equals(Player.State.DEAD)) {
             setAction(delta, bob);
-            collisionDetector.checkPlayerCollisionWithExplosions(bob, delta);
+            collisionDetector.checkPlayerCollisionWithExplosions(bob);
         }
         Iterator aiPlayerIterator = aiPlayers.iterator();
         while(aiPlayerIterator.hasNext()) {
             AIPlayer aiPlayer = (AIPlayer)aiPlayerIterator.next();
             if (!aiPlayer.getState().equals(Player.State.DEAD)) {
                 setAction(delta, aiPlayer);
-                collisionDetector.checkPlayerCollisionWithExplosions(aiPlayer, delta);
+                collisionDetector.checkPlayerCollisionWithExplosions(aiPlayer);
             } else {
                 world.getBloodStains().add(new BloodStain(aiPlayer.getPosition(), aiPlayer.getName()));
                 aiPlayerIterator.remove();
@@ -188,15 +137,11 @@ public class WorldController {
                     continue;
                 }
                 if (bullet.getSpeed() > 0) {
+                    bullet.setVelocity(calculateVelocity(bullet.getSpeed() * delta, bullet.getRotation()));
                     collisionDetector.checkBulletCollisionWithBlocks(bullet, delta);
                     collisionDetector.checkBulletCollisionWithPlayers(bullet, delta);
 
-                    Vector2 velocity = bullet.getVelocity();
-                    if (velocity.x < 0) bullet.getPosition().add(-bullet.getSpeed() * delta, 0);
-                    else if (velocity.x > 0) bullet.getPosition().add(bullet.getSpeed() * delta, 0);
-
-                    if (velocity.y < 0) bullet.getPosition().add(0, -bullet.getSpeed() * delta);
-                    else if (velocity.y > 0) bullet.getPosition().add(0, bullet.getSpeed() * delta);
+                    bullet.getPosition().add(bullet.getVelocity().x, bullet.getVelocity().y);
                 }
                 bullet.update(delta);
             }
@@ -220,11 +165,10 @@ public class WorldController {
 
     private void setAction (float delta, Player player) {
         // Convert acceleration to frame time
-        player.getAcceleration().x = player.getAcceleration().x * delta;
-        player.getAcceleration().y = player.getAcceleration().y * delta;
+        //player.setAcceleration(player.getAcceleration() * delta);
 
         // apply acceleration to change velocity
-        player.getVelocity().add(player.getAcceleration().x, player.getAcceleration().y);
+        player.setVelocity(calculateVelocity(player.getAcceleration(), player.getRotation()));
 
         // checking collisions with the surrounding blocks depending on Bob's velocity
         collisionDetector.checkPlayerCollisionWithBlocks(delta, player);
@@ -240,19 +184,19 @@ public class WorldController {
             player.getVelocity().x = -MAX_VEL;
         }
         //set direction
-            if (player.getAcceleration().x != 0) {
-                player.getDirection().x = bob.getAcceleration().x;
-                if (player.getAcceleration().y == 0 && (player instanceof AIPlayer || !(upTimer.isScheduled() || downTimer.isScheduled()))) {
-                    player.getDirection().y = 0;
-                }
-            }
-            if (player.getAcceleration().y != 0) {
-                player.getDirection().y = player.getAcceleration().y;
-                if (player.getAcceleration().x == 0 && (player instanceof AIPlayer || !(leftTimer.isScheduled() || rightTimer.isScheduled()))) {
-                    player.getDirection().x = 0;
-                }
-            }
-        player.getBounds().setRotation(player.calcRotate(player.getDirection()));
+//            if (player.getAcceleration().x != 0) {
+//                player.getDirection().x = bob.getAcceleration().x;
+//                if (player.getAcceleration().y == 0 && (player instanceof AIPlayer || !(upTimer.isScheduled() || downTimer.isScheduled()))) {
+//                    player.getDirection().y = 0;
+//                }
+//            }
+//            if (player.getAcceleration().y != 0) {
+//                player.getDirection().y = player.getAcceleration().y;
+//                if (player.getAcceleration().x == 0 && (player instanceof AIPlayer || !(leftTimer.isScheduled() || rightTimer.isScheduled()))) {
+//                    player.getDirection().x = 0;
+//                }
+//            }
+        player.getBounds().setRotation(player.getRotation());
         // simply updates the state time
         player.update(delta);
     }
@@ -261,11 +205,10 @@ public class WorldController {
     /**
      * Change Bob's state and parameters based on input controls
      **/
-    private boolean processInput(float delta) {
-        //todo can fire up and down as well (diagonal?)
+    private void processInput() {
         if (!bob.getState().equals(Player.State.DEAD)) {
             if (keys.get(Keys.FIRE)) {
-                world.getBullets().addAll(bob.fireBullet(delta));
+                world.getBullets().addAll(bob.fireBullet());
             }
 
             if (keys.get(Keys.USE)) {
@@ -279,47 +222,71 @@ public class WorldController {
             if (keys.get(Keys.LEFT)) {
                 // left is pressed
                 bob.setState(Player.State.MOVING);
-                bob.getAcceleration().x = -ACCELERATION;
+                bob.setRotation(bob.getRotation() + bob.getRotationSpeed());
+                if (bob.getRotation() > 360) {
+                    bob.setRotation(bob.getRotation() - 360);
+                }
             } else if (keys.get(Keys.RIGHT)) {
                 // right is pressed
                 bob.setState(Player.State.MOVING);
-                bob.getAcceleration().x = ACCELERATION;
-            } else {
-                bob.getAcceleration().x = 0;
+                bob.setRotation(bob.getRotation() - bob.getRotationSpeed());
+                if (bob.getRotation() < 0) {
+                    bob.setRotation(bob.getRotation() + 360);
+                }
             }
 
             if (keys.get(Keys.UP)) {
                 // up is pressed
                 bob.setState(Player.State.MOVING);
-                bob.getAcceleration().y = ACCELERATION;
+                bob.setAcceleration(4F);
             } else if (keys.get(Keys.DOWN)) {
                 // down is pressed
                 bob.setState(Player.State.MOVING);
-                bob.getAcceleration().y = -ACCELERATION;
+                bob.setAcceleration(-4F);
             } else {
-                bob.getAcceleration().y = 0;
-            }
-            if (bob.getAcceleration().equals(new Vector2(0, 0))) {
+                bob.setAcceleration(0F);
                 bob.setState(Player.State.IDLE);
             }
         }
-        return false;
     }
 
-    private void processAIInput(AIPlayer aiPlayer, float delta) {
+    private void processAIInput(AIPlayer aiPlayer) {
         if (aiPlayer.getState() != Player.State.DEAD) {
             //do the thing
             if (aiPlayer.getIntent().equals(AIPlayer.Intent.HOMING)) {
                 aiPlayer.setState(Player.State.MOVING);
-                aiPlayer.getAcceleration().y = ACCELERATION;
+                aiPlayer.setAcceleration(2F);
             } else if (aiPlayer.getIntent().equals(AIPlayer.Intent.SEARCHING)) {
                 aiPlayer.setState(Player.State.MOVING);
-                aiPlayer.getAcceleration().y = -ACCELERATION;
+                aiPlayer.setAcceleration(0F);
+                aiPlayer.setRotation(aiPlayer.getRotation() + aiPlayer.getRotationSpeed());
+                if (aiPlayer.getRotation() > 360) {
+                    aiPlayer.setRotation(aiPlayer.getRotation() - 360);
+                }
             }
-
-            if (Math.random() > 0.99) {
-                world.getBullets().addAll(aiPlayer.fireBullet(delta));
+            if (Math.random() > 0.995) {
+                world.getBullets().addAll(aiPlayer.fireBullet());
             }
         }
+    }
+
+    private Vector2 calculateVelocity(float acceleration, float rotation) {
+        Vector2 velocity = new Vector2();
+        rotation = (float)(rotation * (Math.PI/180));
+
+        if (rotation < 90) {
+            velocity.x = (float)Math.cos(rotation)*acceleration;
+            velocity.y = (float)Math.sin(rotation)*acceleration;
+        } else if (rotation < 180) {
+            velocity.x = -(float)Math.cos(rotation)*acceleration;
+            velocity.y = (float)Math.sin(rotation)*acceleration;
+        } else if (rotation < 270) {
+            velocity.x = -(float)Math.cos(rotation)*acceleration;
+            velocity.y = -(float)Math.sin(rotation)*acceleration;
+        } else {
+            velocity.x = (float)Math.cos(rotation)*acceleration;
+            velocity.y = -(float)Math.sin(rotation)*acceleration;
+        }
+        return velocity;
     }
 }
