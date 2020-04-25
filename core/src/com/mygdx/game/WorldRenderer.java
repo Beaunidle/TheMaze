@@ -98,7 +98,7 @@ public class WorldRenderer {
             walkFrames[i] = itemAtlas.findRegion("sprite-0" + (i + 1));
         }
 
-        
+
         walkAnimation = new Animation(RUNNING_FRAME_DURATION, walkFrames);
 
         TextureRegion[] walkInjuredFrames = new TextureRegion[3];
