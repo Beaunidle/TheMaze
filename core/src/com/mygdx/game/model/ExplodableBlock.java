@@ -10,7 +10,7 @@ public class ExplodableBlock extends Block {
     }
 
     int tickCount = 0;
-    boolean exploding = false, hit = false;
+    private boolean exploding = false, hit = false;
     private State state;
     private Timer.Task delay = new Timer.Task() {
         @Override
@@ -63,7 +63,7 @@ public class ExplodableBlock extends Block {
         return exploding;
     }
 
-    public void bang() {
+    private void bang() {
         delay.cancel();
         count.cancel();
         state = State.BANG;

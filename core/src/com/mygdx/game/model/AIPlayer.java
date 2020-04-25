@@ -9,16 +9,16 @@ public class AIPlayer extends Player {
         SEARCHING, HOMING, KILLING, FLEEING
     }
 
-    Intent intent = Intent.SEARCHING;
-    Timer.Task intentTimer = new Timer.Task() {
-        @Override
-        public void run() {
-            switchIntent();
-        }
-    };
+    private Intent intent = Intent.SEARCHING;
 
     public AIPlayer(Vector2 position, String name) {
-        super(position, name);
+        super(position, name, 20);
+        Timer.Task intentTimer = new Timer.Task() {
+            @Override
+            public void run() {
+                switchIntent();
+            }
+        };
         Timer.schedule(intentTimer, 2, 2);
         switch ((int)Math.floor(Math.random() * Math.floor(4))) {
             case 0:
@@ -36,7 +36,7 @@ public class AIPlayer extends Player {
         }
     }
 
-    void switchIntent() {
+    private void switchIntent() {
         if (intent.equals(Intent.SEARCHING)) {
             intent = Intent.HOMING;
         } else if (intent.equals(Intent.HOMING)) {

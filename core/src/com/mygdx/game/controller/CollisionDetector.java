@@ -20,7 +20,7 @@ class CollisionDetector {
     private Player bob;
     private List<AIPlayer> aiPlayers;
 
-    private Array<Block> collidable = new Array<Block>();
+    private Array<Block> collidable = new Array<>();
 
     CollisionDetector(World world, Player bob, List<AIPlayer> aiPlayers) {
         this.world = world;
@@ -227,9 +227,8 @@ class CollisionDetector {
                         //todo ai player is shot
                         if (bullet.isExplosive()) {
                             world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x - Explosion.getSIZE()/2, bullet.getPosition().y - Explosion.getSIZE()/2)));
-                        } else {
-                            player.isShot(bullet.getPlayerName());
                         }
+                        player.isShot(bullet.getPlayerName(), bullet.getDamage());
                         return;
                     }
                 }
@@ -240,9 +239,8 @@ class CollisionDetector {
                 //todo player is shot
                 if (bullet.isExplosive()) {
                     world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x - Explosion.getSIZE()/2, bullet.getPosition().y - Explosion.getSIZE()/2)));
-                } else {
-                    bob.isShot(bullet.getPlayerName());
                 }
+                bob.isShot(bullet.getPlayerName(), bullet.getDamage());
                 return;
             }
             // reset the x position of the collision box
@@ -261,9 +259,8 @@ class CollisionDetector {
                         //todo ai player is shot
                         if (bullet.isExplosive()) {
                             world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x - Explosion.getSIZE()/2, bullet.getPosition().y - Explosion.getSIZE()/2)));
-                        } else {
-                            player.isShot(bullet.getPlayerName());
                         }
+                        player.isShot(bullet.getPlayerName(), bullet.getDamage());
                         return;
                     }
                 }
@@ -274,9 +271,8 @@ class CollisionDetector {
                 //todo player is shot
                 if (bullet.isExplosive()) {
                     world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x - Explosion.getSIZE()/2, bullet.getPosition().y - Explosion.getSIZE()/2)));
-                } else {
-                    bob.isShot(bullet.getPlayerName());
                 }
+                bob.isShot(bullet.getPlayerName(), bullet.getDamage());
                 return;
             }
             // reset the collision box's position on Y
@@ -289,7 +285,15 @@ class CollisionDetector {
 
         for (Explosion explosion : world.getExplosions()) {
             if (Intersector.overlapConvexPolygons(player.getBounds(), explosion.getBounds()) && !player.isInjured()) {
-                player.isShot("explosion");
+                player.isShot("explosion", 5);
+            }
+        }
+    }
+
+    void checkExplodableCollisionWithExplosion(ExplodableBlock eb) {
+        for (Explosion explosion : world.getExplosions()) {
+            if (Intersector.overlapConvexPolygons(eb.getBounds(), explosion.getBounds())) {
+                eb.explode(0.5F);
             }
         }
     }

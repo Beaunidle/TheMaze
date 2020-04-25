@@ -25,7 +25,7 @@ public class Player {
     private final float rotationSpeed;
     private float stateTime = 0;
     private final String name;
-    private int lives = 5;
+    private int lives;
     private Gun gun;
 
     private Timer.Task bulletTimer = new Timer.Task() {
@@ -39,7 +39,7 @@ public class Player {
     private boolean bulletTimerOn;
     private boolean injured;
 
-    Player(Vector2 position, String name) {
+    public Player(Vector2 position, String name, int lives) {
         this.position = position;
         bounds = new Polygon(new float[]{0, 0 ,WIDTH, HEIGHT ,WIDTH ,0, 0,HEIGHT});
         bounds.setPosition(position.x, position.y);
@@ -47,7 +47,8 @@ public class Player {
         rotation = 45;
         rotationSpeed = 3.5F;
         this.name = name;
-        gun = new Gun(Gun.Type.ROCKET);
+        this.lives = lives;
+        gun = new Gun(Gun.Type.PISTOL);
     }
 
     public Vector2 getPosition() {
@@ -151,7 +152,7 @@ public class Player {
         injured = false;
     }
 
-    public void isShot(String name) {
+    public void isShot(String name, float damage) {
         if (!injured) {
             injuredTimer = new Timer.Task() {
                 @Override
@@ -160,13 +161,13 @@ public class Player {
                 }
             };
             injured = true;
-            lives --;
-            if (lives == 0) {
+            lives = lives - (int)Math.floor(damage);
+            if (lives <= 0) {
                 dead();
                 System.out.println(this.getName() + " killed by " + name);
                 return;
             }
-            Timer.schedule(injuredTimer, 1.5F, 1.5f);
+            Timer.schedule(injuredTimer, 0.5F, 1.5f);
         }
     }
 

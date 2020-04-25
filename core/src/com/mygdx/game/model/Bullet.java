@@ -13,25 +13,22 @@ public class Bullet {
     private float height = 0.04F;
     private float width = 0.15f;
     private float rotation;
+    private float damage;
     private Vector2 velocity;
-    private Timer.Task explodeTimer =  new Timer.Task() {
-        @Override
-        public void run() {
-            stopExplodeTimer();
-        }
-    };
+    private Timer.Task explodeTimer;
     private boolean exploding = false;
     private float explodeTime = 0.5f;
     private final String playerName;
     private boolean explosive = false;
 
-    Bullet(Vector2 position, float rotation, String playerName) {
+    Bullet(Vector2 position, float rotation, String playerName, float damage) {
         this.position.x = position.x;
         this.position.y = position.y + 0.25F;
         bounds = new Polygon(new float[]{0, 0, width, height, width, 0, 0, height});
         bounds.setPosition(position.x, position.y);
         this.rotation = rotation;
         this.playerName = playerName;
+        this.damage = damage;
     }
 
     public Vector2 getPosition() {
@@ -60,6 +57,10 @@ public class Bullet {
 
     public void setSpeed(float speed) {
         this.speed = speed;
+    }
+
+    public float getDamage() {
+        return damage;
     }
 
     public float getStateTime() {
@@ -102,6 +103,12 @@ public class Bullet {
 
     public void startExplodeTimer() {
         exploding = true;
+        explodeTimer =  new Timer.Task() {
+            @Override
+            public void run() {
+                stopExplodeTimer();
+            }
+        };
         Timer.schedule(explodeTimer, explodeTime, 0);
     }
 

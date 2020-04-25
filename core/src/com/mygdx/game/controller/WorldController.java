@@ -1,5 +1,6 @@
 package com.mygdx.game.controller;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.model.AIPlayer;
@@ -10,6 +11,7 @@ import com.mygdx.game.model.Explosion;
 import com.mygdx.game.model.GunPad;
 import com.mygdx.game.model.Player;
 import com.mygdx.game.model.World;
+import com.mygdx.game.screens.LoadingScreen;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,10 +27,13 @@ public class WorldController {
     private static final float DAMP = 0.90f;
     private static final float MAX_VEL = 4f;
 
+    private Game game;
     private World world;
     private Player bob;
     private List<AIPlayer> aiPlayers;
     private CollisionDetector collisionDetector;
+    private int level = 1;
+    private boolean levelFinished;
 
     private static Map<Keys, Boolean> keys = new HashMap<>();
 
@@ -41,11 +46,21 @@ public class WorldController {
         keys.put(Keys.FIRE, false);
     }
 
-    public WorldController(World world) {
+    public WorldController(World world, Game game) {
+        this.game = game;
         this.world = world;
         this.bob = world.getBob();
         this.aiPlayers = world.getAIPlayers();
         collisionDetector = new CollisionDetector(world, bob, aiPlayers);
+        levelFinished = false;
+    }
+
+    public boolean isLevelFinished() {
+        return levelFinished;
+    }
+
+    public int getLevel() {
+        return level;
     }
 
     // ** Key presses and touches **************** //
@@ -98,11 +113,23 @@ public class WorldController {
         keys.get(keys.put(Keys.FIRE, false));
     }
 
+
+    public void loadLevel(int level) {
+        world.loadWorld(level);
+        this.bob = world.getBob();
+        this.aiPlayers = world.getAIPlayers();
+        this.collisionDetector = new CollisionDetector(world, bob, aiPlayers);
+        levelFinished = false;
+    }
     /**
      * The main update method
      **/
     public void update(float delta) {
         // Processing the input - setting the states of Bob
+        if (aiPlayers.isEmpty()) {
+             levelFinished = true;
+        }
+
         if (!bob.getState().equals(Player.State.DEAD)) {
             processInput();
         }
@@ -159,6 +186,8 @@ public class WorldController {
             if (eb.getState().equals(ExplodableBlock.State.BANG)) {
                 world.getExplosions().add(new Explosion(new Vector2(eb.getPosition().x - ExplodableBlock.getSIZE(), eb.getPosition().y - ExplodableBlock.getSIZE())));
                 eb.setState(ExplodableBlock.State.RUBBLE);
+            } else if (!eb.getState().equals(ExplodableBlock.State.RUBBLE)) {
+                collisionDetector.checkExplodableCollisionWithExplosion(eb);
             }
         }
     }

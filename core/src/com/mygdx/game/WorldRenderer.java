@@ -38,6 +38,7 @@ public class WorldRenderer {
     private TextureRegion blockExplodeRed, blockExplodeYellow, blockRubble;
     private TextureRegion pistolTexture, smgTexture, shotgunTexture, rocketTexture;
     private TextureRegion bulletTexture;
+    private TextureRegion floorTexture;
 
     //Animations
     private Animation walkAnimation;
@@ -63,14 +64,14 @@ public class WorldRenderer {
 //        float ppuY = (float) h / CAMERA_HEIGHT;
 //    }
 
-    public WorldRenderer(World world, boolean debug) {
+    public WorldRenderer(World world, SpriteBatch spriteBatch, boolean debug) {
         this.world = world;
         this.cam = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
         this.cam.position.set(world.getBob().getPosition().x, world.getBob().getPosition().y + 0.5F, 0);
 //        this.cam.position.set(CAMERA_WIDTH/2, CAMERA_HEIGHT/2, 0);
         this.cam.update();
         this.debug = debug;
-        spriteBatch = new SpriteBatch();
+        this.spriteBatch = spriteBatch;
         loadTextures();
     }
 
@@ -83,6 +84,7 @@ public class WorldRenderer {
         heartTexture = itemAtlas.findRegion("heart");
 
         blockTexture = itemAtlas.findRegion("block");
+        floorTexture = itemAtlas.findRegion("floor");
         blockExplodeRed = itemAtlas.findRegion("explodingBlockRed");
         blockExplodeYellow = itemAtlas.findRegion("explodingBlockYellow");
         blockRubble = itemAtlas.findRegion("rubbleBlock");
@@ -95,6 +97,8 @@ public class WorldRenderer {
         for (int i = 0; i < 3; i++) {
             walkFrames[i] = itemAtlas.findRegion("sprite-0" + (i + 1));
         }
+
+        
         walkAnimation = new Animation(RUNNING_FRAME_DURATION, walkFrames);
 
         TextureRegion[] walkInjuredFrames = new TextureRegion[3];
@@ -125,6 +129,7 @@ public class WorldRenderer {
         this.cam.position.set(world.getBob().getPosition().x, world.getBob().getPosition().y + 0.5F, 0);
         this.cam.update();
         spriteBatch.begin();
+        drawFloor();
         drawBlocks();
         drawGunPads();
         drawBloodStains();
@@ -138,6 +143,16 @@ public class WorldRenderer {
             drawDebug();
     }
 
+    private void drawFloor() {
+        for (int i = 0; i < 50; i++) {
+            for (int j = 0; j < 50; j++) {
+                Block block = world.getLevel().get(i, j);
+                if (block == null) {
+                    spriteBatch.draw(floorTexture, i, j, Block.getSIZE(), Block.getSIZE());
+                }
+            }
+        }
+    }
     private void drawBlocks() {
         for (Block block : world.getDrawableBlocks((int)CAMERA_WIDTH, (int)CAMERA_HEIGHT)) {
             if (block instanceof ExplodableBlock) {

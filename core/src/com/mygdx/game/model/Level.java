@@ -8,11 +8,13 @@ import java.util.List;
 
 public class Level {
 
-    private int width;
-    private int height;
+    private int width =  50;
+    private int height = 50;
     private Block[][] blocks;
     private List<ExplodableBlock> explodableBlocks = new ArrayList<>();
     private List<GunPad> gunPads = new ArrayList<>();
+    private Player player;
+    private List<AIPlayer> aiPlayers = new ArrayList<>();
 
     private Vector2 spanPosition;
 
@@ -41,11 +43,19 @@ public class Level {
     }
 
     public Level() {
-        loadDemoLevel();
+        blocks = new Block[width][height];
+        for (int col = 0; col < width; col++) {
+            for (int row = 0; row < height; row++) {
+                blocks[col][row] = null;
+            }
+        }
     }
 
     public Block get(int x, int y) {
-        return blocks[x][y];
+        if (x > 0 && x < width && y > 0 && y < height) {
+            return blocks[x][y];
+        }
+        return null;
     }
 
     public List<ExplodableBlock> getExplodableBlocks() {
@@ -54,6 +64,30 @@ public class Level {
 
     public List<GunPad> getGunPads() {
         return gunPads;
+    }
+
+    public void setExplodableBlocks(List<ExplodableBlock> explodableBlocks) {
+        this.explodableBlocks = explodableBlocks;
+    }
+
+    public void setGunPads(List<GunPad> gunPads) {
+        this.gunPads = gunPads;
+    }
+
+    public Player getPlayer() {
+        return player;
+    }
+
+    public void setPlayer(Player player) {
+        this.player = player;
+    }
+
+    public List<AIPlayer> getAiPlayers() {
+        return aiPlayers;
+    }
+
+    public void setAiPlayers(List<AIPlayer> aiPlayers) {
+        this.aiPlayers = aiPlayers;
     }
 
     public Vector2 getSpanPosition() {

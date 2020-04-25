@@ -1,27 +1,41 @@
 package com.mygdx.game.screens;
 
 import com.badlogic.gdx.Application;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.mygdx.game.model.World;
 import com.mygdx.game.WorldRenderer;
 import com.mygdx.game.controller.WorldController;
 
 public class GameScreen implements Screen, InputProcessor {
 
+    private Game game;
     private World world;
     private WorldRenderer renderer;
     private WorldController controller;
+    private SpriteBatch spriteBatch;
 
     private int width, height;
+
+    GameScreen(Game game, SpriteBatch spriteBatch) {
+        this.game = game;
+        this.spriteBatch = spriteBatch;
+    }
 
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0.5f, 0.1f, 0.5f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        if (controller.isLevelFinished()) {
+            BitmapFont font = new BitmapFont();
+            game.setScreen(new LoadingScreen(game, spriteBatch, font, controller.getLevel(), this));
+        }
         controller.update(delta);
         renderer.render();
     }
@@ -34,9 +48,10 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public void show() {
+        Gdx.input.setCursorCatched(true);
         world = new World();
-        renderer = new WorldRenderer(world, true);
-        controller = new WorldController(world);
+        renderer = new WorldRenderer(world, spriteBatch, false);
+        controller = new WorldController(world, game);
         Gdx.input.setInputProcessor(this);
     }
 
@@ -146,5 +161,9 @@ public class GameScreen implements Screen, InputProcessor {
     public boolean scrolled(int amount) {
         // TODO Auto-generated method stub
         return false;
+    }
+
+    void loadLevel(int level) {
+        controller.loadLevel(level);
     }
 }

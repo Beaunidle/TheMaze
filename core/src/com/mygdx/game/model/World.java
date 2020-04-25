@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.mygdx.game.controller.LevelLoader;
 import com.mygdx.game.model.Block;
 import com.mygdx.game.model.Level;
 import com.mygdx.game.model.Player;
@@ -21,9 +22,10 @@ public class World {
     private List<BloodStain> bloodStains = new ArrayList<>();
     private Level level;
     private Array<Polygon> collisionRects = new Array<>();
+    private LevelLoader levelLoader = new LevelLoader();
 
     public World() {
-        createDemoWorld();
+        loadWorld(1);
     }
 
     // Getters -----------
@@ -95,7 +97,7 @@ public class World {
             y2 = level.getHeight() - 1;
         }
 
-        List<Block> blocks = new ArrayList<Block>();
+        List<Block> blocks = new ArrayList<>();
         Block block;
         for (int col = x; col <= x2; col++) {
             for (int row = y; row <= y2; row++) {
@@ -108,20 +110,12 @@ public class World {
         return blocks;
     }
 
-    private void createDemoWorld() {
-        bob = new Player(new Vector2(23F, 12F), "Bob");
-        AIPlayers = new ArrayList<>();
-        AIPlayers.add(new AIPlayer(new Vector2(20F, 23F), "AI01"));
-        AIPlayers.add(new AIPlayer(new Vector2(11F, 43F), "AI02"));
-        AIPlayers.add(new AIPlayer(new Vector2(20F, 13F), "AI03"));
-        AIPlayers.add(new AIPlayer(new Vector2(24F, 33F), "AI04"));
-        AIPlayers.add(new AIPlayer(new Vector2(20F, 13F), "AI05"));
-        AIPlayers.add(new AIPlayer(new Vector2(12F, 29F), "AI06"));
-        AIPlayers.add(new AIPlayer(new Vector2(25F, 12F), "AI07"));
-        AIPlayers.add(new AIPlayer(new Vector2(29F, 44F), "AI08"));
-        AIPlayers.add(new AIPlayer(new Vector2(38F, 38F), "AI09"));
-        AIPlayers.add(new AIPlayer(new Vector2(15F, 13F), "AI10"));
-
-        level = new Level();
+    public void loadWorld(int number) {
+        bloodStains.clear();
+        explosions.clear();
+        bullets.clear();
+        level = levelLoader.loadLevel(number);
+        bob = level.getPlayer();
+        AIPlayers = level.getAiPlayers();
     }
 }
