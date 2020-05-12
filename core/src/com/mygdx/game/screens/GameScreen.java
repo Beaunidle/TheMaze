@@ -26,6 +26,7 @@ public class GameScreen implements Screen, InputProcessor {
     GameScreen(Game game, SpriteBatch spriteBatch) {
         this.game = game;
         this.spriteBatch = spriteBatch;
+        world = new World();
     }
 
     @Override
@@ -34,7 +35,7 @@ public class GameScreen implements Screen, InputProcessor {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         if (controller.isLevelFinished()) {
             BitmapFont font = new BitmapFont();
-            game.setScreen(new LoadingScreen(game, spriteBatch, font, controller.getLevel(), this));
+            game.setScreen(new TitleScreen(game, spriteBatch, font));
         }
         controller.update(delta);
         renderer.render();
@@ -49,10 +50,26 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public void show() {
         Gdx.input.setCursorCatched(true);
-        world = new World();
         renderer = new WorldRenderer(world, spriteBatch, false);
         controller = new WorldController(world, game);
+        controller.leftReleased();
+        controller.rightReleased();
+        controller.upReleased();
+        controller.downReleased();
+        controller.useReleased();
+        controller.fireReleased();
         Gdx.input.setInputProcessor(this);
+    }
+
+    void loadLevel(int level) {
+        controller.leftReleased();
+        controller.rightReleased();
+        controller.upReleased();
+        controller.downReleased();
+        controller.useReleased();
+        controller.fireReleased();
+        System.out.println("game screen Loading level " + level);
+        controller.loadLevel(level);
     }
 
     @Override
@@ -163,7 +180,4 @@ public class GameScreen implements Screen, InputProcessor {
         return false;
     }
 
-    void loadLevel(int level) {
-        controller.loadLevel(level);
-    }
 }

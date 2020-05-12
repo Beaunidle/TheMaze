@@ -10,7 +10,10 @@ import com.mygdx.game.model.Level;
 import com.mygdx.game.model.Player;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public class World {
 
@@ -18,7 +21,7 @@ public class World {
     private Player bob;
     private List<Bullet> bullets = new ArrayList<>();
     private List<Explosion> explosions = new ArrayList<>();
-    private List<AIPlayer> AIPlayers;
+    private List<AIPlayer> AIPlayers = new ArrayList<>();
     private List<BloodStain> bloodStains = new ArrayList<>();
     private Level level;
     private Array<Polygon> collisionRects = new Array<>();
@@ -111,11 +114,26 @@ public class World {
     }
 
     public void loadWorld(int number) {
+        System.out.println("Loading level " + number);
         bloodStains.clear();
         explosions.clear();
         bullets.clear();
         level = levelLoader.loadLevel(number);
-        bob = level.getPlayer();
-        AIPlayers = level.getAiPlayers();
+        Map<Integer, SpawnPoint> spawnPoints = level.getSpawnPoints();
+        List<Integer> numbers = new ArrayList<>();
+        Random rand = new Random();
+        int rando = rand.nextInt(spawnPoints.size());
+        SpawnPoint sp = spawnPoints.get(rando);
+        bob = new Player(sp.getPosition(), "player", 20);
+        numbers.add(rando);
+
+        for (int i = 0; i < spawnPoints.size() -1; i++) {
+            while (numbers.contains(rando)) {
+                rando = rand.nextInt(spawnPoints.size());
+            }
+            sp = spawnPoints.get(rando);
+            AIPlayers.add(new AIPlayer(sp.getPosition(), "ai-0" + i));
+            numbers.add(rando);
+        }
     }
 }

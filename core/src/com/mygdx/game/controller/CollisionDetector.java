@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.mygdx.game.model.AIPlayer;
 import com.mygdx.game.model.Block;
+import com.mygdx.game.model.BoostPad;
 import com.mygdx.game.model.Bullet;
 import com.mygdx.game.model.ExplodableBlock;
 import com.mygdx.game.model.Explosion;
@@ -66,6 +67,11 @@ class CollisionDetector {
             if (Intersector.overlapConvexPolygons(playerRect, block.getBounds()) &&
                     !(block instanceof ExplodableBlock && ((ExplodableBlock) block).getState().equals(ExplodableBlock.State.RUBBLE))) {
                 player.getVelocity().x = 0;
+                if (player instanceof AIPlayer) {
+                    if (((AIPlayer) player).getRotateBy() == 0) {
+                        ((AIPlayer) player).setRotateBy(90);
+                    }
+                }
                 world.getCollisionRects().add(block.getBounds());
                 break;
             }
@@ -93,6 +99,11 @@ class CollisionDetector {
             if (Intersector.overlapConvexPolygons(playerRect, block.getBounds()) &&
                     !(block instanceof ExplodableBlock && ((ExplodableBlock) block).getState().equals(ExplodableBlock.State.RUBBLE))) {
                 player.getVelocity().y = 0;
+                if (player instanceof AIPlayer) {
+                    if (((AIPlayer) player).getRotateBy() == 0) {
+                        ((AIPlayer) player).setRotateBy(-90);
+                    }
+                }
                 world.getCollisionRects().add(block.getBounds());
                 break;
             }
@@ -103,6 +114,9 @@ class CollisionDetector {
         // update Player's position
         player.getPosition().add(player.getVelocity());
         player.getBounds().setPosition(player.getPosition().x, player.getPosition().y);
+        player.getBounds().setRotation(player.getRotation());
+        player.getViewCircle().setPosition(player.getCentrePosition().x, player.getCentrePosition().y);
+        player.getShieldCircle().setPosition(player.getCentrePosition().x, player.getCentrePosition().y);
 
         // un-scale velocity (not in frame time)
         player.getVelocity().x = player.getVelocity().x * (1 / delta);
@@ -233,17 +247,27 @@ class CollisionDetector {
                     }
                 }
             }
-            if (!bullet.getPlayerName().equals(bob.getName()) && Intersector.overlapConvexPolygons(bulletRect, bob.getBounds())) {
-                bullet.setSpeed(0);
-                bullet.startExplodeTimer();
-                //todo player is shot
-                if (bullet.isExplosive()) {
-                    world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x - Explosion.getSIZE()/2, bullet.getPosition().y - Explosion.getSIZE()/2)));
+            if  (!bullet.getPlayerName().equals(bob.getName())) {
+                if (bob.getBoost().equals(Player.Boost.SHIELD) && Intersector.overlaps(bob.getShieldCircle(), bulletRect.getBoundingRectangle())) {
+                    bullet.setSpeed(0);
+                    bullet.startExplodeTimer();
+                    if (bullet.isExplosive()) {
+                        world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x - Explosion.getSIZE()/2, bullet.getPosition().y - Explosion.getSIZE()/2)));
+                    }
                 }
-                bob.isShot(bullet.getPlayerName(), bullet.getDamage());
-                return;
+                if (Intersector.overlapConvexPolygons(bulletRect, bob.getBounds())) {
+                    bullet.setSpeed(0);
+                    bullet.startExplodeTimer();
+                    //player is shot
+                    if (bullet.isExplosive()) {
+                        world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x - Explosion.getSIZE()/2, bullet.getPosition().y - Explosion.getSIZE()/2)));
+                    }
+                    bob.isShot(bullet.getPlayerName(), bullet.getDamage());
+                    return;
+                }
+
             }
-            // reset the x position of the collision box
+                       // reset the x position of the collision box
             bulletRect.setPosition(bullet.getPosition().x, bullet.getPosition().y);
         }
 
@@ -284,8 +308,18 @@ class CollisionDetector {
     void checkPlayerCollisionWithExplosions(Player player) {
 
         for (Explosion explosion : world.getExplosions()) {
-            if (Intersector.overlapConvexPolygons(player.getBounds(), explosion.getBounds()) && !player.isInjured()) {
-                player.isShot("explosion", 5);
+            if (!player.getBoost().equals(Player.Boost.SHIELD) && !player.isInjured()
+                    && Intersector.overlapConvexPolygons(player.getBounds(), explosion.getBounds())) {
+                player.isShot("explosion", 2.5F);
+            }
+        }
+    }
+
+    void checkPlayerCollisionWithBoosts(Player player) {
+        for (BoostPad boostPad : world.getLevel().getBoostPads()) {
+            if (boostPad.getBoost() != null && player.getBoost().equals(Player.Boost.NOTHING) &&
+                    Intersector.overlapConvexPolygons(player.getBounds(), boostPad.getBounds())) {
+                player.setBoost(boostPad.collectBoost());
             }
         }
     }

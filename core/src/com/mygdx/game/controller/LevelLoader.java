@@ -6,10 +6,12 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.model.AIPlayer;
 import com.mygdx.game.model.Block;
+import com.mygdx.game.model.BoostPad;
 import com.mygdx.game.model.ExplodableBlock;
 import com.mygdx.game.model.GunPad;
 import com.mygdx.game.model.Level;
 import com.mygdx.game.model.Player;
+import com.mygdx.game.model.SpawnPoint;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -46,7 +48,7 @@ public class LevelLoader {
 
         FileHandle file = Gdx.files.internal("Levels/level0" + number + ".txt");
 
-        int aiCount = 1;
+        int spawnCount = 0;
         BufferedReader br = new BufferedReader(new InputStreamReader(file.read()));
         String st;
         while ((st = br.readLine()) != null) {
@@ -54,11 +56,9 @@ public class LevelLoader {
 
             switch (values[0]) {
                 case "PLAYER":
-                    level.setPlayer(new Player(new Vector2(Integer.valueOf(values[1]), Integer.valueOf(values[2])), "Player", 20));
-                    break;
                 case "AI":
-                    level.getAiPlayers().add(new AIPlayer(new Vector2(Integer.valueOf(values[1]), Integer.valueOf(values[2])), "AI-" + aiCount));
-                    aiCount++;
+                    level.getSpawnPoints().put(spawnCount, new SpawnPoint(new Vector2(Integer.valueOf(values[1]), Integer.valueOf(values[2]))));
+                    spawnCount++;
                     break;
                 case "BLOCK":
                     level.getBlocks()[Integer.valueOf(values[1])][Integer.valueOf(values[2])] = new Block(new Vector2(Integer.valueOf(values[1]), Integer.valueOf(values[2])));
@@ -80,6 +80,8 @@ public class LevelLoader {
                 case "ROCKET":
                     level.getGunPads().add(new GunPad(new Vector2(Integer.valueOf(values[1]), Integer.valueOf(values[2])), ROCKET));
                     break;
+                case "BOOST":
+                    level.getBoostPads().add(new BoostPad(new Vector2(Integer.valueOf(values[1]), Integer.valueOf(values[2]))));
                 case "FLOOR":
                     break;
             }

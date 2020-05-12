@@ -4,17 +4,19 @@ import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.model.Block;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Level {
 
-    private int width =  50;
-    private int height = 50;
+    private int width =  100;
+    private int height = 70;
     private Block[][] blocks;
     private List<ExplodableBlock> explodableBlocks = new ArrayList<>();
     private List<GunPad> gunPads = new ArrayList<>();
-    private Player player;
-    private List<AIPlayer> aiPlayers = new ArrayList<>();
+    private List<BoostPad> boostPads = new ArrayList<>();
+    private Map<Integer, SpawnPoint> spawnPoints = new HashMap<>();
 
     private Vector2 spanPosition;
 
@@ -66,28 +68,16 @@ public class Level {
         return gunPads;
     }
 
-    public void setExplodableBlocks(List<ExplodableBlock> explodableBlocks) {
-        this.explodableBlocks = explodableBlocks;
+    public List<BoostPad> getBoostPads() {
+        return boostPads;
     }
 
-    public void setGunPads(List<GunPad> gunPads) {
-        this.gunPads = gunPads;
+    public Map<Integer, SpawnPoint> getSpawnPoints() {
+        return spawnPoints;
     }
 
-    public Player getPlayer() {
-        return player;
-    }
-
-    public void setPlayer(Player player) {
-        this.player = player;
-    }
-
-    public List<AIPlayer> getAiPlayers() {
-        return aiPlayers;
-    }
-
-    public void setAiPlayers(List<AIPlayer> aiPlayers) {
-        this.aiPlayers = aiPlayers;
+    public void setSpawnPoints(Map<Integer, SpawnPoint> spawnPoints) {
+        this.spawnPoints = spawnPoints;
     }
 
     public Vector2 getSpanPosition() {

@@ -4,10 +4,10 @@ import com.badlogic.gdx.math.Vector2;
 
 public class BloodStain {
 
-    public static final float HEIGHT = 0.9F;
-    public static final float WIDTH = HEIGHT/2;
+    private static final float HEIGHT = 0.9F;
+    private static final float WIDTH = HEIGHT/2;
 
-    private Vector2 position = new Vector2();
+    private Vector2 position;
     private String name;
 
     public BloodStain(Vector2 position, String name) {

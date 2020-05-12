@@ -4,9 +4,13 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.mygdx.game.MyGdxGame;
 
+import java.awt.Dimension;
+
 public class DesktopLauncher {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-		new LwjglApplication(new MyGdxGame(), "test", 720, 480);
+//		config.fullscreen = true;
+		config.title = "Game";
+		new LwjglApplication(new MyGdxGame(),config);
 	}
 }

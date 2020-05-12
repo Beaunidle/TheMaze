@@ -12,14 +12,18 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.model.AIPlayer;
 import com.mygdx.game.model.Block;
 import com.mygdx.game.model.BloodStain;
+import com.mygdx.game.model.BoostPad;
 import com.mygdx.game.model.Bullet;
 import com.mygdx.game.model.ExplodableBlock;
 import com.mygdx.game.model.Explosion;
 import com.mygdx.game.model.GunPad;
+import com.mygdx.game.model.Pad;
 import com.mygdx.game.model.Player;
 import com.mygdx.game.model.World;
 
@@ -36,14 +40,15 @@ public class WorldRenderer {
     private TextureRegion heartTexture;
     private  TextureRegion blockTexture;
     private TextureRegion blockExplodeRed, blockExplodeYellow, blockRubble;
-    private TextureRegion pistolTexture, smgTexture, shotgunTexture, rocketTexture;
-    private TextureRegion bulletTexture;
+    private TextureRegion pistolTexture, smgTexture, shotgunTexture, rocketTexture, boostPadTexture;
+    private TextureRegion bulletTexture, homingBoostTexture, speedBoostTexture, shieldBoostTexture, damageBoostTexture;
     private TextureRegion floorTexture;
 
     //Animations
     private Animation walkAnimation;
     private  Animation walkInjuredAnimation;
     private  Animation explodeAnimation;
+    private Animation shieldAnimation;
 
     private static final float CAMERA_WIDTH = 14f;
     private static final float CAMERA_HEIGHT = 8f;
@@ -79,7 +84,7 @@ public class WorldRenderer {
 
         TextureAtlas itemAtlas = new TextureAtlas(Gdx.files.internal("items.atlas"));
         playerIdle = itemAtlas.findRegion("sprite-01");
-        playerInjured = itemAtlas.findRegion("injured-01");
+        playerInjured = itemAtlas.findRegion("sprite-01");
         playerDead = itemAtlas.findRegion("dead");
         heartTexture = itemAtlas.findRegion("heart");
 
@@ -93,17 +98,22 @@ public class WorldRenderer {
         shotgunTexture = itemAtlas.findRegion("gunShotgun");
         rocketTexture = itemAtlas.findRegion("gunRocket");
         bulletTexture = itemAtlas.findRegion("bullet90");
+        boostPadTexture = itemAtlas.findRegion("boostPad");
+        homingBoostTexture = itemAtlas.findRegion("homingBoost");
+        speedBoostTexture = itemAtlas.findRegion("speedBoost");
+        shieldBoostTexture = itemAtlas.findRegion("shieldBoost");
+        damageBoostTexture = itemAtlas.findRegion("damageBoost");
+
+
         TextureRegion[] walkFrames = new TextureRegion[3];
         for (int i = 0; i < 3; i++) {
-            walkFrames[i] = itemAtlas.findRegion("sprite-0" + (i + 1));
+            walkFrames[i] = itemAtlas.findRegion("sprite-01");
         }
-
-
         walkAnimation = new Animation(RUNNING_FRAME_DURATION, walkFrames);
 
         TextureRegion[] walkInjuredFrames = new TextureRegion[3];
         for (int i = 0; i < 3; i++) {
-            walkInjuredFrames[i] = itemAtlas.findRegion("injured-0" + (i + 1));
+            walkInjuredFrames[i] = itemAtlas.findRegion("sprite-01");
         }
         walkInjuredAnimation = new Animation(RUNNING_FRAME_DURATION, walkInjuredFrames);
 
@@ -115,6 +125,16 @@ public class WorldRenderer {
         explodeFrames[4] = itemAtlas.findRegion("explode-03");
         explodeAnimation = new Animation(EXPLODE_FRAME_DURATION, explodeFrames);
 
+        TextureRegion[] shieldFrames = new TextureRegion[7];
+        shieldFrames[0] = itemAtlas.findRegion("shieldBlue");
+        shieldFrames[1] = itemAtlas.findRegion("shieldPurple");
+        shieldFrames[2] = itemAtlas.findRegion("shieldRed");
+        shieldFrames[3] = itemAtlas.findRegion("shieldOrange");
+        shieldFrames[4] = itemAtlas.findRegion("shieldYellow");
+        shieldFrames[5] = itemAtlas.findRegion("shieldGreen");
+        shieldFrames[6] = itemAtlas.findRegion("shieldTurquoise");
+
+        shieldAnimation = new Animation(RUNNING_FRAME_DURATION, shieldFrames);
 //        TextureRegion[] walkLeftFrames = new TextureRegion[6];
 //
 //        for (int i = 0; i < 6; i++) {
@@ -131,6 +151,7 @@ public class WorldRenderer {
         spriteBatch.begin();
         drawFloor();
         drawBlocks();
+        drawBoostPads();
         drawGunPads();
         drawBloodStains();
         drawExplosions();
@@ -139,13 +160,23 @@ public class WorldRenderer {
         drawBob();
         spriteBatch.end();
 //        drawCollisionBlocks();
-        if (debug)
-            drawDebug();
+//        debugRenderer.setProjectionMatrix(cam.combined);
+//        debugRenderer.setAutoShapeType(true);
+//        debugRenderer.begin(ShapeType.Line);
+//        debugRenderer.setColor(Color.RED);
+//        debugRenderer.polygon(world.getBob().getViewCircle().getTransformedVertices());
+//        for (AIPlayer aiPlayer :  world.getAIPlayers()) {
+//            Rectangle rect = aiPlayer.getViewCircle().getBoundingRectangle();
+//            debugRenderer.rect(rect.x, rect.y, rect.width, rect.height);
+//        }
+//        debugRenderer.end();
+//        if (debug)
+        drawDebug();
     }
 
     private void drawFloor() {
-        for (int i = 0; i < 50; i++) {
-            for (int j = 0; j < 50; j++) {
+        for (int i = 0; i < 100; i++) {
+            for (int j = 0; j < 70; j++) {
                 Block block = world.getLevel().get(i, j);
                 if (block == null) {
                     spriteBatch.draw(floorTexture, i, j, Block.getSIZE(), Block.getSIZE());
@@ -165,6 +196,35 @@ public class WorldRenderer {
                 spriteBatch.draw(blockTexture, block.getPosition().x, block.getPosition().y, Block.getSIZE(), Block.getSIZE());
             }
 
+        }
+    }
+
+    private void drawBoostPads() {
+        for (BoostPad boostPad : world.getLevel().getBoostPads()) {
+            spriteBatch.draw(boostPadTexture, boostPad.getPos().x, boostPad.getPos().y, Pad.getSIZE(), Pad.getSIZE());
+            if (boostPad.getBoost() != null) {
+                TextureRegion boostFrame = null;
+                switch (boostPad.getBoost()) {
+                    case HOMING:
+                        boostFrame = homingBoostTexture;
+                        break;
+                    case SPEED:
+                        boostFrame = speedBoostTexture;
+                        break;
+                    case DAMAGE:
+                        boostFrame = damageBoostTexture;
+                        break;
+                    case SHIELD:
+                        boostFrame = shieldBoostTexture;
+                        break;
+                }
+                if (boostFrame != null) {
+                    spriteBatch.draw(boostFrame,
+                            boostPad.getPos().x + 0.33F, boostPad.getPos().y + 0.35F,
+                            Pad.getSIZE()*0.8F, Pad.getSIZE()*0.8F);
+                }
+
+            }
         }
     }
 
@@ -224,11 +284,74 @@ public class WorldRenderer {
     private void drawBob() {
         Player bob = world.getBob();
         TextureRegion bobFrame = bob.isInjured() ? playerInjured : playerIdle;
-        for (int i = 0; i < bob.getLives(); i++) {
-            float xPos = bob.getPosition().x  + i;
+        for (float i = 0; i < bob.getLives(); i++) {
+            float xPos = 5 + bob.getPosition().x - (i/4);
             float yPos = bob.getPosition().y + 3;
-            spriteBatch.draw(heartTexture, xPos, yPos, 1, 1, 1, 1, 0.5F, 0.5F, 0);
+            spriteBatch.draw(heartTexture, xPos, yPos, 1, 1, 1, 1, 0.25F, 0.25F, 0);
         }
+        for (float i = 0; i < bob.getGun().getAmmo(); i++) {
+            float xPos = 5 + bob.getPosition().x - (i/4);
+            float yPos = bob.getPosition().y + 2.5F;
+            spriteBatch.draw(bulletTexture, xPos, yPos, 1, 1, 0.5F, 1, 0.25F, 0.25F, 0);
+        }
+
+        for (float i = 0; i < bob.getGun().getClips(); i++) {
+            float xPos = 5 + bob.getPosition().x - (i/4);
+            float yPos = bob.getPosition().y + 2.0F;
+            spriteBatch.draw(blockRubble, xPos, yPos, 1, 1, 0.5F, 1, 0.25F, 0.25F, 0);
+        }
+
+        TextureRegion gunFrame = null;
+        switch (bob.getGun().getType()) {
+            case PISTOL:
+                gunFrame = pistolTexture;
+                break;
+            case SHOTGUN:
+                gunFrame = shotgunTexture;
+                break;
+            case SMG:
+                gunFrame = smgTexture;
+                break;
+            case ROCKET:
+                gunFrame = rocketTexture;
+                break;
+        }
+
+        float xPos = bob.getPosition().x + 5;
+        float yPos = bob.getPosition().y + 1.75F;
+        if (gunFrame != null) {
+            spriteBatch.draw(gunFrame, xPos, yPos, 1, 1, 1F, 1, 0.75F, 0.75F, 0);
+        }
+
+
+        if (!bob.getBoost().equals(Player.Boost.NOTHING)) {
+            TextureRegion boostFrame = null;
+
+            switch (bob.getBoost()) {
+                case HOMING:
+                    boostFrame = homingBoostTexture;
+                    break;
+                case SPEED:
+                    boostFrame = speedBoostTexture;
+                    break;
+                case DAMAGE:
+                    boostFrame = damageBoostTexture;
+                    break;
+                case SHIELD:
+                    boostFrame = shieldBoostTexture;
+                    TextureRegion shieldFrame = (TextureRegion) (shieldAnimation.getKeyFrame(bob.getStateTime(), true));
+                    Circle circle = bob.getShieldCircle();
+                    spriteBatch.draw(shieldFrame, circle.x - circle.radius/2, circle.y - circle.radius/2, 1, 1, 2F, 2, 2.00F, 2.00F, 0);
+                    break;
+            }
+
+            xPos = bob.getPosition().x + 4.5F;
+            if (boostFrame != null) {
+                spriteBatch.draw(boostFrame, xPos, yPos, 1, 1, 1F, 1, 0.75F, 0.75F, 0);
+            }
+
+        }
+
         if(bob.getState().equals(Player.State.MOVING)) {
             if (bob.isInjured()) {
                 bobFrame =  (TextureRegion) (walkInjuredAnimation.getKeyFrame(bob.getStateTime(), true));
@@ -257,20 +380,31 @@ public class WorldRenderer {
     }
 
     private void drawDebug() {
-        // render blocks
         debugRenderer.setProjectionMatrix(cam.combined);
+        debugRenderer.setAutoShapeType(true);
         debugRenderer.begin(ShapeType.Line);
-        for (Block block : world.getDrawableBlocks((int)CAMERA_WIDTH, (int)CAMERA_HEIGHT)) {
-            Rectangle rect = block.getBounds().getBoundingRectangle();
-            float x1 = block.getPosition().x + rect.x;
-            float y1 = block.getPosition().y + rect.y;
-            debugRenderer.setColor(new Color(1, 0, 0, 1));
-            debugRenderer.rect(x1, y1, rect.width, rect.height);
+        debugRenderer.setColor(Color.RED);
+        debugRenderer.circle(world.getBob().getViewCircle().x, world.getBob().getViewCircle().y, world.getBob().getViewCircle().radius);
+        for (AIPlayer aiPlayer :  world.getAIPlayers()) {
+            debugRenderer.circle(aiPlayer.getViewCircle().x, aiPlayer.getViewCircle().y, aiPlayer.getViewCircle().radius);
         }
+
+        for (Bullet bullet : world.getBullets()) {
+
+            if (bullet.isHoming()) {
+                debugRenderer.circle(bullet.getViewCircle().x, bullet.getViewCircle().y, bullet.getViewCircle().radius);
+            }
+        }
+
         // render Bob
         Player bob = world.getBob();
         debugRenderer.setColor(Color.BLACK);
         debugRenderer.polygon(bob.getBounds().getTransformedVertices());
+        debugRenderer.setColor(Color.RED);
+        debugRenderer.circle(bob.getShieldCircle().x, bob.getShieldCircle().y, bob.getShieldCircle().radius);
+
+        Rectangle rect = bob.getBounds().getBoundingRectangle();
+        debugRenderer.rect(rect.x, rect.y, rect.width, rect.height);
         debugRenderer.end();
     }
 

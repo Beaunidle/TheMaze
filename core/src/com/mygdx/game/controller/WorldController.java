@@ -12,6 +12,7 @@ import com.mygdx.game.model.GunPad;
 import com.mygdx.game.model.Player;
 import com.mygdx.game.model.World;
 import com.mygdx.game.screens.LoadingScreen;
+import com.mygdx.game.utils.Locator;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,6 +35,7 @@ public class WorldController {
     private CollisionDetector collisionDetector;
     private int level = 1;
     private boolean levelFinished;
+    private Locator locator;
 
     private static Map<Keys, Boolean> keys = new HashMap<>();
 
@@ -53,6 +55,7 @@ public class WorldController {
         this.aiPlayers = world.getAIPlayers();
         collisionDetector = new CollisionDetector(world, bob, aiPlayers);
         levelFinished = false;
+        locator = new Locator();
     }
 
     public boolean isLevelFinished() {
@@ -114,11 +117,13 @@ public class WorldController {
     }
 
 
-    public void loadLevel(int level) {
-        world.loadWorld(level);
+    public void loadLevel(int number) {
+        System.out.println("controller Loading level " + number);
+        world.loadWorld(number);
         this.bob = world.getBob();
         this.aiPlayers = world.getAIPlayers();
         this.collisionDetector = new CollisionDetector(world, bob, aiPlayers);
+        level = number;
         levelFinished = false;
     }
     /**
@@ -131,17 +136,22 @@ public class WorldController {
         }
 
         if (!bob.getState().equals(Player.State.DEAD)) {
+            bob.heal();
             processInput();
+        } else {
+            levelFinished = true;
         }
         for (AIPlayer aiPlayer : aiPlayers) {
             if (!aiPlayer.getState().equals(Player.State.DEAD)) {
-                processAIInput(aiPlayer);
+                aiPlayer.heal();
+                processAIInput(aiPlayer, delta);
             }
         }
 
         if (!bob.getState().equals(Player.State.DEAD)) {
             setAction(delta, bob);
             collisionDetector.checkPlayerCollisionWithExplosions(bob);
+            collisionDetector.checkPlayerCollisionWithBoosts(bob);
         }
         Iterator aiPlayerIterator = aiPlayers.iterator();
         while(aiPlayerIterator.hasNext()) {
@@ -164,11 +174,33 @@ public class WorldController {
                     continue;
                 }
                 if (bullet.getSpeed() > 0) {
+
+                    if (bullet.isHoming() && bullet.isActivated()) {
+                        bullet.chooseTarget(bob, aiPlayers);
+
+                        if (bullet.getTarget() != null) {
+                            Vector2 distance = new Vector2(bullet.getTarget().getCentrePosition()).sub(bullet.getPosition());
+                            double rot = Math.atan2(distance.y, distance.x);
+                            float deg = (float) (rot * (180 / Math.PI));
+                            if (deg < 0) {
+                                deg = 360 - (-deg);
+                            }
+
+                            if (locator.locate(deg, bullet.getRotation()) < 0) {
+                                bullet.rotateAntiClockwise(delta);
+                            } else if (locator.locate(deg, bullet.getRotation()) > 0) {
+                                bullet.rotateClockwise(delta);
+                            }
+                        }
+                    }
+
+
                     bullet.setVelocity(calculateVelocity(bullet.getSpeed() * delta, bullet.getRotation()));
                     collisionDetector.checkBulletCollisionWithBlocks(bullet, delta);
                     collisionDetector.checkBulletCollisionWithPlayers(bullet, delta);
 
                     bullet.getPosition().add(bullet.getVelocity().x, bullet.getVelocity().y);
+                    bullet.getViewCircle().setPosition(bullet.getPosition().x, bullet.getPosition().y);
                 }
                 bullet.update(delta);
             }
@@ -182,6 +214,7 @@ public class WorldController {
                 }
             }
         }
+
         for (ExplodableBlock eb : world.getLevel().getExplodableBlocks()) {
             if (eb.getState().equals(ExplodableBlock.State.BANG)) {
                 world.getExplosions().add(new Explosion(new Vector2(eb.getPosition().x - ExplodableBlock.getSIZE(), eb.getPosition().y - ExplodableBlock.getSIZE())));
@@ -195,6 +228,13 @@ public class WorldController {
     private void setAction (float delta, Player player) {
         // Convert acceleration to frame time
         //player.setAcceleration(player.getAcceleration() * delta);
+
+        if (player.isTurningAntiClockwise()) {
+            player.rotateAntiClockwise(delta);
+        }
+        if (player.isTurningClcokwise()) {
+            player.rotateClockwise(delta);
+        }
 
         // apply acceleration to change velocity
         player.setVelocity(calculateVelocity(player.getAcceleration(), player.getRotation()));
@@ -212,20 +252,7 @@ public class WorldController {
         if (player.getVelocity().x < -MAX_VEL) {
             player.getVelocity().x = -MAX_VEL;
         }
-        //set direction
-//            if (player.getAcceleration().x != 0) {
-//                player.getDirection().x = bob.getAcceleration().x;
-//                if (player.getAcceleration().y == 0 && (player instanceof AIPlayer || !(upTimer.isScheduled() || downTimer.isScheduled()))) {
-//                    player.getDirection().y = 0;
-//                }
-//            }
-//            if (player.getAcceleration().y != 0) {
-//                player.getDirection().y = player.getAcceleration().y;
-//                if (player.getAcceleration().x == 0 && (player instanceof AIPlayer || !(leftTimer.isScheduled() || rightTimer.isScheduled()))) {
-//                    player.getDirection().x = 0;
-//                }
-//            }
-        player.getBounds().setRotation(player.getRotation());
+
         // simply updates the state time
         player.update(delta);
     }
@@ -246,32 +273,33 @@ public class WorldController {
                         bob.getGun().setType(gunPad.getType());
                     }
                 }
+                if (!bob.getGun().fullAmmo()) {
+                    bob.getGun().reload();
+                }
             }
 
             if (keys.get(Keys.LEFT)) {
                 // left is pressed
                 bob.setState(Player.State.MOVING);
-                bob.setRotation(bob.getRotation() + bob.getRotationSpeed());
-                if (bob.getRotation() > 360) {
-                    bob.setRotation(bob.getRotation() - 360);
-                }
+                bob.setTurningAntiClockwise(true);
+                bob.setTurningClcokwise(false);
             } else if (keys.get(Keys.RIGHT)) {
                 // right is pressed
-                bob.setState(Player.State.MOVING);
-                bob.setRotation(bob.getRotation() - bob.getRotationSpeed());
-                if (bob.getRotation() < 0) {
-                    bob.setRotation(bob.getRotation() + 360);
-                }
+                bob.setTurningClcokwise(true);
+                bob.setTurningAntiClockwise(false);
+            } else {
+                bob.setTurningClcokwise(false);
+                bob.setTurningAntiClockwise(false);
             }
 
             if (keys.get(Keys.UP)) {
                 // up is pressed
                 bob.setState(Player.State.MOVING);
-                bob.setAcceleration(4F);
+                bob.setAcceleration(bob.getBoost().equals(Player.Boost.SPEED) ? 8F : 4F);
             } else if (keys.get(Keys.DOWN)) {
                 // down is pressed
                 bob.setState(Player.State.MOVING);
-                bob.setAcceleration(-4F);
+                bob.setAcceleration(bob.getBoost().equals(Player.Boost.SPEED) ? -8F : -4F);
             } else {
                 bob.setAcceleration(0F);
                 bob.setState(Player.State.IDLE);
@@ -279,22 +307,13 @@ public class WorldController {
         }
     }
 
-    private void processAIInput(AIPlayer aiPlayer) {
+    private void processAIInput(AIPlayer aiPlayer, float delta) {
         if (aiPlayer.getState() != Player.State.DEAD) {
             //do the thing
-            if (aiPlayer.getIntent().equals(AIPlayer.Intent.HOMING)) {
-                aiPlayer.setState(Player.State.MOVING);
-                aiPlayer.setAcceleration(2F);
-            } else if (aiPlayer.getIntent().equals(AIPlayer.Intent.SEARCHING)) {
-                aiPlayer.setState(Player.State.MOVING);
-                aiPlayer.setAcceleration(0F);
-                aiPlayer.setRotation(aiPlayer.getRotation() + aiPlayer.getRotationSpeed());
-                if (aiPlayer.getRotation() > 360) {
-                    aiPlayer.setRotation(aiPlayer.getRotation() - 360);
-                }
-            }
+            Vector2 target = aiPlayer.chooseTarget(bob, aiPlayers);
+            world.getBullets().addAll(aiPlayer.decide(delta));
             if (Math.random() > 0.995) {
-                world.getBullets().addAll(aiPlayer.fireBullet());
+//                world.getBullets().addAll(aiPlayer.fireBullet());
             }
         }
     }

@@ -59,7 +59,7 @@ public class LoadingScreen extends ScreenAdapter {
         stage.draw();
 
         spriteBatch.begin();
-        font.draw(spriteBatch, "Loading Level" + level + 1, Gdx.graphics.getWidth() * .25f, Gdx.graphics.getHeight() * .75f);
+        font.draw(spriteBatch, "Loading Level " + (level + 1), Gdx.graphics.getWidth() * .25f, Gdx.graphics.getHeight() * .75f);
         spriteBatch.end();
     }
 
@@ -69,7 +69,9 @@ public class LoadingScreen extends ScreenAdapter {
     }
 
     private void endScreen() {
-        gameScreen.loadLevel(level + 1);
+        int number = level + 1;
+        System.out.println("Loading screen level " + number);
+        gameScreen.loadLevel(number);
         game.setScreen(gameScreen);
     }
 }

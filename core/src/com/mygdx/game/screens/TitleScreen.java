@@ -43,7 +43,7 @@ public class TitleScreen extends ScreenAdapter implements InputProcessor {
     }
     @Override
     public void show(){
-//        Gdx.input.setCursorCatched(true);
+        Gdx.input.setCursorCatched(false);
 //        Gdx.input.setInputProcessor(new InputAdapter() {
 //            @Override
 //            public boolean keyDown(int keyCode) {

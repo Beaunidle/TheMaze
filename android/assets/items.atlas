@@ -4,51 +4,92 @@ size: 2048,2048
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
-block
-  rotate: false
-  xy: 95, 1973
-  size: 70, 63
-  orig: 70, 63
-  offset: 0, 0
-  index: -1
 bullet
   rotate: false
-  xy: 2, 2023
+  xy: 2, 2
   size: 37, 13
   orig: 37, 13
   offset: 0, 0
   index: -1
 bullet180
   rotate: false
-  xy: 41, 2023
+  xy: 2006, 2006
   size: 37, 13
   orig: 37, 13
   offset: 0, 0
   index: -1
 bullet90
   rotate: false
-  xy: 80, 1999
+  xy: 2006, 1967
   size: 13, 37
   orig: 13, 37
   offset: 0, 0
   index: -1
+damageBoost
+  rotate: false
+  xy: 2, 17
+  size: 1000, 1000
+  orig: 1000, 1000
+  offset: 0, 0
+  index: -1
+homingBoost
+  rotate: false
+  xy: 2, 1019
+  size: 1000, 1000
+  orig: 1000, 1000
+  offset: 0, 0
+  index: -1
+shieldBoost
+  rotate: false
+  xy: 1004, 17
+  size: 1000, 1000
+  orig: 1000, 1000
+  offset: 0, 0
+  index: -1
+speedBoost
+  rotate: false
+  xy: 1004, 1019
+  size: 1000, 1000
+  orig: 1000, 1000
+  offset: 0, 0
+  index: -1
+
+items2.png
+size: 2048,2048
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+block
+  rotate: false
+  xy: 74, 1973
+  size: 70, 63
+  orig: 70, 63
+  offset: 0, 0
+  index: -1
 explodingBlockRed
   rotate: false
-  xy: 167, 1973
+  xy: 146, 1973
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 explodingBlockYellow
   rotate: false
-  xy: 239, 1973
+  xy: 218, 1973
+  size: 70, 63
+  orig: 70, 63
+  offset: 0, 0
+  index: -1
+floor
+  rotate: false
+  xy: 2, 1973
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 gunPistol
   rotate: false
-  xy: 383, 1396
+  xy: 362, 1396
   size: 640, 640
   orig: 640, 640
   offset: 0, 0
@@ -69,34 +110,68 @@ gunSMG
   index: -1
 gunShotgun
   rotate: false
-  xy: 1025, 1396
+  xy: 1004, 1396
   size: 640, 640
   orig: 640, 640
   offset: 0, 0
   index: -1
 heart
   rotate: false
-  xy: 2, 2
+  xy: 1004, 2
   size: 1000, 750
   orig: 1000, 750
   offset: 0, 0
   index: -1
 rubbleBlock
   rotate: false
-  xy: 311, 1973
+  xy: 290, 1973
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
-sprite-01
+shieldYellow
+  rotate: false
+  xy: 2, 2
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+
+items3.png
+size: 2048,2048
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+shieldPurple
   rotate: false
   xy: 1004, 2
   size: 1000, 750
   orig: 1000, 750
   offset: 0, 0
   index: -1
+sprite-01
+  rotate: false
+  xy: 2, 754
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+sprite-02
+  rotate: false
+  xy: 2, 2
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+sprite-03
+  rotate: false
+  xy: 1004, 754
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
 
-items2.png
+items4.png
 size: 2048,2048
 format: RGBA8888
 filter: Nearest,Nearest
@@ -115,48 +190,82 @@ injured-03
   orig: 1000, 750
   offset: 0, 0
   index: -1
-sprite-02
-  rotate: false
-  xy: 2, 754
-  size: 1000, 750
-  orig: 1000, 750
-  offset: 0, 0
-  index: -1
-sprite-03
+shieldGreen
   rotate: false
   xy: 2, 2
   size: 1000, 750
   orig: 1000, 750
   offset: 0, 0
   index: -1
+shieldTurquoise
+  rotate: false
+  xy: 2, 754
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
 
-items3.png
+items5.png
 size: 2048,2048
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
 explode-01
   rotate: false
-  xy: 2, 754
+  xy: 2, 2
   size: 1000, 750
   orig: 1000, 750
   offset: 0, 0
   index: -1
 explode-02
   rotate: false
-  xy: 2, 2
+  xy: 1004, 754
   size: 1000, 750
   orig: 1000, 750
   offset: 0, 0
   index: -1
 explode-03
   rotate: false
-  xy: 1004, 754
+  xy: 1004, 2
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+shieldRed
+  rotate: false
+  xy: 2, 754
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+
+items6.png
+size: 2048,2048
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+boostPad
+  rotate: false
+  xy: 2, 754
   size: 1000, 750
   orig: 1000, 750
   offset: 0, 0
   index: -1
 injured-01
+  rotate: false
+  xy: 2, 2
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+shieldBlue
+  rotate: false
+  xy: 1004, 754
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+shieldOrange
   rotate: false
   xy: 1004, 2
   size: 1000, 750
@@ -164,7 +273,7 @@ injured-01
   offset: 0, 0
   index: -1
 
-items4.png
+items7.png
 size: 1024,1024
 format: RGBA8888
 filter: Nearest,Nearest
