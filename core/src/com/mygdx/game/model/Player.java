@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Timer;
+import com.mygdx.game.utils.View;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +31,15 @@ public class Player {
     private final float rotationSpeed;
     private float stateTime = 0;
     private final String name;
-    private int lives;
-    private int maxLives;
+    private float lives;
+    private float maxLives;
     private Gun gun;
-    private Circle viewCircle, shieldCircle;
+    private Circle shieldCircle;
+//    private Circle viewCircle;
+    private Polygon viewCircle;
+    private float viewCircleWidth, viewCircleHeight;
+    private View view;
+    private String killedBy;
 
     private Timer.Task bulletTimer = new Timer.Task() {
         @Override
@@ -49,22 +55,29 @@ public class Player {
     private boolean injured, healing;
     private boolean turningAntiClockwise = false, turningClcokwise = false, moveForward = false, moveBackward = false;
 
-    Player(Vector2 position, String name, int lives) {
+    public Player(Vector2 position, String name, float lives) {
         this.position = position;
         bounds = new Polygon(new float[]{0, 0, WIDTH, 0, WIDTH, HEIGHT, 0, HEIGHT});
 
         bounds.setPosition(position.x, position.y);
         bounds.setOrigin(WIDTH/2, HEIGHT/2);
-        viewCircle = new Circle(getCentrePosition().x, getCentrePosition().y, 7.5F);
+//        viewCircle = new Circle(getCentrePosition().x, getCentrePosition().y, 7.5F);
+        viewCircleWidth = 15;
+        viewCircleHeight = 8;
+        float viewX = -viewCircleWidth/2 ;
+        float viewY = -viewCircleHeight/2 ;
+        viewCircle = new Polygon(new float[]{viewX, viewY, viewX + viewCircleWidth, viewY, viewX + viewCircleWidth, viewY + viewCircleHeight, viewX, viewY + viewCircleHeight});
+        view = new View();
         shieldCircle = new Circle(getCentrePosition().x, getCentrePosition().y, 2F);
         rotation = 0;
-        rotationSpeed = 150;
+        rotationSpeed = 200;
         this.name = name;
         this.lives = lives;
         this.maxLives = lives;
         gun = new Gun(Gun.Type.PISTOL);
         acceleration = 0F;
     }
+
 
     public Vector2 getPosition() {
         return position;
@@ -131,6 +144,14 @@ public class Player {
         return rotationSpeed;
     }
 
+    public String getKilledBy() {
+        return killedBy;
+    }
+
+    public void setKilledBy(String killedBy) {
+        this.killedBy = killedBy;
+    }
+
     public boolean isTurningAntiClockwise() {
         return turningAntiClockwise;
     }
@@ -178,12 +199,41 @@ public class Player {
         return name;
     }
 
-    public int getLives() {
+    public float getLives() {
         return lives;
     }
 
-    public Circle getViewCircle() {
+    public float getMaxLives() {
+        return maxLives;
+    }
+
+    public void reduceLife(float damage) {
+        lives = lives - damage;
+    }
+
+//    public Circle getViewCircle() {
+//        return viewCircle;
+//    }
+
+
+    public Polygon getViewCircle() {
         return viewCircle;
+    }
+
+    public float getViewCircleWidth() {
+        return viewCircleWidth;
+    }
+
+    public float getViewCircleHeight() {
+        return viewCircleHeight;
+    }
+
+    public View getView() {
+        return view;
+    }
+
+    public void clearView() {
+        view = new View();
     }
 
     public Circle getShieldCircle() {
@@ -219,9 +269,21 @@ public class Player {
         List<Bullet> bullets = new ArrayList<>();
         if (!bulletTimerOn) {
             startBulletTimer(gun.getFiringRate() * 0.25F);
-            bullets.addAll(gun.fire((new Vector2(viewCircle.x, viewCircle.y)), rotation, name, getBoost().equals(Boost.HOMING), getBoost().equals(Boost.DAMAGE)));
+            bullets.addAll(gun.fire((new Vector2(viewCircle.getX(), viewCircle.getY())), rotation, name, getBoost().equals(Boost.HOMING), getBoost().equals(Boost.DAMAGE)));
         }
         return bullets;
+    }
+
+    public void respawn(Vector2 newPos) {
+        this.lives = maxLives;
+        this.gun = new Gun(Gun.Type.PISTOL);
+        this.position = new Vector2(newPos);
+        this.bounds.setPosition(position.x, position.y);
+        this.bounds.setRotation(rotation);
+        this.viewCircle.setPosition(getCentrePosition().x, getCentrePosition().y);
+        this.shieldCircle.setPosition(getCentrePosition().x, getCentrePosition().y);
+        this.injured = false;
+        this.state = State.IDLE;
     }
 
     private void startBulletTimer(float delay) {
@@ -242,7 +304,7 @@ public class Player {
     private void stopHealTimer() {
         healTimer.cancel();
         healing = false;
-        lives = lives + 4;
+        lives = lives + 1;
         if (lives > maxLives) lives = maxLives;
     }
 
@@ -255,18 +317,18 @@ public class Player {
                 }
             };
             injured = true;
-            lives = lives - (int)Math.floor(damage);
+            lives = lives - damage;
             if (lives <= 0) {
-                dead();
-                System.out.println(this.getName() + " killed by " + name);
+                dead(name);
                 return;
             }
             Timer.schedule(injuredTimer, 0.02F, 1.5f);
         }
     }
 
-    private void dead() {
+    private void dead(String name) {
         setState(State.DEAD);
+        killedBy = name;
     }
 
     public void heal() {
@@ -278,7 +340,7 @@ public class Player {
                 }
             };
             healing = true;
-            Timer.schedule(healTimer, 2F);
+            Timer.schedule(healTimer, 1F);
         }
     }
 

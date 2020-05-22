@@ -7,10 +7,17 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.mygdx.game.model.ScoreBoard;
 
 public class LoadingScreen extends ScreenAdapter {
 
@@ -18,22 +25,13 @@ public class LoadingScreen extends ScreenAdapter {
     private SpriteBatch spriteBatch;
     private BitmapFont font;
     private Stage stage;
-    private int level;
-    private GameScreen gameScreen;
+    private ScoreBoard scoreBoard;
 
-    LoadingScreen(Game game, SpriteBatch spriteBatch, BitmapFont font, int level, GameScreen gameScreen) {
+    LoadingScreen(Game game, SpriteBatch spriteBatch, BitmapFont font, ScoreBoard scoreBoard) {
         this.game = game;
         this.spriteBatch = spriteBatch;
         this.font = font;
-        this.level = level;
-        this.gameScreen = gameScreen;
-        Timer.Task timer = new Timer.Task() {
-            @Override
-            public void run() {
-                endScreen();
-            }
-        };
-        Timer.schedule(timer, 5);
+        this.scoreBoard = scoreBoard;
 
         OrthographicCamera camera = new OrthographicCamera();
         Viewport viewport = new FitViewport(640, 480, camera);
@@ -47,8 +45,58 @@ public class LoadingScreen extends ScreenAdapter {
 
     public void show(){
 
-        //todo start the timer
+        Gdx.input.setCursorCatched(false);
         Gdx.input.setInputProcessor(stage);
+
+        Table mainTable = new Table();
+        Table topTable = new Table();
+        Table bottomTable = new Table();
+
+//        Set table to fill stage
+        mainTable.setFillParent(true);
+
+
+
+        mainTable.center();
+        mainTable.add(topTable).top();
+        mainTable.add(bottomTable).bottom();
+
+
+
+        TextureAtlas atlas = new TextureAtlas(Gdx.files.internal("buttons/buttons.atlas"));
+        Button startButton = new Button(new TextureRegionDrawable(atlas.findRegion("start")));
+        Button exitButton = new Button(new TextureRegionDrawable(atlas.findRegion("exit")));
+        //todo title button
+
+//        startButton.setWidth(100);
+//        startButton.setHeight(100);
+//        startButton.setX(150);
+//        startButton.setY(50);
+//
+//        exitButton.setWidth(100);
+//        exitButton.setHeight(100);
+//        exitButton.setX(400);
+//        exitButton.setY(50);
+
+        startButton.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new GameScreen(game, spriteBatch));
+            }
+        });
+        exitButton.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                Gdx.app.exit();
+            }
+        });
+
+        bottomTable.add(startButton).width(35).height(35);
+        bottomTable.add(exitButton).width(35).height(35);
+//        stage.addActor(startButton);
+//        stage.addActor(exitButton);
+
+        stage.addActor(mainTable);
     }
 
     @Override
@@ -59,7 +107,7 @@ public class LoadingScreen extends ScreenAdapter {
         stage.draw();
 
         spriteBatch.begin();
-        font.draw(spriteBatch, "Loading Level " + (level + 1), Gdx.graphics.getWidth() * .25f, Gdx.graphics.getHeight() * .75f);
+        font.draw(spriteBatch, scoreBoard.toString(), Gdx.graphics.getWidth() * .25f, Gdx.graphics.getHeight() * .75f);
         spriteBatch.end();
     }
 
@@ -69,9 +117,8 @@ public class LoadingScreen extends ScreenAdapter {
     }
 
     private void endScreen() {
-        int number = level + 1;
-        System.out.println("Loading screen level " + number);
-        gameScreen.loadLevel(number);
-        game.setScreen(gameScreen);
+//        System.out.println("Loading screen level " + number);
+//        gameScreen.loadLevel(number);
+//        game.setScreen(gameScreen);
     }
 }

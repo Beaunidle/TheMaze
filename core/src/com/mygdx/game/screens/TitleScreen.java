@@ -44,15 +44,6 @@ public class TitleScreen extends ScreenAdapter implements InputProcessor {
     @Override
     public void show(){
         Gdx.input.setCursorCatched(false);
-//        Gdx.input.setInputProcessor(new InputAdapter() {
-//            @Override
-//            public boolean keyDown(int keyCode) {
-//                if (keyCode == Input.Keys.SPACE) {
-//                    game.setScreen(new GameScreen(game, spriteBatch));
-//                }
-//                return true;
-//            }
-//        });
         Gdx.input.setInputProcessor(stage);
 
 //        Table mainTable = new Table();

@@ -17,17 +17,18 @@ public class Explosion {
             finish();
         }
     };
+    private String name;
 
     public static float getSIZE() {
         return SIZE;
     }
 
-    public Explosion(Vector2 pos) {
+    public Explosion(Vector2 pos, String name) {
         this.position = pos;
         this.bounds = new Polygon(new float[]{0, 0, SIZE, SIZE, 0, SIZE, SIZE, 0});
         this.bounds.setPosition(pos.x, pos.y);
         Timer.schedule(exploding, 2, 2);
-
+        this.name = name;
     }
 
     public Vector2 getPosition() {
@@ -36,6 +37,10 @@ public class Explosion {
 
     public Polygon getBounds() {
         return bounds;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public boolean isFinished() {

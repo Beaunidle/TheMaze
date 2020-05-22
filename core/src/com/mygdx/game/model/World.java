@@ -124,7 +124,7 @@ public class World {
         Random rand = new Random();
         int rando = rand.nextInt(spawnPoints.size());
         SpawnPoint sp = spawnPoints.get(rando);
-        bob = new Player(sp.getPosition(), "player", 20);
+        bob = new Player(new Vector2(sp.getPosition()), "player", 20);
         numbers.add(rando);
 
         for (int i = 0; i < spawnPoints.size() -1; i++) {
@@ -132,7 +132,7 @@ public class World {
                 rando = rand.nextInt(spawnPoints.size());
             }
             sp = spawnPoints.get(rando);
-            AIPlayers.add(new AIPlayer(sp.getPosition(), "ai-0" + i));
+            AIPlayers.add(new AIPlayer(new Vector2(sp.getPosition()), "ai-0" + i));
             numbers.add(rando);
         }
     }

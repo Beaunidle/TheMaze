@@ -22,6 +22,7 @@ import com.mygdx.game.model.BoostPad;
 import com.mygdx.game.model.Bullet;
 import com.mygdx.game.model.ExplodableBlock;
 import com.mygdx.game.model.Explosion;
+import com.mygdx.game.model.FloorPad;
 import com.mygdx.game.model.GunPad;
 import com.mygdx.game.model.Pad;
 import com.mygdx.game.model.Player;
@@ -42,6 +43,7 @@ public class WorldRenderer {
     private TextureRegion blockExplodeRed, blockExplodeYellow, blockRubble;
     private TextureRegion pistolTexture, smgTexture, shotgunTexture, rocketTexture, boostPadTexture;
     private TextureRegion bulletTexture, homingBoostTexture, speedBoostTexture, shieldBoostTexture, damageBoostTexture;
+    private TextureRegion spikeTexture, slimeTexture, moveTexture;
     private TextureRegion floorTexture;
 
     //Animations
@@ -103,6 +105,10 @@ public class WorldRenderer {
         speedBoostTexture = itemAtlas.findRegion("speedBoost");
         shieldBoostTexture = itemAtlas.findRegion("shieldBoost");
         damageBoostTexture = itemAtlas.findRegion("damageBoost");
+        spikeTexture = itemAtlas.findRegion("padSpike");
+        slimeTexture = itemAtlas.findRegion("padSticky");
+        moveTexture = itemAtlas.findRegion("padMove");
+
 
 
         TextureRegion[] walkFrames = new TextureRegion[3];
@@ -153,6 +159,7 @@ public class WorldRenderer {
         drawBlocks();
         drawBoostPads();
         drawGunPads();
+        drawFloorPads();
         drawBloodStains();
         drawExplosions();
         drawBullets();
@@ -247,6 +254,31 @@ public class WorldRenderer {
             }
             if (gunFrame != null) {
                 spriteBatch.draw(gunFrame, gunPad.getPos().x, gunPad.getPos().y, GunPad.getSIZE(), GunPad.getSIZE());
+            }
+        }
+    }
+
+    private void drawFloorPads() {
+        for (FloorPad floorPad : world.getLevel().getFloorPads()) {
+            TextureRegion floorFrame = null;
+            switch (floorPad.getType()) {
+                case SPIKE:
+                    floorFrame = spikeTexture;
+                    break;
+                case SLIME:
+                    floorFrame = slimeTexture;
+                    break;
+                case MOVE:
+                    floorFrame = moveTexture;
+                    break;
+            }
+            if (floorFrame != null) {
+                if (floorPad.getType().equals(FloorPad.Type.MOVE)) {
+                    spriteBatch.draw(floorFrame, floorPad.getPos().x, floorPad.getPos().y, Block.getSIZE()/2, Block.getSIZE()/2,
+                            Block.getSIZE(), Block.getSIZE(), 1, 1, floorPad.getRot() + 90, true);
+                } else {
+                    spriteBatch.draw(floorFrame, floorPad.getPos().x, floorPad.getPos().y, GunPad.getSIZE(), GunPad.getSIZE());
+                }
             }
         }
     }
@@ -376,6 +408,15 @@ public class WorldRenderer {
             }
             spriteBatch.draw(aiFrame, aiPlayer.getPosition().x, aiPlayer.getPosition().y, Player.WIDTH/2, Player.HEIGHT/2, Player.WIDTH, Player.HEIGHT,
                     1, 1, aiPlayer.getRotation(), true);
+
+            if (!aiPlayer.getBoost().equals(Player.Boost.NOTHING)) {
+
+                if (aiPlayer.getBoost() == Player.Boost.SHIELD) {
+                    TextureRegion shieldFrame = (TextureRegion) (shieldAnimation.getKeyFrame(aiPlayer.getStateTime(), true));
+                    Circle circle = aiPlayer.getShieldCircle();
+                    spriteBatch.draw(shieldFrame, circle.x - circle.radius / 2, circle.y - circle.radius / 2, 1, 1, 2F, 2, 2.00F, 2.00F, 0);
+                }
+            }
         }
     }
 
@@ -384,9 +425,11 @@ public class WorldRenderer {
         debugRenderer.setAutoShapeType(true);
         debugRenderer.begin(ShapeType.Line);
         debugRenderer.setColor(Color.RED);
-        debugRenderer.circle(world.getBob().getViewCircle().x, world.getBob().getViewCircle().y, world.getBob().getViewCircle().radius);
+        debugRenderer.polygon(world.getBob().getViewCircle().getTransformedVertices());
+//        debugRenderer.circle(world.getBob().getViewCircle().getX(), world.getBob().getViewCircle().y, world.getBob().getViewCircle().radius);
         for (AIPlayer aiPlayer :  world.getAIPlayers()) {
-            debugRenderer.circle(aiPlayer.getViewCircle().x, aiPlayer.getViewCircle().y, aiPlayer.getViewCircle().radius);
+            debugRenderer.polygon(aiPlayer.getViewCircle().getTransformedVertices());
+//            debugRenderer.circle(aiPlayer.getViewCircle().getX(), aiPlayer.getViewCircle().y, aiPlayer.getViewCircle().radius);
         }
 
         for (Bullet bullet : world.getBullets()) {

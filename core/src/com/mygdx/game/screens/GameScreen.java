@@ -35,7 +35,7 @@ public class GameScreen implements Screen, InputProcessor {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         if (controller.isLevelFinished()) {
             BitmapFont font = new BitmapFont();
-            game.setScreen(new TitleScreen(game, spriteBatch, font));
+            game.setScreen(new LoadingScreen(game, spriteBatch, font, controller.getScoreBoard()));
         }
         controller.update(delta);
         renderer.render();

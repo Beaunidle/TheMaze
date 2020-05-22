@@ -8,6 +8,7 @@ import com.mygdx.game.model.AIPlayer;
 import com.mygdx.game.model.Block;
 import com.mygdx.game.model.BoostPad;
 import com.mygdx.game.model.ExplodableBlock;
+import com.mygdx.game.model.FloorPad;
 import com.mygdx.game.model.GunPad;
 import com.mygdx.game.model.Level;
 import com.mygdx.game.model.Player;
@@ -82,6 +83,25 @@ public class LevelLoader {
                     break;
                 case "BOOST":
                     level.getBoostPads().add(new BoostPad(new Vector2(Integer.valueOf(values[1]), Integer.valueOf(values[2]))));
+                    break;
+                case "SPIKE":
+                    level.getFloorPads().add(new FloorPad(new Vector2(Integer.valueOf(values[1]), Integer.valueOf(values[2])), FloorPad.Type.SPIKE));
+                    break;
+                case "SLIME":
+                    level.getFloorPads().add(new FloorPad(new Vector2(Integer.valueOf(values[1]), Integer.valueOf(values[2])), FloorPad.Type.SLIME));
+                    break;
+                case "MOVERIGHT":
+                    level.getFloorPads().add(new FloorPad(new Vector2(Integer.valueOf(values[1]), Integer.valueOf(values[2])), 0));
+                    break;
+                case "MOVEUP":
+                    level.getFloorPads().add(new FloorPad(new Vector2(Integer.valueOf(values[1]), Integer.valueOf(values[2])), 90));
+                    break;
+                case "MOVELEFT":
+                    level.getFloorPads().add(new FloorPad(new Vector2(Integer.valueOf(values[1]), Integer.valueOf(values[2])), 180));
+                    break;
+                case "MOVEDOWN":
+                    level.getFloorPads().add(new FloorPad(new Vector2(Integer.valueOf(values[1]), Integer.valueOf(values[2])), 270));
+                    break;
                 case "FLOOR":
                     break;
             }

@@ -3,13 +3,17 @@ package com.mygdx.game.controller;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Timer;
 import com.mygdx.game.model.AIPlayer;
 import com.mygdx.game.model.BloodStain;
 import com.mygdx.game.model.Bullet;
 import com.mygdx.game.model.ExplodableBlock;
 import com.mygdx.game.model.Explosion;
+import com.mygdx.game.model.FloorPad;
 import com.mygdx.game.model.GunPad;
 import com.mygdx.game.model.Player;
+import com.mygdx.game.model.ScoreBoard;
+import com.mygdx.game.model.SpawnPoint;
 import com.mygdx.game.model.World;
 import com.mygdx.game.screens.LoadingScreen;
 import com.mygdx.game.utils.Locator;
@@ -18,6 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class WorldController {
 
@@ -36,6 +41,7 @@ public class WorldController {
     private int level = 1;
     private boolean levelFinished;
     private Locator locator;
+    private ScoreBoard scoreBoard;
 
     private static Map<Keys, Boolean> keys = new HashMap<>();
 
@@ -56,6 +62,16 @@ public class WorldController {
         collisionDetector = new CollisionDetector(world, bob, aiPlayers);
         levelFinished = false;
         locator = new Locator();
+        scoreBoard = new ScoreBoard(bob, aiPlayers);
+
+        Timer.Task gameTimer = new Timer.Task() {
+            @Override
+            public void run() {
+                levelFinished = true;
+                System.out.print(scoreBoard.toString());
+            }
+        };
+        Timer.schedule(gameTimer, 120);
     }
 
     public boolean isLevelFinished() {
@@ -64,6 +80,10 @@ public class WorldController {
 
     public int getLevel() {
         return level;
+    }
+
+    public ScoreBoard getScoreBoard() {
+        return scoreBoard;
     }
 
     // ** Key presses and touches **************** //
@@ -135,36 +155,50 @@ public class WorldController {
              levelFinished = true;
         }
 
-        if (!bob.getState().equals(Player.State.DEAD)) {
-            bob.heal();
-            processInput();
+        //check health of players and set control instructions
+        if (bob.getState().equals(Player.State.DEAD)) {
+            scoreBoard.addDeath(bob.getName());
+            if (bob.getKilledBy() != null) {
+                scoreBoard.addKill(bob.getKilledBy());
+                bob.setKilledBy(null);
+            }
+            world.getBloodStains().add(new BloodStain(bob.getPosition(), bob.getName()));
+            SpawnPoint sp = findSpawnPoint();
+            bob.respawn(sp.getPosition());
         } else {
-            levelFinished = true;
+            bob.heal();
+            fillView(bob);
+            bob.getView().printView();
+            processInput();
         }
         for (AIPlayer aiPlayer : aiPlayers) {
             if (!aiPlayer.getState().equals(Player.State.DEAD)) {
                 aiPlayer.heal();
+                fillView(aiPlayer);
                 processAIInput(aiPlayer, delta);
             }
         }
 
+        //check for collisions and carry out movements
         if (!bob.getState().equals(Player.State.DEAD)) {
             setAction(delta, bob);
-            collisionDetector.checkPlayerCollisionWithExplosions(bob);
-            collisionDetector.checkPlayerCollisionWithBoosts(bob);
         }
-        Iterator aiPlayerIterator = aiPlayers.iterator();
-        while(aiPlayerIterator.hasNext()) {
-            AIPlayer aiPlayer = (AIPlayer)aiPlayerIterator.next();
+        for (AIPlayer aiPlayer : aiPlayers) {
             if (!aiPlayer.getState().equals(Player.State.DEAD)) {
-                setAction(delta, aiPlayer);
-                collisionDetector.checkPlayerCollisionWithExplosions(aiPlayer);
+//                setAction(delta, aiPlayer);
             } else {
+                scoreBoard.addDeath(aiPlayer.getName());
+                if (aiPlayer.getKilledBy() != null) {
+                    scoreBoard.addKill(aiPlayer.getKilledBy());
+                    aiPlayer.setKilledBy(null);
+                }
                 world.getBloodStains().add(new BloodStain(aiPlayer.getPosition(), aiPlayer.getName()));
-                aiPlayerIterator.remove();
+                SpawnPoint sp = findSpawnPoint();
+                aiPlayer.respawn(sp.getPosition());
             }
         }
 
+        //check collisions and move bullets
         if (world.getBullets() != null && !world.getBullets().isEmpty()) {
             Iterator bulletIterator = world.getBullets().iterator();
             while (bulletIterator.hasNext()) {
@@ -194,7 +228,6 @@ public class WorldController {
                         }
                     }
 
-
                     bullet.setVelocity(calculateVelocity(bullet.getSpeed() * delta, bullet.getRotation()));
                     collisionDetector.checkBulletCollisionWithBlocks(bullet, delta);
                     collisionDetector.checkBulletCollisionWithPlayers(bullet, delta);
@@ -205,6 +238,8 @@ public class WorldController {
                 bullet.update(delta);
             }
         }
+
+        //remove finished explosions
         if (world.getExplosions() != null && !world.getExplosions().isEmpty()) {
             Iterator explosionIterator = world.getExplosions().iterator();
             while (explosionIterator.hasNext()) {
@@ -215,12 +250,15 @@ public class WorldController {
             }
         }
 
+        //handle explodable blocks
         for (ExplodableBlock eb : world.getLevel().getExplodableBlocks()) {
-            if (eb.getState().equals(ExplodableBlock.State.BANG)) {
-                world.getExplosions().add(new Explosion(new Vector2(eb.getPosition().x - ExplodableBlock.getSIZE(), eb.getPosition().y - ExplodableBlock.getSIZE())));
-                eb.setState(ExplodableBlock.State.RUBBLE);
-            } else if (!eb.getState().equals(ExplodableBlock.State.RUBBLE)) {
-                collisionDetector.checkExplodableCollisionWithExplosion(eb);
+            if (!eb.getState().equals(ExplodableBlock.State.RUBBLE)) {
+                if (eb.getState().equals(ExplodableBlock.State.BANG)) {
+                    world.getExplosions().add(new Explosion(new Vector2(eb.getPosition().x - ExplodableBlock.getSIZE(), eb.getPosition().y - ExplodableBlock.getSIZE()), "explosion"));
+                    eb.setState(ExplodableBlock.State.RUBBLE);
+                } else {
+                    collisionDetector.checkExplodableCollisionWithExplosion(eb);
+                }
             }
         }
     }
@@ -239,8 +277,15 @@ public class WorldController {
         // apply acceleration to change velocity
         player.setVelocity(calculateVelocity(player.getAcceleration(), player.getRotation()));
 
+        //apply world effects
+        collisionDetector.checkPlayerCollisionWithFloorPads(player);
+
         // checking collisions with the surrounding blocks depending on Bob's velocity
         collisionDetector.checkPlayerCollisionWithBlocks(delta, player);
+
+        //effects after moving
+        collisionDetector.checkPlayerCollisionWithExplosions(player);
+        collisionDetector.checkPlayerCollisionWithBoosts(player);
 
         // apply damping to halt Player nicely
         player.getVelocity().x *= DAMP;
@@ -318,6 +363,30 @@ public class WorldController {
         }
     }
 
+    private void fillView(Player player) {
+        player.clearView();
+        int xPos = (int)Math.floor(player.getViewCircle().getX() - player.getViewCircleWidth()/2);
+        int yPos = (int)Math.floor(player.getViewCircle().getY() - player.getViewCircleHeight()/2);
+
+        for (int i = 0; i < player.getViewCircleWidth(); i++) {
+            for (int j = 0; j < player.getViewCircleHeight(); j++) {
+                int col = xPos + i;
+                int row = yPos + j;
+                if (col >= 0 && row >= 0 && col < world.getLevel().getWidth() && row < world.getLevel().getHeight()) {
+                    player.getView().getBlocks()[i][j] = world.getLevel().get(col, row);
+                }
+            }
+        }
+        for (FloorPad floorPad : world.getLevel().getFloorPads()) {
+            if (Intersector.overlapConvexPolygons(floorPad.getBounds(), player.getViewCircle())) {
+                player.getView().getFloorPads().add(floorPad);
+            }
+        }
+
+        //todo think about a new Class, viewObject, which simply contains names and locations.
+
+    }
+
     private Vector2 calculateVelocity(float acceleration, float rotation) {
         Vector2 velocity = new Vector2();
         rotation = (float)(rotation * (Math.PI/180));
@@ -336,5 +405,20 @@ public class WorldController {
             velocity.y = -(float)Math.sin(rotation)*acceleration;
         }
         return velocity;
+    }
+
+    private SpawnPoint findSpawnPoint() {
+        Random rand = new Random();
+        Map<Integer, SpawnPoint> sps = world.getLevel().getSpawnPoints();
+        SpawnPoint sp = sps.get(rand.nextInt(sps.size()));
+        boolean occupied = true;
+        while (occupied) {
+            if (collisionDetector.checkSpawnPointForPlayers(sp)) {
+                occupied = false;
+            } else {
+                sp = sps.get(rand.nextInt(sps.size()));
+            }
+        }
+        return sp;
     }
 }

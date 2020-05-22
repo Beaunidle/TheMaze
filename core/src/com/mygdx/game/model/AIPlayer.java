@@ -98,60 +98,59 @@ public class AIPlayer extends Player {
                 rotateClockwise(delta);
                 rotateBy--;
             }
+        }
+
+        if (target != null) {
+            if (getViewCircle().contains(target.getCentrePosition())) {
+                setIntent(Intent.HOMING);
+                Vector2 distance = new Vector2(target.getCentrePosition()).sub(getCentrePosition());
+                float dst = target.getCentrePosition().dst(getCentrePosition());
+                double rot = Math.atan2(distance.y, distance.x);
+                float deg = (float) (rot * (180 / Math.PI));
+                if (deg < 0) {
+                    deg = 360 - (-deg);
+                }
+                if (-20 < (deg - getRotation())  && (deg - getRotation()) < 20) {
+                    if (dst > 2) {
+                        moveForward();
+                    } else {
+                        stop();
+                    }
+                    if (Math.random() > 0.695) {
+                        bullets.addAll(fireBullet());
+                    }
+                } else {
+                    stop();
+                    int random = rand.nextInt(100);
+                    if (random > 94) moveForward();
+                }
+
+                if (locator.locate(deg, getRotation()) < 0) {
+                    rotateAntiClockwise(delta);
+                } else if (locator.locate(deg, getRotation()) > 0) {
+                    rotateClockwise(delta);
+                } else {
+                    stop();
+                }
+            }
         } else {
-            if (target != null) {
-                if (getViewCircle().contains(target.getCentrePosition())) {
-                    setIntent(Intent.HOMING);
-                    Vector2 distance = new Vector2(target.getCentrePosition()).sub(getCentrePosition());
-                    float dst = target.getCentrePosition().dst(getCentrePosition());
-                    double rot = Math.atan2(distance.y, distance.x);
-                    float deg = (float) (rot * (180 / Math.PI));
-                    if (deg < 0) {
-                        deg = 360 - (-deg);
-                    }
+            setIntent(Intent.SEARCHING);
+        }
 
-                    if (-20 < (deg - getRotation())  && (deg - getRotation()) < 20) {
-                        if (dst > 2) {
-                            moveForward();
-                        } else {
-                            stop();
-                        }
-                        if (Math.random() > 0.695) {
-                            bullets.addAll(fireBullet());
-                        }
-                    } else {
-                        stop();
-                        int random = rand.nextInt(100);
-                        if (random > 94) moveForward();
-                    }
+        if (getIntent().equals(Intent.SEARCHING)) {
+            {
+                setState(Player.State.MOVING);
+                int random = rand.nextInt(10);
 
-                    if (locator.locate(deg, getRotation()) < 0) {
-                        rotateAntiClockwise(delta);
-                    } else if (locator.locate(deg, getRotation()) > 0) {
-                        rotateClockwise(delta);
-                    } else {
-                        setIntent(Intent.SEARCHING);
-                        stop();
-                    }
+                if (random > 2) {
+                    moveForward();
+                } else {
+                    stop();
                 }
 
-
-                if (getIntent().equals(Intent.SEARCHING)) {
-                    {
-                        setState(Player.State.MOVING);
-                        int random = rand.nextInt(10);
-
-                        if (random > 4) {
-                            moveForward();
-                        } else {
-                            stop();
-                        }
-
-                        random = rand.nextInt(10);
-                        if (random >= 4 && random <= 6) rotateClockwise(delta);
-                        if (random >= 7 && random <= 9) rotateAntiClockwise(delta);
-                    }
-                }
+                random = rand.nextInt(10);
+                if (random >= 4 && random <= 6) rotateClockwise(delta);
+                if (random >= 7 && random <= 9) rotateAntiClockwise(delta);
             }
         }
         return bullets;

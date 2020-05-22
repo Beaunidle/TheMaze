@@ -80,6 +80,7 @@ public class Gun {
                 reloadTime = 4;
                 break;
         }
+        this.ammo = CLIP_SIZE;
     }
 
     List<Bullet> fire(Vector2 position, float rotation, String playerName, boolean homing, boolean damageBoost) {

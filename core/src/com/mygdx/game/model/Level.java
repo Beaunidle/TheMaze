@@ -16,6 +16,7 @@ public class Level {
     private List<ExplodableBlock> explodableBlocks = new ArrayList<>();
     private List<GunPad> gunPads = new ArrayList<>();
     private List<BoostPad> boostPads = new ArrayList<>();
+    private List<FloorPad> floorPads = new ArrayList<>();
     private Map<Integer, SpawnPoint> spawnPoints = new HashMap<>();
 
     private Vector2 spanPosition;
@@ -70,6 +71,10 @@ public class Level {
 
     public List<BoostPad> getBoostPads() {
         return boostPads;
+    }
+
+    public List<FloorPad> getFloorPads() {
+        return floorPads;
     }
 
     public Map<Integer, SpawnPoint> getSpawnPoints() {
