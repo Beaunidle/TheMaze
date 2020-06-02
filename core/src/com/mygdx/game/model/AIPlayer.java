@@ -117,7 +117,7 @@ public class AIPlayer extends Player {
                         stop();
                     }
                     if (Math.random() > 0.695) {
-                        bullets.addAll(fireBullet());
+                        bullets.addAll(fireBullet(getRotation()));
                     }
                 } else {
                     stop();
@@ -132,6 +132,8 @@ public class AIPlayer extends Player {
                 } else {
                     stop();
                 }
+            } else {
+                target = null;
             }
         } else {
             setIntent(Intent.SEARCHING);

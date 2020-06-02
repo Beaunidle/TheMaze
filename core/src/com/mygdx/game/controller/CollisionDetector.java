@@ -117,7 +117,7 @@ class CollisionDetector {
         player.getPosition().add(player.getVelocity());
         player.getBounds().setPosition(player.getPosition().x, player.getPosition().y);
         player.getBounds().setRotation(player.getRotation());
-        player.getViewCircle().setPosition(player.getPosition().x, player.getPosition().y);
+        player.getViewCircle().setPosition(player.getPosition().x - 7.5F, player.getPosition().y - 4F);
         //        player.getViewCircle().setPosition(player.getCentrePosition().x, player.getCentrePosition().y);
         player.getShieldCircle().setPosition(player.getCentrePosition().x, player.getCentrePosition().y);
 

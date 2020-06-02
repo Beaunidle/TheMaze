@@ -1,5 +1,6 @@
 package com.mygdx.game.screens;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
@@ -25,6 +26,8 @@ public class TitleScreen extends ScreenAdapter implements InputProcessor {
     private SpriteBatch spriteBatch;
     private BitmapFont font;
     private Stage stage;
+    private int width = Gdx.app.getGraphics().getWidth();
+    private int height = Gdx.app.getGraphics().getHeight();
 
 
     public TitleScreen(Game game, SpriteBatch spriteBatch, BitmapFont font) {
@@ -33,7 +36,7 @@ public class TitleScreen extends ScreenAdapter implements InputProcessor {
         this.font = font;
 
         OrthographicCamera camera = new OrthographicCamera();
-        Viewport viewport = new FitViewport(640, 480, camera);
+        Viewport viewport = new FitViewport(width, height, camera);
         viewport.apply();
 
         camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
@@ -78,20 +81,20 @@ public class TitleScreen extends ScreenAdapter implements InputProcessor {
         Button startButton = new Button(new TextureRegionDrawable(atlas.findRegion("start")));
         Button exitButton = new Button(new TextureRegionDrawable(atlas.findRegion("exit")));
 
-        startButton.setWidth(100);
-        startButton.setHeight(100);
-        startButton.setX(150);
-        startButton.setY(100);
+        startButton.setWidth(width/10f);
+        startButton.setHeight(height/5f);
+        startButton.setX(width * 0.25F);
+        startButton.setY(height * 0.25F);
 
-        exitButton.setWidth(100);
-        exitButton.setHeight(100);
-        exitButton.setX(400);
-        exitButton.setY(100);
+        exitButton.setWidth(width/10f);
+        exitButton.setHeight(height/5f);
+        exitButton.setX(width * 0.65F);
+        exitButton.setY(height * 0.25F);
 
         startButton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new GameScreen(game, spriteBatch));
+                game.setScreen(new GameScreen(game, spriteBatch, font));
             }
         });
         exitButton.addListener(new ClickListener(){
@@ -115,9 +118,12 @@ public class TitleScreen extends ScreenAdapter implements InputProcessor {
 
         spriteBatch.begin();
         font.getLineHeight();
-        font.draw(spriteBatch, "Moody Mayhem!", Gdx.graphics.getWidth() * .25f, Gdx.graphics.getHeight() * .75f);
-        font.draw(spriteBatch, "Run around and don't die!!!", Gdx.graphics.getWidth() * .25f, Gdx.graphics.getHeight() * .65f);
-        font.draw(spriteBatch, "Click start to play", Gdx.graphics.getWidth() * .25f, Gdx.graphics.getHeight() * .55f);
+
+        if (Gdx.app.getType().equals(Application.ApplicationType.Android)) font.getData().setScale(4);
+            font.draw(spriteBatch, "Moody Mayhem!", Gdx.graphics.getWidth() * .35f, Gdx.graphics.getHeight() * .75f);
+            font.draw(spriteBatch, "Run around and don't die!!!", Gdx.graphics.getWidth() * .35f, Gdx.graphics.getHeight() * .65f);
+            font.draw(spriteBatch, "Click start to play", Gdx.graphics.getWidth() * .35f, Gdx.graphics.getHeight() * .55f);
+
         spriteBatch.end();
     }
 

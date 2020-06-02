@@ -3,18 +3,23 @@ package com.mygdx.game;
 
 
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Circle;
+import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.mygdx.game.model.AIPlayer;
 import com.mygdx.game.model.Block;
 import com.mygdx.game.model.BloodStain;
@@ -23,10 +28,14 @@ import com.mygdx.game.model.Bullet;
 import com.mygdx.game.model.ExplodableBlock;
 import com.mygdx.game.model.Explosion;
 import com.mygdx.game.model.FloorPad;
+import com.mygdx.game.model.GameButton;
 import com.mygdx.game.model.GunPad;
 import com.mygdx.game.model.Pad;
 import com.mygdx.game.model.Player;
 import com.mygdx.game.model.World;
+import com.mygdx.game.utils.JoyStick;
+
+import java.util.Arrays;
 
 
 public class WorldRenderer {
@@ -44,7 +53,10 @@ public class WorldRenderer {
     private TextureRegion pistolTexture, smgTexture, shotgunTexture, rocketTexture, boostPadTexture;
     private TextureRegion bulletTexture, homingBoostTexture, speedBoostTexture, shieldBoostTexture, damageBoostTexture;
     private TextureRegion spikeTexture, slimeTexture, moveTexture;
+    private TextureRegion joystickOuterTexture, joystickInnerTexture;
     private TextureRegion floorTexture;
+    private TextureRegion fireButtonTexture, useButtonTexture;
+    private TextureRegion reloadingTexture;
 
     //Animations
     private Animation walkAnimation;
@@ -62,6 +74,7 @@ public class WorldRenderer {
     private ShapeRenderer debugRenderer = new ShapeRenderer();
 
     private SpriteBatch spriteBatch;
+    private BitmapFont font;
     private boolean debug;
 
 //    public void setSize (int w, int h) {
@@ -71,7 +84,7 @@ public class WorldRenderer {
 //        float ppuY = (float) h / CAMERA_HEIGHT;
 //    }
 
-    public WorldRenderer(World world, SpriteBatch spriteBatch, boolean debug) {
+    public WorldRenderer(World world, SpriteBatch spriteBatch, boolean debug, BitmapFont font) {
         this.world = world;
         this.cam = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
         this.cam.position.set(world.getBob().getPosition().x, world.getBob().getPosition().y + 0.5F, 0);
@@ -79,6 +92,7 @@ public class WorldRenderer {
         this.cam.update();
         this.debug = debug;
         this.spriteBatch = spriteBatch;
+        this.font = font;
         loadTextures();
     }
 
@@ -108,8 +122,9 @@ public class WorldRenderer {
         spikeTexture = itemAtlas.findRegion("padSpike");
         slimeTexture = itemAtlas.findRegion("padSticky");
         moveTexture = itemAtlas.findRegion("padMove");
-
-
+        joystickOuterTexture = itemAtlas.findRegion("joystickOuter");
+        joystickInnerTexture = itemAtlas.findRegion("joystickInner");
+        reloadingTexture = itemAtlas.findRegion("reloading");
 
         TextureRegion[] walkFrames = new TextureRegion[3];
         for (int i = 0; i < 3; i++) {
@@ -148,6 +163,10 @@ public class WorldRenderer {
 //            walkLeftFrames[i].flip(true, false);
 //        }
 //        walkLeftAnimation = new Animation(RUNNING_FRAME_DURATION, walkLeftFrames);
+
+        TextureAtlas buttonAtlas = new TextureAtlas(Gdx.files.internal("buttons/buttons.atlas"));
+        fireButtonTexture = buttonAtlas.findRegion("start");
+        useButtonTexture = buttonAtlas.findRegion("exit");
     }
 
     public void render() {
@@ -165,6 +184,9 @@ public class WorldRenderer {
         drawBullets();
         drawAis();
         drawBob();
+        if (world.getMoveJoystick() != null) drawJoystick(world.getMoveJoystick());
+        if (world.getFireJoystick() != null) drawJoystick(world.getFireJoystick());
+        drawButtons();
         spriteBatch.end();
 //        drawCollisionBlocks();
 //        debugRenderer.setProjectionMatrix(cam.combined);
@@ -178,7 +200,7 @@ public class WorldRenderer {
 //        }
 //        debugRenderer.end();
 //        if (debug)
-        drawDebug();
+//        drawDebug();
     }
 
     private void drawFloor() {
@@ -304,7 +326,7 @@ public class WorldRenderer {
             TextureRegion bulletFrame = bulletTexture;
             if (bullet.isExploding()) {
                 bulletFrame = (TextureRegion) (explodeAnimation.getKeyFrame(bullet.getStateTime(), true));
-                spriteBatch.draw(bulletFrame, bullet.getPosition().x, bullet.getPosition().y, bullet.getWidth()/2, bullet.getHeight()/2,
+                spriteBatch.draw(bulletFrame, bullet.getPosition().x, bullet.getPosition().y, 0, bullet.getHeight()/2,
                         bullet.getWidth(), bullet.getHeight(), 2.5F, 5, bullet.getRotation(), true);
             } else {
                 spriteBatch.draw(bulletFrame, bullet.getPosition().x, bullet.getPosition().y, bullet.getWidth()/2, bullet.getHeight()/2,
@@ -384,6 +406,12 @@ public class WorldRenderer {
 
         }
 
+        if (bob.getGun().isReloading()) {
+            float x = world.getBob().getPosition().x - (CAMERA_WIDTH/2) + 3;
+            float y = world.getBob().getPosition().y + (CAMERA_HEIGHT/2) - 1.5F;
+            spriteBatch.draw(reloadingTexture, x, y, 1, 1, 6.0F, 2.0F, 1.00F, 1.00F, 0);
+        }
+
         if(bob.getState().equals(Player.State.MOVING)) {
             if (bob.isInjured()) {
                 bobFrame =  (TextureRegion) (walkInjuredAnimation.getKeyFrame(bob.getStateTime(), true));
@@ -391,8 +419,10 @@ public class WorldRenderer {
                 bobFrame =  (TextureRegion) (walkAnimation.getKeyFrame(bob.getStateTime(), true));
             }
         }
+        Float drawAngle = bob.getRotation();
+        if (world.getFireJoystick() != null && world.getFireJoystick().getDrag() != null) drawAngle = world.getFireJoystick().getAngle();
         spriteBatch.draw(bobFrame, bob.getPosition().x, bob.getPosition().y, Player.WIDTH/2, Player.HEIGHT/2, Player.WIDTH, Player.HEIGHT,
-        1, 1, bob.getRotation(), true);
+        1, 1, drawAngle, true);
         //todo make injured sprites
     }
 
@@ -420,27 +450,146 @@ public class WorldRenderer {
         }
     }
 
+    private void drawJoystick(JoyStick joyStick) {
+
+        Vector2 midPoint = new Vector2(Gdx.app.getGraphics().getWidth()/2f, Gdx.app.getGraphics().getHeight()/2f);
+        Vector2 touchPoint = joyStick.getPosition();
+        float xDist = midPoint.x - touchPoint.x;
+        float yDist = midPoint.y - touchPoint.y;
+        float xRatio = 7.5F / midPoint.x;
+        float yRatio = 4F / midPoint.y;
+
+        float xVal = world.getBob().getPosition().x - (xDist * xRatio);
+        float yVal = world.getBob().getPosition().y - (yDist * yRatio);
+
+        Vector2 drawOuter;
+        if (Gdx.app.getType().equals(Application.ApplicationType.Android)) {
+            drawOuter = new Vector2(xVal - 0.5F, yVal + 0.5F);
+        } else {
+            drawOuter = new Vector2(xVal + 0.2F, yVal + 0.5F);
+        }
+        spriteBatch.draw(joystickOuterTexture, drawOuter.x - JoyStick.getWIDTH() / 2, drawOuter.y - JoyStick.getWIDTH() / 2, 1, 1, 2F, 2, 1.00F, 1.00F, 0);
+        if (joyStick.getDrag() == null) {
+            spriteBatch.draw(joystickInnerTexture, drawOuter.x - JoyStick.getWIDTH() / 2, drawOuter.y - JoyStick.getWIDTH() / 2, 1, 1, 2.0F, 2.0F, 1.00F, 1.00F, 0);
+        } else {
+            Vector2 dragPoint = joyStick.getDrag();
+            float xDist2 = midPoint.x - dragPoint.x;
+            float yDist2 = midPoint.y - dragPoint.y;
+
+            float xVal2 = world.getBob().getPosition().x - (xDist2 * xRatio);
+            float yVal2 = world.getBob().getPosition().y - (yDist2 * yRatio);
+            float difX = touchPoint.x - dragPoint.x;
+            float difY = touchPoint.y - dragPoint.y;
+            Vector2 drawInner;
+            if (Gdx.app.getType().equals(Application.ApplicationType.Android)) {
+                drawInner = new Vector2(xVal2 - 0.5F, yVal2 + 0.5F);
+            } else  {
+                drawInner = new Vector2(xVal2 + 0.2F, yVal2 + 0.5F);
+            }
+            if (difX > 45) drawInner.x = drawOuter.x - 1;
+            if (difX < -45) drawInner.x = drawOuter.x + 1;
+            if (difY > 55) drawInner.y = drawOuter.y - 1;
+            if (difY < -55) drawInner.y = drawOuter.y + 1;
+
+            spriteBatch.draw(joystickInnerTexture, drawInner.x - JoyStick.getWIDTH() / 2, drawInner.y - JoyStick.getWIDTH() / 2, 1, 1, 2.0F, 2.0F, 1.00F, 1.00F, 0);
+    }
+        
+//        if (world.getTouchPoint() != null) {
+//
+//            Vector2 midPoint = new Vector2(Gdx.app.getGraphics().getWidth()/2, Gdx.app.getGraphics().getHeight()/2);
+//            Vector2 touchPoint = world.getTouchPoint();
+//            float xDist = midPoint.x - touchPoint.x;
+//            float yDist = midPoint.y - touchPoint.y ;
+//            float xRatio = 7.5F / midPoint.x;
+//            float yRatio = 4F / midPoint.y;
+//
+//            float xVal = world.getBob ().getPosition().x - (xDist * xRatio);
+//            float yVal = world.getBob().getPosition().y - (yDist * yRatio);
+//
+//            Vector2 drawOuter;
+//            if (Gdx.app.getType().equals(Application.ApplicationType.Android)) {
+//                drawOuter = new Vector2(xVal - 0.5F, yVal + 0.5F);
+//            } else {
+//                drawOuter = new Vector2(xVal + 0.2F, yVal + 0.5F);
+//            }
+//            spriteBatch.draw(joystickOuterTexture, drawOuter.x - JoyStick.getWIDTH() / 2, drawOuter.y - JoyStick.getWIDTH() / 2, 1, 1, 2F, 2, 1.00F, 1.00F, 0);
+//            if (world.getDragPoint() == null) {
+//                spriteBatch.draw(joystickInnerTexture, drawOuter.x - JoyStick.getWIDTH() / 2, drawOuter.y - JoyStick.getWIDTH() / 2, 1, 1, 2.0F, 2.0F, 1.00F, 1.00F, 0);
+//            } else {
+//                Vector2 dragPoint = world.getDragPoint();
+//                float xDist2 = midPoint.x - dragPoint.x;
+//                float yDist2 = midPoint.y - dragPoint.y;
+//
+//                float xVal2 = world.getBob().getPosition().x - (xDist2 * xRatio);
+//                float yVal2 = world.getBob().getPosition().y - (yDist2 * yRatio);
+//                float difX = touchPoint.x - dragPoint.x;
+//                float difY = touchPoint.y - dragPoint.y;
+//                Vector2 drawInner;
+//                if (Gdx.app.getType().equals(Application.ApplicationType.Android)) {
+//                    drawInner = new Vector2(xVal2 - 0.5F, yVal2 + 0.5F);
+//                } else  {
+//                    drawInner = new Vector2(xVal2 + 0.2F, yVal2 + 0.5F);
+//                }
+//                if (difX > 45) drawInner.x = drawOuter.x - 1;
+//                if (difX < -45) drawInner.x = drawOuter.x + 1;
+//                if (difY > 55) drawInner.y = drawOuter.y - 1;
+//                if (difY < -55) drawInner.y = drawOuter.y + 1;
+//
+//                spriteBatch.draw(joystickInnerTexture, drawInner.x - JoyStick.getWIDTH() / 2, drawInner.y - JoyStick.getWIDTH() / 2, 1, 1, 2.0F, 2.0F, 1.00F, 1.00F, 0);
+//            }
+//        }
+    }
+
+    private void drawButtons() {
+        for (GameButton gameButton : world.getButtons()) {
+            TextureRegion buttonFrame = null;
+            switch (gameButton.getType()) {
+                case FIRE:
+                    buttonFrame = fireButtonTexture;
+                    break;
+                case USE:
+                    buttonFrame = useButtonTexture;
+                    break;
+            }
+            float xish, yish;
+            if (Gdx.app.getType().equals(Application.ApplicationType.Android)) {
+                xish = world.getBob().getPosition().x + gameButton.getArea().x - CAMERA_WIDTH/2 - gameButton.getArea().radius;
+                yish = world.getBob().getPosition().y - gameButton.getArea().y + CAMERA_HEIGHT/2;
+            } else {
+                xish = world.getBob().getPosition().x + gameButton.getArea().x - CAMERA_WIDTH/2 - gameButton.getArea().radius;
+                yish = world.getBob().getPosition().y - gameButton.getArea().y + CAMERA_HEIGHT/2;
+            }
+
+            if (buttonFrame != null) spriteBatch.draw(buttonFrame, xish, yish, 1, 1, 1.0F, 1.0F, 1.00F, 1.00F, 0);
+            spriteBatch.end();
+            debugRenderer.setProjectionMatrix(cam.combined);
+            debugRenderer.setAutoShapeType(true);
+            debugRenderer.begin(ShapeType.Line);
+            debugRenderer.setColor(Color.GREEN);
+            debugRenderer.circle(xish + gameButton.getArea().radius, yish + gameButton.getArea().radius, gameButton.getArea().radius);
+            debugRenderer.end();
+            spriteBatch.begin();
+        }
+    }
     private void drawDebug() {
         debugRenderer.setProjectionMatrix(cam.combined);
         debugRenderer.setAutoShapeType(true);
         debugRenderer.begin(ShapeType.Line);
         debugRenderer.setColor(Color.RED);
-        debugRenderer.polygon(world.getBob().getViewCircle().getTransformedVertices());
+        Player bob = world.getBob();
+        debugRenderer.polygon(bob.getViewCircle().getTransformedVertices());
 //        debugRenderer.circle(world.getBob().getViewCircle().getX(), world.getBob().getViewCircle().y, world.getBob().getViewCircle().radius);
         for (AIPlayer aiPlayer :  world.getAIPlayers()) {
             debugRenderer.polygon(aiPlayer.getViewCircle().getTransformedVertices());
 //            debugRenderer.circle(aiPlayer.getViewCircle().getX(), aiPlayer.getViewCircle().y, aiPlayer.getViewCircle().radius);
         }
-
+        debugRenderer.setColor(Color.RED);
         for (Bullet bullet : world.getBullets()) {
-
-            if (bullet.isHoming()) {
-                debugRenderer.circle(bullet.getViewCircle().x, bullet.getViewCircle().y, bullet.getViewCircle().radius);
-            }
+//             debugRenderer.circle(bullet.getViewCircle().x, bullet.getViewCircle().y, bullet.getViewCircle().radius);
+            debugRenderer.polygon(bullet.getBounds().getTransformedVertices());
         }
 
         // render Bob
-        Player bob = world.getBob();
         debugRenderer.setColor(Color.BLACK);
         debugRenderer.polygon(bob.getBounds().getTransformedVertices());
         debugRenderer.setColor(Color.RED);

@@ -1,5 +1,6 @@
 package com.mygdx.game.model;
 
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -8,6 +9,7 @@ import com.mygdx.game.controller.LevelLoader;
 import com.mygdx.game.model.Block;
 import com.mygdx.game.model.Level;
 import com.mygdx.game.model.Player;
+import com.mygdx.game.utils.JoyStick;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,15 +19,20 @@ import java.util.Random;
 
 public class World {
 
-    /** Our player controlled hero **/
+    public enum JoystickState {
+        STILL, SPIN, MOVE
+    }
+
     private Player bob;
     private List<Bullet> bullets = new ArrayList<>();
     private List<Explosion> explosions = new ArrayList<>();
     private List<AIPlayer> AIPlayers = new ArrayList<>();
     private List<BloodStain> bloodStains = new ArrayList<>();
+    private List<GameButton> buttons = new ArrayList<>();
     private Level level;
     private Array<Polygon> collisionRects = new Array<>();
     private LevelLoader levelLoader = new LevelLoader();
+    private JoyStick moveJoystick, fireJoystick;
 
     public World() {
         loadWorld(1);
@@ -75,6 +82,26 @@ public class World {
 
     public void setAIPlayers(List<AIPlayer> AIPlayers) {
         this.AIPlayers = AIPlayers;
+    }
+
+    public List<GameButton> getButtons() {
+        return buttons;
+    }
+
+    public JoyStick getMoveJoystick() {
+        return moveJoystick;
+    }
+
+    public void setMoveJoystick(JoyStick moveJoystick) {
+        this.moveJoystick = moveJoystick;
+    }
+
+    public JoyStick getFireJoystick() {
+        return fireJoystick;
+    }
+
+    public void setFireJoystick(JoyStick fireJoystick) {
+        this.fireJoystick = fireJoystick;
     }
 
     // --------------------
@@ -135,5 +162,6 @@ public class World {
             AIPlayers.add(new AIPlayer(new Vector2(sp.getPosition()), "ai-0" + i));
             numbers.add(rando);
         }
+        buttons.add(new GameButton(new Vector2(12, 3), 0.5F, GameButton.Type.USE));
     }
 }

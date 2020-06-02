@@ -34,7 +34,7 @@ public class Bullet {
 
     Bullet(Vector2 position, float rotation, String playerName, float damage, final boolean homing) {
         this.position.x = position.x;
-        this.position.y = position.y + 0.25F;
+        this.position.y = position.y;
         bounds = new Polygon(new float[]{0, 0, width, height, width, 0, 0, height});
         bounds.setPosition(position.x, position.y);
         this.rotation = rotation;

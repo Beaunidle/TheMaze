@@ -16,6 +16,7 @@ import com.mygdx.game.model.ScoreBoard;
 import com.mygdx.game.model.SpawnPoint;
 import com.mygdx.game.model.World;
 import com.mygdx.game.screens.LoadingScreen;
+import com.mygdx.game.utils.JoyStick;
 import com.mygdx.game.utils.Locator;
 
 import java.util.HashMap;
@@ -68,7 +69,7 @@ public class WorldController {
             @Override
             public void run() {
                 levelFinished = true;
-                System.out.print(scoreBoard.toString());
+//                System.out.print(scoreBoard.toString());
             }
         };
         Timer.schedule(gameTimer, 120);
@@ -168,7 +169,7 @@ public class WorldController {
         } else {
             bob.heal();
             fillView(bob);
-            bob.getView().printView();
+//            bob.getView().printView();
             processInput();
         }
         for (AIPlayer aiPlayer : aiPlayers) {
@@ -185,8 +186,9 @@ public class WorldController {
         }
         for (AIPlayer aiPlayer : aiPlayers) {
             if (!aiPlayer.getState().equals(Player.State.DEAD)) {
-//                setAction(delta, aiPlayer);
-            } else {
+                setAction(delta, aiPlayer);
+            }
+            else {
                 scoreBoard.addDeath(aiPlayer.getName());
                 if (aiPlayer.getKilledBy() != null) {
                     scoreBoard.addKill(aiPlayer.getKilledBy());
@@ -309,7 +311,7 @@ public class WorldController {
     private void processInput() {
         if (!bob.getState().equals(Player.State.DEAD)) {
             if (keys.get(Keys.FIRE)) {
-                world.getBullets().addAll(bob.fireBullet());
+                world.getBullets().addAll(bob.fireBullet(bob.getRotation()));
             }
 
             if (keys.get(Keys.USE)) {
@@ -330,6 +332,7 @@ public class WorldController {
                 bob.setTurningClcokwise(false);
             } else if (keys.get(Keys.RIGHT)) {
                 // right is pressed
+                bob.setState(Player.State.MOVING);
                 bob.setTurningClcokwise(true);
                 bob.setTurningAntiClockwise(false);
             } else {
@@ -350,6 +353,42 @@ public class WorldController {
                 bob.setState(Player.State.IDLE);
             }
         }
+
+        if (world.getFireJoystick() != null && world.getFireJoystick().getDrag() != null) {
+            JoyStick fireJoystick = world.getFireJoystick();
+
+            float fireDeg = fireJoystick.getAngle();
+            world.getBullets().addAll(bob.fireBullet(fireDeg));
+        }
+        if (world.getMoveJoystick() != null && world.getMoveJoystick().getDrag() != null) {
+            JoyStick moveJoystick = world.getMoveJoystick();
+            float dst = moveJoystick.getDistance();
+            float deg = moveJoystick.getAngle();
+
+            if (dst > 2) {
+                if (locator.locate(deg, bob.getRotation()) < 0) {
+                    bob.setState(Player.State.MOVING);
+                    bob.setTurningAntiClockwise(true);
+                    bob.setTurningClcokwise(false);
+                } else if (locator.locate(deg, bob.getRotation()) > 0) {
+                    bob.setState(Player.State.MOVING);
+                    bob.setTurningClcokwise(true);
+                    bob.setTurningAntiClockwise(false);
+                }
+            } else {
+                bob.setTurningClcokwise(false);
+                bob.setTurningAntiClockwise(false);
+            }
+            if (dst > 25) {
+                bob.setState(Player.State.MOVING);
+                bob.setAcceleration(bob.getBoost().equals(Player.Boost.SPEED) ? 8F : 4F);
+            }
+
+        } else {
+            bob.setTurningClcokwise(false);
+            bob.setTurningAntiClockwise(false);
+            bob.setAcceleration(0F);
+        }
     }
 
     private void processAIInput(AIPlayer aiPlayer, float delta) {
@@ -357,9 +396,6 @@ public class WorldController {
             //do the thing
             Vector2 target = aiPlayer.chooseTarget(bob, aiPlayers);
             world.getBullets().addAll(aiPlayer.decide(delta));
-            if (Math.random() > 0.995) {
-//                world.getBullets().addAll(aiPlayer.fireBullet());
-            }
         }
     }
 

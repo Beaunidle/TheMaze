@@ -34,7 +34,7 @@ public class LoadingScreen extends ScreenAdapter {
         this.scoreBoard = scoreBoard;
 
         OrthographicCamera camera = new OrthographicCamera();
-        Viewport viewport = new FitViewport(640, 480, camera);
+        Viewport viewport = new FitViewport(Gdx.app.getGraphics().getWidth(), Gdx.app.getGraphics().getHeight(), camera);
         viewport.apply();
 
         camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
@@ -81,7 +81,7 @@ public class LoadingScreen extends ScreenAdapter {
         startButton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new GameScreen(game, spriteBatch));
+                game.setScreen(new GameScreen(game, spriteBatch, font));
             }
         });
         exitButton.addListener(new ClickListener(){

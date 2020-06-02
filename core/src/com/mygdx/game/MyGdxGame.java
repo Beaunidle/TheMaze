@@ -8,10 +8,19 @@ import com.mygdx.game.screens.TitleScreen;
 
 public class MyGdxGame extends Game {
 
+    SpriteBatch spriteBatch;
+    BitmapFont font;
+
     @Override
     public void create() {
-        SpriteBatch spriteBatch = new SpriteBatch();
-        BitmapFont font = new BitmapFont();
+        spriteBatch = new SpriteBatch();
+        font = new BitmapFont();
         setScreen(new TitleScreen(this, spriteBatch, font));
+    }
+
+    @Override
+    public void dispose () {
+        spriteBatch.dispose();
+        font.dispose();
     }
 }

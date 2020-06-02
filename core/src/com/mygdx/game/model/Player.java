@@ -6,7 +6,10 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Timer;
 import com.mygdx.game.utils.View;
 
+import org.omg.CORBA.MARSHAL;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Player {
@@ -64,13 +67,14 @@ public class Player {
 //        viewCircle = new Circle(getCentrePosition().x, getCentrePosition().y, 7.5F);
         viewCircleWidth = 15;
         viewCircleHeight = 8;
-        float viewX = -viewCircleWidth/2 ;
-        float viewY = -viewCircleHeight/2 ;
-        viewCircle = new Polygon(new float[]{viewX, viewY, viewX + viewCircleWidth, viewY, viewX + viewCircleWidth, viewY + viewCircleHeight, viewX, viewY + viewCircleHeight});
+        float viewX = viewCircleWidth/2 ;
+        float viewY = viewCircleHeight/2 ;
+        viewCircle = new Polygon(new float[]{0, 0, viewCircleWidth, 0, viewCircleWidth, viewCircleHeight, 0, viewCircleHeight});
+        viewCircle.setPosition(getPosition().x - viewX, getPosition().y - viewY);
         view = new View();
         shieldCircle = new Circle(getCentrePosition().x, getCentrePosition().y, 2F);
         rotation = 0;
-        rotationSpeed = 200;
+        rotationSpeed = 400;
         this.name = name;
         this.lives = lives;
         this.maxLives = lives;
@@ -265,11 +269,13 @@ public class Player {
         return injured;
     }
 
-    public List<Bullet> fireBullet() {
+    public List<Bullet> fireBullet(float rot) {
         List<Bullet> bullets = new ArrayList<>();
         if (!bulletTimerOn) {
             startBulletTimer(gun.getFiringRate() * 0.25F);
-            bullets.addAll(gun.fire((new Vector2(viewCircle.getX(), viewCircle.getY())), rotation, name, getBoost().equals(Boost.HOMING), getBoost().equals(Boost.DAMAGE)));
+            float x = getCentrePosition().x + (float)(WIDTH/2 * Math.cos(rot * Math.PI/180));
+            float y = getCentrePosition().y + (float)(HEIGHT/2 * Math.sin(rot * Math.PI/180));
+            bullets.addAll(gun.fire(new Vector2(x, y), rot, name, getBoost().equals(Boost.HOMING), getBoost().equals(Boost.DAMAGE)));
         }
         return bullets;
     }
@@ -280,7 +286,8 @@ public class Player {
         this.position = new Vector2(newPos);
         this.bounds.setPosition(position.x, position.y);
         this.bounds.setRotation(rotation);
-        this.viewCircle.setPosition(getCentrePosition().x, getCentrePosition().y);
+//        this.viewCircle.setPosition(getCentrePosition().x, getCentrePosition().y);
+        this.getViewCircle().setPosition(this.getPosition().x, this.getPosition().y);
         this.shieldCircle.setPosition(getCentrePosition().x, getCentrePosition().y);
         this.injured = false;
         this.state = State.IDLE;

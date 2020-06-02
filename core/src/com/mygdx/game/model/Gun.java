@@ -18,7 +18,7 @@ public class Gun {
     private int CLIP_SIZE;
     private int ammo;
     private int clips;
-    private int reloadTime;
+    private float reloadTime;
     private boolean reloading;
     private Timer.Task reloadTimer;
 
@@ -44,7 +44,11 @@ public class Gun {
         return clips;
     }
 
-        public Type getType() {
+    public boolean isReloading() {
+        return reloading;
+    }
+
+    public Type getType() {
         return type;
     }
 
@@ -56,28 +60,28 @@ public class Gun {
                 damage = 5;
                 CLIP_SIZE = 8;
                 clips = 3;
-                reloadTime = 2;
+                reloadTime = 1;
                 break;
             case SMG:
                 firingRate = 0.5F;
                 damage = 4;
                 CLIP_SIZE = 24;
                 clips = 3;
-                reloadTime = 2;
+                reloadTime = 1;
                 break;
             case SHOTGUN:
                 firingRate = 3F;
                 damage = 6;
                 CLIP_SIZE = 6;
                 clips = 3;
-                reloadTime = 3;
+                reloadTime = 2;
                 break;
             case ROCKET:
                 firingRate = 4F;
                 damage = 2.5F;
                 CLIP_SIZE = 3;
                 clips = 3;
-                reloadTime = 4;
+                reloadTime = 2.5F;
                 break;
         }
         this.ammo = CLIP_SIZE;
@@ -86,7 +90,6 @@ public class Gun {
     List<Bullet> fire(Vector2 position, float rotation, String playerName, boolean homing, boolean damageBoost) {
         List<Bullet> bullets = new ArrayList<>();
         Vector2 bulletPosition = new Vector2(position);
-
 
         float bulletDamage = damageBoost ? damage * 2 : damage;
         if (ammo > 0) {

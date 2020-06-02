@@ -68,12 +68,13 @@ public class Locator {
                 //clockwise
                 return 1;
             } else {
-                if (deg - rotation <= 180) {
+                if (deg - rotation >= 180) {
                     //clockwise
                     return 1;
                 } else {
                     //anti-clockwise
                     return -1;
+
                 }
             }
         }
