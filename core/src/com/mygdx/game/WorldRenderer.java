@@ -189,16 +189,27 @@ public class WorldRenderer {
         drawButtons();
         spriteBatch.end();
 //        drawCollisionBlocks();
-//        debugRenderer.setProjectionMatrix(cam.combined);
-//        debugRenderer.setAutoShapeType(true);
-//        debugRenderer.begin(ShapeType.Line);
-//        debugRenderer.setColor(Color.RED);
-//        debugRenderer.polygon(world.getBob().getViewCircle().getTransformedVertices());
-//        for (AIPlayer aiPlayer :  world.getAIPlayers()) {
-//            Rectangle rect = aiPlayer.getViewCircle().getBoundingRectangle();
-//            debugRenderer.rect(rect.x, rect.y, rect.width, rect.height);
-//        }
-//        debugRenderer.end();
+        debugRenderer.setProjectionMatrix(cam.combined);
+        debugRenderer.setAutoShapeType(true);
+        debugRenderer.begin(ShapeType.Line);
+        debugRenderer.setColor(Color.RED);
+        debugRenderer.polygon(world.getBob().getViewCircle().getTransformedVertices());
+        for (AIPlayer aiPlayer :  world.getAIPlayers()) {
+            Rectangle rect = aiPlayer.getViewCircle().getBoundingRectangle();
+            Block[][] blocks = aiPlayer.getView().getBlocks();
+            for (int i = 0; i < 15; i++) {
+                for (int j = 0; j < 8; j++) {
+                    Block block = null;
+                    if (blocks[i][j] != null) block = blocks[i][j];
+                    if (block != null) debugRenderer.polygon(block.getBounds().getTransformedVertices());
+                }
+            }
+            debugRenderer.setColor(Color.BLUE);
+            if (aiPlayer.getTarget() != null) debugRenderer.circle(aiPlayer.getTarget().x, aiPlayer.getTarget().y, 2);
+            debugRenderer.setColor(Color.RED);
+            debugRenderer.rect(rect.x, rect.y, rect.width, rect.height);
+        }
+        debugRenderer.end();
 //        if (debug)
 //        drawDebug();
     }

@@ -17,7 +17,7 @@ public class AIPlayer extends Player {
 
     private Intent intent = Intent.SEARCHING;
     private Random rand = new Random();
-    private Player target;
+    private Vector2 target;
     private int rotateBy = 0;
     Locator locator;
 
@@ -64,7 +64,15 @@ public class AIPlayer extends Player {
         this.rotateBy = rotateBy;
     }
 
-    public Vector2 chooseTarget(Player player, List<AIPlayer> aiPlayers) {
+    public Vector2 getTarget() {
+        return target;
+    }
+
+    public void setTarget(Vector2 target) {
+        this.target = target;
+    }
+
+    public void chooseTarget(Player player, List<AIPlayer> aiPlayers) {
 
         List<Player> players = new ArrayList<>();
         if (getViewCircle().contains(player.getCentrePosition())) players.add(player);
@@ -76,12 +84,8 @@ public class AIPlayer extends Player {
         }
         if (players.isEmpty()) {
             target = null;
-            return null;
         } else {
-            if (target != null && rand.nextInt(1000) < 999) return target.getCentrePosition();
-
-            target =  players.get(rand.nextInt(players.size()));
-            return target.getCentrePosition();
+            target =  players.get(rand.nextInt(players.size())).getCentrePosition();
         }
     }
 
@@ -101,15 +105,10 @@ public class AIPlayer extends Player {
         }
 
         if (target != null) {
-            if (getViewCircle().contains(target.getCentrePosition())) {
+            if (getViewCircle().contains(target)) {
                 setIntent(Intent.HOMING);
-                Vector2 distance = new Vector2(target.getCentrePosition()).sub(getCentrePosition());
-                float dst = target.getCentrePosition().dst(getCentrePosition());
-                double rot = Math.atan2(distance.y, distance.x);
-                float deg = (float) (rot * (180 / Math.PI));
-                if (deg < 0) {
-                    deg = 360 - (-deg);
-                }
+                float dst = target.dst(getCentrePosition());
+                float deg = locator.getAngle(new Vector2(target).sub(getCentrePosition()));
                 if (-20 < (deg - getRotation())  && (deg - getRotation()) < 20) {
                     if (dst > 2) {
                         moveForward();

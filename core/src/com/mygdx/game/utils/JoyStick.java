@@ -10,10 +10,12 @@ public class JoyStick {
     private Vector2 position;
     private Vector2 drag;
     private Circle touchCircle;
+    private Locator locator;
 
     public JoyStick(Vector2 position) {
         this.position = position;
         touchCircle = new Circle(position.x, position.y, 500);
+        locator = new Locator();
     }
 
     public static float getWIDTH() {
@@ -42,11 +44,6 @@ public class JoyStick {
 
     public float getAngle() {
         Vector2 distance = new Vector2(drag).sub(position);
-        double rot = Math.atan2(distance.y, distance.x);
-        float deg = (float) (rot * (180 / Math.PI));
-        if (deg < 0) {
-            deg = 360 - (-deg);
-        }
-        return deg;
+        return locator.getAngle(distance);
     }
 }

@@ -1,6 +1,8 @@
 package com.mygdx.game.controller;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Timer;
@@ -217,10 +219,7 @@ public class WorldController {
                         if (bullet.getTarget() != null) {
                             Vector2 distance = new Vector2(bullet.getTarget().getCentrePosition()).sub(bullet.getPosition());
                             double rot = Math.atan2(distance.y, distance.x);
-                            float deg = (float) (rot * (180 / Math.PI));
-                            if (deg < 0) {
-                                deg = 360 - (-deg);
-                            }
+                            float deg = locator.getAngle(distance);
 
                             if (locator.locate(deg, bullet.getRotation()) < 0) {
                                 bullet.rotateAntiClockwise(delta);
@@ -384,7 +383,7 @@ public class WorldController {
                 bob.setAcceleration(bob.getBoost().equals(Player.Boost.SPEED) ? 8F : 4F);
             }
 
-        } else {
+        } else if (!Gdx.app.getType().equals(Application.ApplicationType.Desktop)) {
             bob.setTurningClcokwise(false);
             bob.setTurningAntiClockwise(false);
             bob.setAcceleration(0F);
@@ -394,15 +393,19 @@ public class WorldController {
     private void processAIInput(AIPlayer aiPlayer, float delta) {
         if (aiPlayer.getState() != Player.State.DEAD) {
             //do the thing
-            Vector2 target = aiPlayer.chooseTarget(bob, aiPlayers);
+            aiPlayer.chooseTarget(bob, aiPlayers);
+            if (aiPlayer.getTarget() != null)
+                aiPlayer.setTarget(locator.wallInbetween(aiPlayer.getPosition(), aiPlayer.getTarget(), aiPlayer.getView().getBlocks()));
             world.getBullets().addAll(aiPlayer.decide(delta));
         }
     }
 
     private void fillView(Player player) {
         player.clearView();
-        int xPos = (int)Math.floor(player.getViewCircle().getX() - player.getViewCircleWidth()/2);
-        int yPos = (int)Math.floor(player.getViewCircle().getY() - player.getViewCircleHeight()/2);
+        int xPos = (int)Math.floor(player.getCentrePosition().x - player.getViewCircleWidth()/2);
+        int yPos = (int)Math.floor(player.getCentrePosition().y - player.getViewCircleHeight()/2);
+//        System.out.println("Player centre pos: " + player.getCentrePosition());
+//        System.out.println("X and Y: " + xPos + ", " + yPos);
 
         for (int i = 0; i < player.getViewCircleWidth(); i++) {
             for (int j = 0; j < player.getViewCircleHeight(); j++) {
@@ -410,6 +413,9 @@ public class WorldController {
                 int row = yPos + j;
                 if (col >= 0 && row >= 0 && col < world.getLevel().getWidth() && row < world.getLevel().getHeight()) {
                     player.getView().getBlocks()[i][j] = world.getLevel().get(col, row);
+                    if (world.getLevel().get(col, row) != null) {
+//                        System.out.println("Block at: " + new Vector2(i, j));
+                    }
                 }
             }
         }

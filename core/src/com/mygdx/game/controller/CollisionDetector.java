@@ -69,11 +69,11 @@ class CollisionDetector {
             if (Intersector.overlapConvexPolygons(playerRect, block.getBounds()) &&
                     !(block instanceof ExplodableBlock && ((ExplodableBlock) block).getState().equals(ExplodableBlock.State.RUBBLE))) {
                 player.getVelocity().x = 0;
-                if (player instanceof AIPlayer) {
-                    if (((AIPlayer) player).getRotateBy() == 0) {
-                        ((AIPlayer) player).setRotateBy(90);
-                    }
-                }
+//                if (player instanceof AIPlayer) {
+//                    if (((AIPlayer) player).getRotateBy() == 0) {
+//                        ((AIPlayer) player).setRotateBy(90);
+//                    }
+//                }
                 world.getCollisionRects().add(block.getBounds());
                 break;
             }
@@ -101,11 +101,11 @@ class CollisionDetector {
             if (Intersector.overlapConvexPolygons(playerRect, block.getBounds()) &&
                     !(block instanceof ExplodableBlock && ((ExplodableBlock) block).getState().equals(ExplodableBlock.State.RUBBLE))) {
                 player.getVelocity().y = 0;
-                if (player instanceof AIPlayer) {
-                    if (((AIPlayer) player).getRotateBy() == 0) {
-                        ((AIPlayer) player).setRotateBy(-90);
-                    }
-                }
+//                if (player instanceof AIPlayer) {
+//                    if (((AIPlayer) player).getRotateBy() == 0) {
+//                        ((AIPlayer) player).setRotateBy(-90);
+//                    }
+//                }
                 world.getCollisionRects().add(block.getBounds());
                 break;
             }
@@ -384,9 +384,10 @@ class CollisionDetector {
                 return false;
             }
         }
+        return !Intersector.overlapConvexPolygons(bob.getBounds(), sp.getBounds());
         //return true if it is clear
-        return true;
     }
+
     /**
      * populate the collidable array with the blocks found in the enclosing coordinates
      **/
