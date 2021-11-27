@@ -154,9 +154,9 @@ public class WorldController {
      **/
     public void update(float delta) {
         // Processing the input - setting the states of Bob
-        if (aiPlayers.isEmpty()) {
-             levelFinished = true;
-        }
+//        if (aiPlayers.isEmpty()) {
+//             levelFinished = true;
+//        }
 
         //check health of players and set control instructions
         if (bob.getState().equals(Player.State.DEAD)) {
@@ -166,7 +166,7 @@ public class WorldController {
                 bob.setKilledBy(null);
             }
             world.getBloodStains().add(new BloodStain(bob.getPosition(), bob.getName()));
-            SpawnPoint sp = findSpawnPoint();
+            SpawnPoint sp = findSpawnPoint(bob.getName());
             bob.respawn(sp.getPosition());
         } else {
             bob.heal();
@@ -175,7 +175,21 @@ public class WorldController {
             processInput();
         }
         for (AIPlayer aiPlayer : aiPlayers) {
-            if (!aiPlayer.getState().equals(Player.State.DEAD)) {
+            if (aiPlayer.getState().equals(Player.State.DEAD)) {
+                System.out.println("player dead");
+                scoreBoard.addDeath(aiPlayer.getName());
+                if (aiPlayer.getKilledBy() != null) {
+                    scoreBoard.addKill(aiPlayer.getKilledBy());
+                    aiPlayer.setKilledBy(null);
+                }
+                world.getBloodStains().add(new BloodStain(aiPlayer.getPosition(), aiPlayer.getName()));
+                System.out.println("finding spawn");
+
+                SpawnPoint sp = findSpawnPoint(aiPlayer.getName());
+                aiPlayer.respawn(sp.getPosition());
+                System.out.println("Respawn complete");
+            }
+            else {
                 aiPlayer.heal();
                 fillView(aiPlayer);
                 processAIInput(aiPlayer, delta);
@@ -191,14 +205,6 @@ public class WorldController {
                 setAction(delta, aiPlayer);
             }
             else {
-                scoreBoard.addDeath(aiPlayer.getName());
-                if (aiPlayer.getKilledBy() != null) {
-                    scoreBoard.addKill(aiPlayer.getKilledBy());
-                    aiPlayer.setKilledBy(null);
-                }
-                world.getBloodStains().add(new BloodStain(aiPlayer.getPosition(), aiPlayer.getName()));
-                SpawnPoint sp = findSpawnPoint();
-                aiPlayer.respawn(sp.getPosition());
             }
         }
 
@@ -255,7 +261,7 @@ public class WorldController {
         for (ExplodableBlock eb : world.getLevel().getExplodableBlocks()) {
             if (!eb.getState().equals(ExplodableBlock.State.RUBBLE)) {
                 if (eb.getState().equals(ExplodableBlock.State.BANG)) {
-                    world.getExplosions().add(new Explosion(new Vector2(eb.getPosition().x - ExplodableBlock.getSIZE(), eb.getPosition().y - ExplodableBlock.getSIZE()), "explosion"));
+                    world.getExplosions().add(new Explosion(new Vector2(eb.getPosition().x + ExplodableBlock.getSIZE()/2, eb.getPosition().y + ExplodableBlock.getSIZE()/2), "explosion"));
                     eb.setState(ExplodableBlock.State.RUBBLE);
                 } else {
                     collisionDetector.checkExplodableCollisionWithExplosion(eb);
@@ -394,8 +400,10 @@ public class WorldController {
         if (aiPlayer.getState() != Player.State.DEAD) {
             //do the thing
             aiPlayer.chooseTarget(bob, aiPlayers);
-            if (aiPlayer.getTarget() != null)
-                aiPlayer.setTarget(locator.wallInbetween(aiPlayer.getPosition(), aiPlayer.getTarget(), aiPlayer.getView().getBlocks()));
+            aiPlayer.setTarget(locator.wallInbetween(aiPlayer, aiPlayer.getTarget()));
+            if (aiPlayer.getTarget() == null && aiPlayer.getTargetPlayer() != null) {
+                aiPlayer.ignore(aiPlayer.getTargetPlayer().getName());
+            }
             world.getBullets().addAll(aiPlayer.decide(delta));
         }
     }
@@ -449,13 +457,13 @@ public class WorldController {
         return velocity;
     }
 
-    private SpawnPoint findSpawnPoint() {
+    private SpawnPoint findSpawnPoint(String name) {
         Random rand = new Random();
         Map<Integer, SpawnPoint> sps = world.getLevel().getSpawnPoints();
         SpawnPoint sp = sps.get(rand.nextInt(sps.size()));
         boolean occupied = true;
         while (occupied) {
-            if (collisionDetector.checkSpawnPointForPlayers(sp)) {
+            if (collisionDetector.checkSpawnPointForPlayers(sp, name)) {
                 occupied = false;
             } else {
                 sp = sps.get(rand.nextInt(sps.size()));

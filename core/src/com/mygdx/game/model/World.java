@@ -34,8 +34,10 @@ public class World {
     private LevelLoader levelLoader = new LevelLoader();
     private JoyStick moveJoystick, fireJoystick;
 
+    private Vector2 locateExplosion;
+
     public World() {
-        loadWorld(1);
+        loadWorld(2);
     }
 
     // Getters -----------
@@ -163,5 +165,13 @@ public class World {
             numbers.add(rando);
         }
         buttons.add(new GameButton(new Vector2(12, 3), 0.5F, GameButton.Type.USE));
+    }
+
+    public Vector2 getLocateExplosion() {
+        return locateExplosion;
+    }
+
+    public void setLocateExplosion(Vector2 locateExplosion) {
+        this.locateExplosion = locateExplosion;
     }
 }

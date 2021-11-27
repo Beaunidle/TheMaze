@@ -6,49 +6,49 @@ filter: Nearest,Nearest
 repeat: none
 bullet
   rotate: false
-  xy: 2, 17
+  xy: 2, 2
   size: 37, 13
   orig: 37, 13
   offset: 0, 0
   index: -1
 bullet180
   rotate: false
-  xy: 2, 2
+  xy: 2006, 2006
   size: 37, 13
   orig: 37, 13
   offset: 0, 0
   index: -1
 bullet90
   rotate: false
-  xy: 2006, 1997
+  xy: 2006, 1967
   size: 13, 37
   orig: 13, 37
   offset: 0, 0
   index: -1
 damageBoost
   rotate: false
-  xy: 1004, 1034
+  xy: 2, 17
   size: 1000, 1000
   orig: 1000, 1000
   offset: 0, 0
   index: -1
 homingBoost
   rotate: false
-  xy: 2, 32
+  xy: 2, 1019
   size: 1000, 1000
   orig: 1000, 1000
   offset: 0, 0
   index: -1
 shieldBoost
   rotate: false
-  xy: 1004, 32
+  xy: 1004, 1019
   size: 1000, 1000
   orig: 1000, 1000
   offset: 0, 0
   index: -1
 speedBoost
   rotate: false
-  xy: 2, 1034
+  xy: 1004, 17
   size: 1000, 1000
   orig: 1000, 1000
   offset: 0, 0
@@ -64,13 +64,6 @@ block
   xy: 74, 1973
   size: 70, 63
   orig: 70, 63
-  offset: 0, 0
-  index: -1
-explode-02
-  rotate: false
-  xy: 2, 2
-  size: 1000, 750
-  orig: 1000, 750
   offset: 0, 0
   index: -1
 explodingBlockRed
@@ -96,7 +89,7 @@ floor
   index: -1
 gunPistol
   rotate: false
-  xy: 1004, 1396
+  xy: 362, 1396
   size: 640, 640
   orig: 640, 640
   offset: 0, 0
@@ -117,9 +110,23 @@ gunSMG
   index: -1
 gunShotgun
   rotate: false
-  xy: 362, 1396
+  xy: 1004, 1396
   size: 640, 640
   orig: 640, 640
+  offset: 0, 0
+  index: -1
+padMove
+  rotate: false
+  xy: 2, 2
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+padMoveRight
+  rotate: false
+  xy: 2, 2
+  size: 1000, 750
+  orig: 1000, 750
   offset: 0, 0
   index: -1
 padMoveDown
@@ -144,33 +151,26 @@ filter: Nearest,Nearest
 repeat: none
 heart
   rotate: false
-  xy: 1004, 754
-  size: 1000, 750
-  orig: 1000, 750
-  offset: 0, 0
-  index: -1
-padMove
-  rotate: false
-  xy: 2, 754
-  size: 1000, 750
-  orig: 1000, 750
-  offset: 0, 0
-  index: -1
-padMoveRight
-  rotate: false
-  xy: 2, 754
-  size: 1000, 750
-  orig: 1000, 750
-  offset: 0, 0
-  index: -1
-shieldYellow
-  rotate: false
   xy: 2, 2
   size: 1000, 750
   orig: 1000, 750
   offset: 0, 0
   index: -1
-sprite-01
+joystickStill
+  rotate: false
+  xy: 2, 754
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+padSticky
+  rotate: false
+  xy: 1004, 754
+  size: 1000, 750
+  orig: 1000, 750
+  offset: 0, 0
+  index: -1
+sprite-02
   rotate: false
   xy: 1004, 2
   size: 1000, 750
@@ -192,21 +192,21 @@ injured-03
   index: -1
 shieldPurple
   rotate: false
-  xy: 1004, 754
+  xy: 2, 2
   size: 1000, 750
   orig: 1000, 750
   offset: 0, 0
   index: -1
-sprite-02
+shieldTurquoise
   rotate: false
-  xy: 2, 754
+  xy: 1004, 754
   size: 1000, 750
   orig: 1000, 750
   offset: 0, 0
   index: -1
 sprite-03
   rotate: false
-  xy: 2, 2
+  xy: 2, 754
   size: 1000, 750
   orig: 1000, 750
   offset: 0, 0
@@ -224,14 +224,14 @@ dead
   orig: 1000, 750
   offset: 0, 0
   index: -1
-joystickOuter
+explode-03
   rotate: false
   xy: 2, 2
   size: 1000, 750
   orig: 1000, 750
   offset: 0, 0
   index: -1
-padSticky
+joystickOuter
   rotate: false
   xy: 2, 754
   size: 1000, 750
@@ -292,9 +292,9 @@ boostPad
   orig: 1000, 750
   offset: 0, 0
   index: -1
-explode-03
+explode-02
   rotate: false
-  xy: 2, 2
+  xy: 2, 754
   size: 1000, 750
   orig: 1000, 750
   offset: 0, 0
@@ -306,9 +306,9 @@ injured-01
   orig: 1000, 750
   offset: 0, 0
   index: -1
-joystickStill
+injured-02
   rotate: false
-  xy: 2, 754
+  xy: 2, 2
   size: 1000, 750
   orig: 1000, 750
   offset: 0, 0
@@ -321,7 +321,7 @@ filter: Nearest,Nearest
 repeat: none
 joystickInner
   rotate: false
-  xy: 1004, 2
+  xy: 1004, 754
   size: 1000, 750
   orig: 1000, 750
   offset: 0, 0
@@ -333,16 +333,16 @@ padSpike
   orig: 1000, 750
   offset: 0, 0
   index: -1
-shieldOrange
+shieldBlue
   rotate: false
-  xy: 2, 2
+  xy: 1004, 2
   size: 1000, 750
   orig: 1000, 750
   offset: 0, 0
   index: -1
-shieldTurquoise
+shieldOrange
   rotate: false
-  xy: 1004, 754
+  xy: 2, 2
   size: 1000, 750
   orig: 1000, 750
   offset: 0, 0
@@ -353,24 +353,24 @@ size: 2048,2048
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
-injured-02
-  rotate: false
-  xy: 2, 754
-  size: 1000, 750
-  orig: 1000, 750
-  offset: 0, 0
-  index: -1
 padMoveUp
   rotate: false
-  xy: 1004, 504
+  xy: 2, 754
   size: 750, 1000
   orig: 750, 1000
   offset: 0, 0
   index: -1
-shieldBlue
+shieldYellow
   rotate: false
-  xy: 2, 2
+  xy: 754, 1004
   size: 1000, 750
   orig: 1000, 750
+  offset: 0, 0
+  index: -1
+sprite-01
+  rotate: false
+  xy: 2, 2
+  size: 960, 750
+  orig: 960, 750
   offset: 0, 0
   index: -1

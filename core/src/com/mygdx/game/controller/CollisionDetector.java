@@ -14,6 +14,7 @@ import com.mygdx.game.model.FloorPad;
 import com.mygdx.game.model.Player;
 import com.mygdx.game.model.SpawnPoint;
 import com.mygdx.game.model.World;
+import com.mygdx.game.utils.Locator;
 
 import java.util.List;
 
@@ -24,6 +25,7 @@ class CollisionDetector {
     private List<AIPlayer> aiPlayers;
 
     private Array<Block> collidable = new Array<>();
+    private Locator locator = new Locator();
 
     CollisionDetector(World world, Player bob, List<AIPlayer> aiPlayers) {
         this.world = world;
@@ -69,11 +71,9 @@ class CollisionDetector {
             if (Intersector.overlapConvexPolygons(playerRect, block.getBounds()) &&
                     !(block instanceof ExplodableBlock && ((ExplodableBlock) block).getState().equals(ExplodableBlock.State.RUBBLE))) {
                 player.getVelocity().x = 0;
-//                if (player instanceof AIPlayer) {
-//                    if (((AIPlayer) player).getRotateBy() == 0) {
-//                        ((AIPlayer) player).setRotateBy(90);
-//                    }
-//                }
+                if (player instanceof AIPlayer) {
+                    ((AIPlayer) player).turnAround(90);
+                }
                 world.getCollisionRects().add(block.getBounds());
                 break;
             }
@@ -101,11 +101,9 @@ class CollisionDetector {
             if (Intersector.overlapConvexPolygons(playerRect, block.getBounds()) &&
                     !(block instanceof ExplodableBlock && ((ExplodableBlock) block).getState().equals(ExplodableBlock.State.RUBBLE))) {
                 player.getVelocity().y = 0;
-//                if (player instanceof AIPlayer) {
-//                    if (((AIPlayer) player).getRotateBy() == 0) {
-//                        ((AIPlayer) player).setRotateBy(-90);
-//                    }
-//                }
+                if (player instanceof AIPlayer) {
+                    ((AIPlayer) player).turnAround(-90);
+                }
                 world.getCollisionRects().add(block.getBounds());
                 break;
             }
@@ -175,7 +173,7 @@ class CollisionDetector {
                     bullet.setSpeed(0);
                     bullet.startExplodeTimer();
                     if (bullet.isExplosive()) {
-                        world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x - Explosion.getSIZE()/2, bullet.getPosition().y - Explosion.getSIZE()/2), bullet.getPlayerName()));
+                        world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x, bullet.getPosition().y), bullet.getPlayerName()));
                     }
                     return;
                 }
@@ -210,7 +208,7 @@ class CollisionDetector {
                     bullet.startExplodeTimer();
                     world.getCollisionRects().add(block.getBounds());
                     if (bullet.isExplosive()) {
-                        world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x - Explosion.getSIZE()/2, bullet.getPosition().y - Explosion.getSIZE()/2), bullet.getPlayerName()));
+                        world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x, bullet.getPosition().y), bullet.getPlayerName()));
                     }
                     return;
                 }
@@ -243,7 +241,7 @@ class CollisionDetector {
                             bullet.setSpeed(0);
                             bullet.startExplodeTimer();
                             if (bullet.isExplosive()) {
-                                world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x - Explosion.getSIZE()/2, bullet.getPosition().y - Explosion.getSIZE()/2), bullet.getPlayerName()));
+                                world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x, bullet.getPosition().y), bullet.getPlayerName()));
                             }
                         }
                         if (Intersector.overlapConvexPolygons(bulletRect, player.getBounds())) {
@@ -251,7 +249,7 @@ class CollisionDetector {
                             bullet.startExplodeTimer();
                             //todo ai player is shot
                             if (bullet.isExplosive()) {
-                                world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x - Explosion.getSIZE()/2, bullet.getPosition().y - Explosion.getSIZE()/2), bullet.getPlayerName()));
+                                world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x, bullet.getPosition().y), bullet.getPlayerName()));
                             }
                             player.isShot(bullet.getPlayerName(), bullet.getDamage());
                             return;
@@ -264,7 +262,7 @@ class CollisionDetector {
                     bullet.setSpeed(0);
                     bullet.startExplodeTimer();
                     if (bullet.isExplosive()) {
-                        world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x - Explosion.getSIZE()/2, bullet.getPosition().y - Explosion.getSIZE()/2), bullet.getPlayerName()));
+                        world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x, bullet.getPosition().y), bullet.getPlayerName()));
                     }
                 }
                 if (Intersector.overlapConvexPolygons(bulletRect, bob.getBounds())) {
@@ -272,7 +270,7 @@ class CollisionDetector {
                     bullet.startExplodeTimer();
                     //player is shot
                     if (bullet.isExplosive()) {
-                        world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x - Explosion.getSIZE()/2, bullet.getPosition().y - Explosion.getSIZE()/2), bullet.getPlayerName()));
+                        world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x, bullet.getPosition().y), bullet.getPlayerName()));
                     }
                     bob.isShot(bullet.getPlayerName(), bullet.getDamage());
                     return;
@@ -294,7 +292,7 @@ class CollisionDetector {
                         bullet.startExplodeTimer();
                         //todo ai player is shot
                         if (bullet.isExplosive()) {
-                            world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x - Explosion.getSIZE()/2, bullet.getPosition().y - Explosion.getSIZE()/2), bullet.getPlayerName()));
+                            world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x, bullet.getPosition().y), bullet.getPlayerName()));
                         }
                         player.isShot(bullet.getPlayerName(), bullet.getDamage());
                         return;
@@ -306,7 +304,7 @@ class CollisionDetector {
                 bullet.startExplodeTimer();
                 //todo player is shot
                 if (bullet.isExplosive()) {
-                    world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x - Explosion.getSIZE()/2, bullet.getPosition().y - Explosion.getSIZE()/2), bullet.getPlayerName()));
+                    world.getExplosions().add(new Explosion(new Vector2(bullet.getPosition().x, bullet.getPosition().y), bullet.getPlayerName()));
                 }
                 bob.isShot(bullet.getPlayerName(), bullet.getDamage());
                 return;
@@ -321,8 +319,8 @@ class CollisionDetector {
 
         for (Explosion explosion : world.getExplosions()) {
             if (!player.getBoost().equals(Player.Boost.SHIELD) && !player.isInjured()
-                    && Intersector.overlapConvexPolygons(player.getBounds(), explosion.getBounds())) {
-                player.isShot(explosion.getName(), 2.5F);
+                    && Intersector.overlaps(explosion.getBounds(), player.getBounds().getBoundingRectangle())) {
+                if (!locator.wallInbetweenExplosion(player, explosion.getPosition())) player.isShot(explosion.getName(), 2.5F);
             }
         }
     }
@@ -371,20 +369,23 @@ class CollisionDetector {
 
     void checkExplodableCollisionWithExplosion(ExplodableBlock eb) {
         for (Explosion explosion : world.getExplosions()) {
-            if (Intersector.overlapConvexPolygons(eb.getBounds(), explosion.getBounds())) {
+            if (Intersector.overlaps(explosion.getBounds(), eb.getBounds().getBoundingRectangle())) {
                 eb.explode(0.5F);
             }
         }
     }
 
-    public boolean checkSpawnPointForPlayers(SpawnPoint sp) {
+    public boolean checkSpawnPointForPlayers(SpawnPoint sp, String name) {
 
         for (AIPlayer aiPlayer : aiPlayers) {
-            if (Intersector.overlapConvexPolygons(aiPlayer.getBounds(), sp.getBounds())) {
+            if (!name.equals(aiPlayer.getName()) && Intersector.overlapConvexPolygons(aiPlayer.getBounds(), sp.getBounds())) {
                 return false;
             }
         }
-        return !Intersector.overlapConvexPolygons(bob.getBounds(), sp.getBounds());
+        if (!name.equals(bob.getName()) && !Intersector.overlapConvexPolygons(bob.getBounds(), sp.getBounds())) {
+            return false;
+        }
+        return true;
         //return true if it is clear
     }
 

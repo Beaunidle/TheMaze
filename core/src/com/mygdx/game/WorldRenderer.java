@@ -188,14 +188,34 @@ public class WorldRenderer {
         if (world.getFireJoystick() != null) drawJoystick(world.getFireJoystick());
         drawButtons();
         spriteBatch.end();
+//        aiDebug();
 //        drawCollisionBlocks();
+//        if (debug)
+//        drawDebug();
         debugRenderer.setProjectionMatrix(cam.combined);
         debugRenderer.setAutoShapeType(true);
         debugRenderer.begin(ShapeType.Line);
         debugRenderer.setColor(Color.RED);
-        debugRenderer.polygon(world.getBob().getViewCircle().getTransformedVertices());
+        for (Explosion explosion : world.getExplosions()) {
+            debugRenderer.circle(explosion.getBounds().x, explosion.getBounds().y, explosion.getBounds().radius);
+        }
+        if (world.getLocateExplosion() != null) {
+            debugRenderer.setColor(Color.GREEN);
+            debugRenderer.circle(world.getLocateExplosion().x, world.getLocateExplosion().y, 5);
+            debugRenderer.setColor(Color.PURPLE);
+            debugRenderer.circle(world.getLocateExplosion().x, world.getLocateExplosion().y, 2);
+        }
+            debugRenderer.end();
+    }
+
+    private void aiDebug(){
+        debugRenderer.setProjectionMatrix(cam.combined);
+        debugRenderer.setAutoShapeType(true);
+        debugRenderer.begin(ShapeType.Line);
+        debugRenderer.setColor(Color.RED);
+//        debugRenderer.polygon(world.getBob().getViewCircle().getTransformedVertices());
         for (AIPlayer aiPlayer :  world.getAIPlayers()) {
-            Rectangle rect = aiPlayer.getViewCircle().getBoundingRectangle();
+//            Rectangle rect = aiPlayer.getViewCircle().getBoundingRectangle();
             Block[][] blocks = aiPlayer.getView().getBlocks();
             for (int i = 0; i < 15; i++) {
                 for (int j = 0; j < 8; j++) {
@@ -204,16 +224,20 @@ public class WorldRenderer {
                     if (block != null) debugRenderer.polygon(block.getBounds().getTransformedVertices());
                 }
             }
+            debugRenderer.setColor(Color.PURPLE);
+            Block[] blocking = aiPlayer.getView().getBlockingWall();
+            for (int i = 0; i < blocking.length; i++) {
+                if (blocking[i] != null) debugRenderer.polygon(blocking[i].getBounds().getTransformedVertices());
+            }
+
             debugRenderer.setColor(Color.BLUE);
             if (aiPlayer.getTarget() != null) debugRenderer.circle(aiPlayer.getTarget().x, aiPlayer.getTarget().y, 2);
-            debugRenderer.setColor(Color.RED);
-            debugRenderer.rect(rect.x, rect.y, rect.width, rect.height);
+//            debugRenderer.setColor(Color.GREEN);
+//            debugRenderer.rect(rect.x, rect.y, rect.width, rect.height);
         }
         debugRenderer.end();
-//        if (debug)
-//        drawDebug();
-    }
 
+    }
     private void drawFloor() {
         for (int i = 0; i < 100; i++) {
             for (int j = 0; j < 70; j++) {
@@ -326,7 +350,7 @@ public class WorldRenderer {
         for (Explosion explosion : world.getExplosions()) {
             if (!explosion.isFinished()) {
                 TextureRegion explosionFrame = (TextureRegion) explodeAnimation.getKeyFrame(world.getBob().getStateTime(), true);
-                spriteBatch.draw(explosionFrame, explosion.getPosition().x, explosion.getPosition().y, Explosion.getSIZE() / 2, Explosion.getSIZE() / 2,
+                spriteBatch.draw(explosionFrame, explosion.getPosition().x - Explosion.getSIZE()/2, explosion.getPosition().y - Explosion.getSIZE()/2, Explosion.getSIZE() / 2, Explosion.getSIZE() / 2,
                         Explosion.getSIZE(), Explosion.getSIZE(), 1F, 1F, 0, true);
             }
         }
@@ -572,14 +596,14 @@ public class WorldRenderer {
             }
 
             if (buttonFrame != null) spriteBatch.draw(buttonFrame, xish, yish, 1, 1, 1.0F, 1.0F, 1.00F, 1.00F, 0);
-            spriteBatch.end();
-            debugRenderer.setProjectionMatrix(cam.combined);
-            debugRenderer.setAutoShapeType(true);
-            debugRenderer.begin(ShapeType.Line);
-            debugRenderer.setColor(Color.GREEN);
-            debugRenderer.circle(xish + gameButton.getArea().radius, yish + gameButton.getArea().radius, gameButton.getArea().radius);
-            debugRenderer.end();
-            spriteBatch.begin();
+//            spriteBatch.end();
+//            debugRenderer.setProjectionMatrix(cam.combined);
+//            debugRenderer.setAutoShapeType(true);
+//            debugRenderer.begin(ShapeType.Line);
+//            debugRenderer.setColor(Color.GREEN);
+//            debugRenderer.circle(xish + gameButton.getArea().radius, yish + gameButton.getArea().radius, gameButton.getArea().radius);
+//            debugRenderer.end();
+//            spriteBatch.begin();
         }
     }
     private void drawDebug() {

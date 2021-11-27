@@ -78,7 +78,7 @@ public class Player {
         this.name = name;
         this.lives = lives;
         this.maxLives = lives;
-        gun = new Gun(Gun.Type.PISTOL);
+        gun = new Gun(Gun.Type.ROCKET);
         acceleration = 0F;
     }
 
@@ -281,8 +281,10 @@ public class Player {
     }
 
     public void respawn(Vector2 newPos) {
+
+        System.out.println("respawn started");
         this.lives = maxLives;
-        this.gun = new Gun(Gun.Type.PISTOL);
+        this.gun = new Gun(Gun.Type.ROCKET);
         this.position = new Vector2(newPos);
         this.bounds.setPosition(position.x, position.y);
         this.bounds.setRotation(rotation);
@@ -290,7 +292,10 @@ public class Player {
         this.getViewCircle().setPosition(this.getPosition().x, this.getPosition().y);
         this.shieldCircle.setPosition(getCentrePosition().x, getCentrePosition().y);
         this.injured = false;
+        this.setBoost(Boost.SHIELD);
         this.state = State.IDLE;
+        this.injured = false;
+        System.out.println("respawn finished");
     }
 
     private void startBulletTimer(float delay) {
@@ -336,6 +341,7 @@ public class Player {
     private void dead(String name) {
         setState(State.DEAD);
         killedBy = name;
+
     }
 
     public void heal() {

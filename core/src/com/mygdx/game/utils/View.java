@@ -11,12 +11,14 @@ import java.util.List;
 public class View {
 
     private Block[][] blocks;
+    private Block[] blockingWall;
     private List<Player> players;
     private List<FloorPad> floorPads;
     private List<BoostPad> boostPads;
 
     public View() {
         blocks = new Block[15][8];
+        blockingWall = new Block[3];
         players = new ArrayList<>();
         floorPads = new ArrayList<>();
         boostPads = new ArrayList<>();
@@ -24,6 +26,14 @@ public class View {
 
     public Block[][] getBlocks() {
         return blocks;
+    }
+
+    public Block[] getBlockingWall() {
+        return blockingWall;
+    }
+
+    public void setBlockingWall(Block[] blockingWall) {
+        this.blockingWall = blockingWall;
     }
 
     public List<Player> getPlayers() {

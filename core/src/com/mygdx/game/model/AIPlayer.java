@@ -17,6 +17,8 @@ public class AIPlayer extends Player {
 
     private Intent intent = Intent.SEARCHING;
     private Random rand = new Random();
+    private Player targetPlayer;
+    private String ignore;
     private Vector2 target;
     private int rotateBy = 0;
     Locator locator;
@@ -38,6 +40,7 @@ public class AIPlayer extends Player {
                 this.getGun().setType(Gun.Type.ROCKET);
                 break;
         }
+        this.getGun().setType(Gun.Type.ROCKET);
     }
 
     private void switchIntent() {
@@ -68,41 +71,62 @@ public class AIPlayer extends Player {
         return target;
     }
 
+    public Player getTargetPlayer() {
+        return targetPlayer;
+    }
+
+    public void setTargetPlayer(Player targetPlayer) {
+        this.targetPlayer = targetPlayer;
+    }
+
     public void setTarget(Vector2 target) {
         this.target = target;
+    }
+
+    public String getIgnore() {
+        return ignore;
+    }
+
+    public void setIgnore(String ignore) {
+        this.ignore = ignore;
     }
 
     public void chooseTarget(Player player, List<AIPlayer> aiPlayers) {
 
         List<Player> players = new ArrayList<>();
-        if (getViewCircle().contains(player.getCentrePosition())) players.add(player);
+        if ((!player.getName().equals(ignore)) && getViewCircle().contains(player.getCentrePosition())) players.add(player);
 
         for (AIPlayer aiPlayer : aiPlayers) {
-            if (!aiPlayer.getName().equals(getName())) {
+            if (!aiPlayer.getName().equals(getName()) && !aiPlayer.getName().equals(ignore)) {
                 if (getViewCircle().contains(aiPlayer.getCentrePosition()))players.add(aiPlayer);
             }
         }
         if (players.isEmpty()) {
+            targetPlayer = null;
             target = null;
+            getView().setBlockingWall(new Block[3]);
         } else {
-            target =  players.get(rand.nextInt(players.size())).getCentrePosition();
+            if (targetPlayer == null || rand.nextInt(1000) > 999)  {
+                targetPlayer =  players.get(rand.nextInt(players.size()));
+            }
+            target = targetPlayer.getCentrePosition();
         }
     }
 
+    public void ignore(String name) {
+        ignore = name;
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                ignore = null;
+            }
+        }, 5);
+    }
     public List<Bullet> decide(float delta) {
 
         List<Bullet> bullets = new ArrayList<>();
 
-        if (rotateBy != 0) {
-            if (rotateBy < 0) {
-                rotateAntiClockwise(delta);
-                rotateBy++;
-            }
-            if (rotateBy > 0) {
-                rotateClockwise(delta);
-                rotateBy--;
-            }
-        }
+        if (getState().equals(State.DEAD)) return bullets;
 
         if (target != null) {
             if (getViewCircle().contains(target)) {
@@ -135,6 +159,16 @@ public class AIPlayer extends Player {
                 target = null;
             }
         } else {
+            if (rotateBy != 0) {
+                if (rotateBy < 0) {
+                    rotateAntiClockwise(delta);
+                    rotateBy++;
+                }
+                if (rotateBy > 0) {
+                    rotateClockwise(delta);
+                    rotateBy--;
+                }
+            }
             setIntent(Intent.SEARCHING);
         }
 
@@ -149,11 +183,23 @@ public class AIPlayer extends Player {
                     stop();
                 }
 
-                random = rand.nextInt(10);
-                if (random >= 4 && random <= 6) rotateClockwise(delta);
-                if (random >= 7 && random <= 9) rotateAntiClockwise(delta);
+                random = rand.nextInt(1000);
+                if (random >= 980 && random < 990) rotateClockwise(delta);
+                if (random >= 990) rotateAntiClockwise(delta);
             }
         }
+//        bullets.removeAll(bullets);
         return bullets;
+    }
+
+    public void turnAround(int angle) {
+        if (rotateBy == 0) {
+            rotateBy = angle;
+        }
+    }
+
+    public void respawn(Vector2 newPos) {
+        this.setTarget(null);
+        super.respawn(newPos);
     }
 }
