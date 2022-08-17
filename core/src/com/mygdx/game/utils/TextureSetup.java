@@ -1,6 +1,5 @@
 package com.mygdx.game.utils;
 
-
 import com.badlogic.gdx.tools.texturepacker.TexturePacker;
 
 public class TextureSetup {

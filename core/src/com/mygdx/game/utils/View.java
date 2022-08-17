@@ -1,23 +1,23 @@
 package com.mygdx.game.utils;
 
-import com.mygdx.game.model.Block;
-import com.mygdx.game.model.BoostPad;
-import com.mygdx.game.model.FloorPad;
-import com.mygdx.game.model.Player;
+import com.mygdx.game.model.environment.blocks.Block;
+import com.mygdx.game.model.pads.BoostPad;
+import com.mygdx.game.model.pads.FloorPad;
+import com.mygdx.game.model.moveable.Player;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class View {
 
-    private Block[][] blocks;
+    private final Block[][] blocks;
     private Block[] blockingWall;
-    private List<Player> players;
-    private List<FloorPad> floorPads;
-    private List<BoostPad> boostPads;
+    private final List<Player> players;
+    private final List<FloorPad> floorPads;
+    private final List<BoostPad> boostPads;
 
     public View() {
-        blocks = new Block[15][8];
+        blocks = new Block[30][16];
         blockingWall = new Block[3];
         players = new ArrayList<>();
         floorPads = new ArrayList<>();

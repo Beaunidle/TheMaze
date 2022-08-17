@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 public class GameButton {
 
     public enum Type {
-        FIRE, USE
+        FIRE, USE, EXIT
     }
     private Vector2 position;
     private int radius;

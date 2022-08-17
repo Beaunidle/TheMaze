@@ -22,12 +22,12 @@ import java.util.List;
 
 public class TitleScreen extends ScreenAdapter implements InputProcessor {
 
-    private Game game;
-    private SpriteBatch spriteBatch;
-    private BitmapFont font;
-    private Stage stage;
-    private int width = Gdx.app.getGraphics().getWidth();
-    private int height = Gdx.app.getGraphics().getHeight();
+    private final Game game;
+    private final SpriteBatch spriteBatch;
+    private final BitmapFont font;
+    private final Stage stage;
+    private final int width = Gdx.app.getGraphics().getWidth();
+    private final int height = Gdx.app.getGraphics().getHeight();
 
 
     public TitleScreen(Game game, SpriteBatch spriteBatch, BitmapFont font) {
@@ -44,6 +44,7 @@ public class TitleScreen extends ScreenAdapter implements InputProcessor {
 
         stage = new Stage(viewport, spriteBatch);
     }
+
     @Override
     public void show(){
         Gdx.input.setCursorCatched(false);
@@ -77,7 +78,7 @@ public class TitleScreen extends ScreenAdapter implements InputProcessor {
 //            i++;
 //        }
 
-        TextureAtlas atlas = new TextureAtlas(Gdx.files.internal("buttons/buttons.atlas"));
+        TextureAtlas atlas = new TextureAtlas(Gdx.files.internal("buttons.atlas"));
         Button startButton = new Button(new TextureRegionDrawable(atlas.findRegion("start")));
         Button exitButton = new Button(new TextureRegionDrawable(atlas.findRegion("exit")));
 

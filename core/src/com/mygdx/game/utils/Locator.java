@@ -1,8 +1,9 @@
 package com.mygdx.game.utils;
 
 import com.badlogic.gdx.math.Vector2;
-import com.mygdx.game.model.Block;
-import com.mygdx.game.model.Player;
+import com.mygdx.game.model.environment.blocks.Block;
+import com.mygdx.game.model.moveable.Player;
+import com.mygdx.game.model.moveable.Sprite;
 
 public class Locator {
 
@@ -203,7 +204,7 @@ public class Locator {
         return target;
     }
 
-    public boolean wallInbetweenExplosion(Player player, Vector2 explosion) {
+    public boolean wallInbetweenExplosion(Sprite player, Vector2 explosion) {
 
         Vector2 position = player.getCentrePosition();
         View view = player.getView();
@@ -219,8 +220,8 @@ public class Locator {
             //to the right
             for (int j = 8; j <= 11; j++) {
 
-                System.out.println("j is: " + j + ". dst is: " + dst);
-                System.out.println();
+//                System.out.println("j is: " + j + ". dst is: " + dst);
+//                System.out.println();
 //                block[0] = blocks[j][3];
                 block1 = blocks[j][4];
 //                block[2] = blocks[j][5];

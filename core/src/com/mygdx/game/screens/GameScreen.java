@@ -15,6 +15,7 @@ import com.mygdx.game.model.GameButton;
 import com.mygdx.game.model.World;
 import com.mygdx.game.WorldRenderer;
 import com.mygdx.game.controller.WorldController;
+import com.mygdx.game.model.environment.blocks.FillableBlock;
 import com.mygdx.game.utils.JoyStick;
 import com.mygdx.game.utils.Locator;
 
@@ -50,8 +51,8 @@ public class GameScreen implements Screen, InputProcessor {
         this.width = Gdx.app.getGraphics().getWidth();
         this.height = Gdx.app.getGraphics().getHeight();
 
-        xRatio = 14F / width;
-        yRatio = 8F / height;
+        xRatio = 30F / width;
+        yRatio = 16F / height;
     }
 
     @Override
@@ -61,6 +62,22 @@ public class GameScreen implements Screen, InputProcessor {
         if (controller.isLevelFinished()) {
             BitmapFont font = new BitmapFont();
             game.setScreen(new LoadingScreen(game, spriteBatch, font, controller.getScoreBoard()));
+        }
+        if (controller.isPaused() && controller.getFillableToShow() == null) {
+            game.setScreen(new InstructionsScreen(game, spriteBatch, font, this));
+            return;
+        }
+        if (controller.getFillableToShow() != null) {
+            if (controller.getFillableToShow().getFillableType().equals(FillableBlock.FillableType.INVSCREEN)) {
+                game.setScreen(new InventoryScreen(game, spriteBatch, font, this, world));
+                return;
+            }
+            if (controller.getFillableToShow().getFillableType().equals(FillableBlock.FillableType.MAPSCREEN)) {
+                game.setScreen(new MapScreen(game, spriteBatch, font, this, world));
+                return;
+            }
+            if (!controller.getFillableToShow().isRecipeSelect())game.setScreen(new FillableScreen(game, spriteBatch, font, this, world, controller.getFillableToShow()));
+            else game.setScreen(new CraftScreen(game, spriteBatch, font, this, world, controller.getFillableToShow().getRecipes()));
         }
         controller.update(delta);
         renderer.render();
@@ -79,20 +96,38 @@ public class GameScreen implements Screen, InputProcessor {
         controller = new WorldController(world, game);
         controller.leftReleased();
         controller.rightReleased();
+        controller.strafeLeftReleased();
+        controller.strafeRightReleased();
         controller.upReleased();
         controller.downReleased();
         controller.useReleased();
         controller.fireReleased();
+        controller.shiftReleased();
+        controller.invReleased();
+        controller.mapReleased();
+        controller.slotLeftReleased();
+        controller.slotRightReleased();
+        controller.slotUseReleased();
+        controller.pauseReleased();
         Gdx.input.setInputProcessor(this);
     }
 
     void loadLevel(int level) {
         controller.leftReleased();
         controller.rightReleased();
+        controller.strafeLeftReleased();
+        controller.strafeRightReleased();
         controller.upReleased();
         controller.downReleased();
         controller.useReleased();
         controller.fireReleased();
+        controller.shiftReleased();
+        controller.invReleased();
+        controller.mapReleased();
+        controller.slotLeftReleased();
+        controller.slotRightReleased();
+        controller.slotUseReleased();
+        controller.pauseReleased();
         System.out.println("game screen Loading level " + level);
         controller.loadLevel(level);
     }
@@ -119,35 +154,73 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public boolean keyDown(int keycode) {
-        if (keycode == Input.Keys.LEFT)
+        if (keycode == Input.Keys.NUMPAD_4)
             controller.leftPressed();
-        if (keycode == Input.Keys.RIGHT)
+        if (keycode == Input.Keys.NUMPAD_6)
             controller.rightPressed();
-        if (keycode == Input.Keys.UP)
+        if (keycode == Input.Keys.W)
             controller.upPressed();
-        if (keycode == Input.Keys.DOWN)
+        if (keycode == Input.Keys.S)
             controller.downPressed();
-        if (keycode == Input.Keys.Z)
+        if (keycode == Input.Keys.A)
+            controller.strafeLeftPressed();
+        if (keycode == Input.Keys.D)
+            controller.strafeRightPressed();
+        if (keycode == Input.Keys.ENTER)
             controller.usePressed();
-        if (keycode == Input.Keys.X)
+        if (keycode == Input.Keys.SPACE)
             controller.firePressed();
+        if (keycode == Input.Keys.SHIFT_RIGHT)
+            controller.shiftPressed();
+        if (keycode == Input.Keys.I)
+            controller.invPressed();
+        if (keycode == Input.Keys.M) {
+            controller.mapPressed();
+        }
+        if (keycode == Input.Keys.P)
+            controller.pausePressed();
+        if (keycode == Input.Keys.NUMPAD_2)
+            controller.slotLeftPressed();
+        if (keycode == Input.Keys.NUMPAD_8)
+            controller.slotRightPressed();
+        if (keycode == Input.Keys.NUMPAD_5)
+            controller.slotUsePressed();
         return true;
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        if (keycode == Input.Keys.LEFT)
+        if (keycode == Input.Keys.NUMPAD_4)
             controller.leftReleased();
-        if (keycode == Input.Keys.RIGHT)
+        if (keycode == Input.Keys.NUMPAD_6)
             controller.rightReleased();
-        if (keycode == Input.Keys.UP)
+        if (keycode == Input.Keys.W)
             controller.upReleased();
-        if (keycode == Input.Keys.DOWN)
+        if (keycode == Input.Keys.S)
             controller.downReleased();
-        if (keycode == Input.Keys.Z)
+        if (keycode == Input.Keys.A)
+            controller.strafeLeftReleased();
+        if (keycode == Input.Keys.D)
+            controller.strafeRightReleased();
+        if (keycode == Input.Keys.ENTER)
             controller.useReleased();
-        if (keycode == Input.Keys.X)
+        if (keycode == Input.Keys.SPACE)
             controller.fireReleased();
+        if (keycode == Input.Keys.SHIFT_RIGHT)
+            controller.shiftReleased();
+        if (keycode == Input.Keys.I)
+            controller.invReleased();
+        if (keycode == Input.Keys.M) {
+            controller.mapReleased();
+        }
+        if (keycode == Input.Keys.NUMPAD_2)
+            controller.slotLeftReleased();
+        if (keycode == Input.Keys.NUMPAD_8)
+            controller.slotRightReleased();
+        if (keycode == Input.Keys.NUMPAD_5)
+            controller.slotUseReleased();
+        if (keycode == Input.Keys.P)
+            controller.pauseReleased();
         return true;
     }
 
@@ -254,4 +327,7 @@ public class GameScreen implements Screen, InputProcessor {
         return false;
     }
 
+    public WorldController getController() {
+        return controller;
+    }
 }

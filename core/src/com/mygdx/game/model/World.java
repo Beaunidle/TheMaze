@@ -1,18 +1,23 @@
 package com.mygdx.game.model;
 
-import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Polygon;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.mygdx.game.controller.LevelLoader;
-import com.mygdx.game.model.Block;
-import com.mygdx.game.model.Level;
-import com.mygdx.game.model.Player;
+import com.mygdx.game.model.environment.AnimalSpawn;
+import com.mygdx.game.model.environment.Tilled;
+import com.mygdx.game.model.environment.blocks.Block;
+import com.mygdx.game.model.environment.BloodStain;
+import com.mygdx.game.model.environment.AreaAffect;
+import com.mygdx.game.model.environment.SpawnPoint;
+import com.mygdx.game.model.moveable.AIPlayer;
+import com.mygdx.game.model.moveable.Animal;
+import com.mygdx.game.model.moveable.Projectile;
+import com.mygdx.game.model.moveable.Player;
 import com.mygdx.game.utils.JoyStick;
+import com.mygdx.game.utils.RecipeHolder;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -24,20 +29,27 @@ public class World {
     }
 
     private Player bob;
-    private List<Bullet> bullets = new ArrayList<>();
-    private List<Explosion> explosions = new ArrayList<>();
-    private List<AIPlayer> AIPlayers = new ArrayList<>();
+    private List<Projectile> projectiles = new ArrayList<>();
+    private List<AreaAffect> areaAffects = new ArrayList<>();
+    private final List<AIPlayer> AIPlayers = new ArrayList<>();
+    private final List<Animal> animals = new ArrayList<>();
     private List<BloodStain> bloodStains = new ArrayList<>();
+    private final List<Tilled> tilled = new ArrayList<>();
+    private List<Block> bodies = new ArrayList<>();
     private List<GameButton> buttons = new ArrayList<>();
     private Level level;
     private Array<Polygon> collisionRects = new Array<>();
     private LevelLoader levelLoader = new LevelLoader();
     private JoyStick moveJoystick, fireJoystick;
+    private RecipeHolder recipeHolder = new RecipeHolder();
+    private String time;
+    private boolean daytime = false;
+    private int minute = 0, hour = 2, day = 0;
 
     private Vector2 locateExplosion;
 
     public World() {
-        loadWorld(2);
+        loadWorld(1);
     }
 
     // Getters -----------
@@ -54,40 +66,52 @@ public class World {
         return level;
     }
 
-    public List<Bullet> getBullets() {
-        return bullets;
+    public List<Projectile> getProjectiles() {
+        return projectiles;
     }
 
-    public void setBullets(List<Bullet> bullets) {
-        this.bullets = bullets;
+    public void setProjectiles(List<Projectile> projectiles) {
+        this.projectiles = projectiles;
     }
 
-    public List<Explosion> getExplosions() {
-        return explosions;
+    public List<AreaAffect> getAreaAffects() {
+        return areaAffects;
     }
 
-    public void setExplosions(List<Explosion> explosions) {
-        this.explosions = explosions;
+    public void setAreaAffects(List<AreaAffect> areaAffects) {
+        this.areaAffects = areaAffects;
     }
 
     public List<BloodStain> getBloodStains() {
         return bloodStains;
     }
 
-    public void setBloodStains(List<BloodStain> bloodStains) {
-        this.bloodStains = bloodStains;
+    public List<Tilled> getTilled() {
+        return tilled;
+    }
+
+    public List<Block> getBodies() {
+        return bodies;
+    }
+
+    public void setBodies(List<Block> bodies) {
+        this.bodies = bodies;
     }
 
     public List<AIPlayer> getAIPlayers() {
         return AIPlayers;
     }
 
-    public void setAIPlayers(List<AIPlayer> AIPlayers) {
-        this.AIPlayers = AIPlayers;
+    public List<Animal> getAnimals() {
+        return animals;
     }
 
     public List<GameButton> getButtons() {
         return buttons;
+    }
+
+    public RecipeHolder getRecipeHolder() {
+        return recipeHolder;
     }
 
     public JoyStick getMoveJoystick() {
@@ -106,6 +130,43 @@ public class World {
         this.fireJoystick = fireJoystick;
     }
 
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public boolean isDaytime() {
+        return daytime;
+    }
+
+    public void setDaytime(boolean daytime) {
+        this.daytime = daytime;
+    }
+
+    public void increaseMinute() {
+        minute++;
+
+        if (minute == 60) {
+            hour++;
+            minute = 0;
+        }
+        if (hour == 24) {
+            day++;
+            hour = 0;
+        }
+
+        if (hour >= 4 && hour < 20) {
+            setDaytime(true);
+        } else {
+            setDaytime(false);
+        }
+
+        setTime((hour < 10 ? "0" : "") + hour + ":" + (minute < 10 ? "0" : "") + minute + " on day " + day + (!isDaytime() ? " ---NIGHTTIME!!!!----" : ""));
+    }
+
     // --------------------
 
     /** Return only the blocks that need to be drawn **/
@@ -118,7 +179,6 @@ public class World {
         if (y < 0) {
             y = 0;
         }
-
 
         int x2 = x + 2 * width;
         int y2 = y + 2 * height;
@@ -133,27 +193,29 @@ public class World {
         Block block;
         for (int col = x; col <= x2; col++) {
             for (int row = y; row <= y2; row++) {
-                block = level.get(col, row);
+                block = level.getBlock(col, row);
                 if (block != null) {
                     blocks.add(block);
                 }
             }
         }
+
         return blocks;
     }
 
     public void loadWorld(int number) {
         System.out.println("Loading level " + number);
         bloodStains.clear();
-        explosions.clear();
-        bullets.clear();
+        bodies.clear();
+        areaAffects.clear();
+        projectiles.clear();
         level = levelLoader.loadLevel(number);
-        Map<Integer, SpawnPoint> spawnPoints = level.getSpawnPoints();
+        Map<Integer, com.mygdx.game.model.environment.SpawnPoint> spawnPoints = level.getSpawnPoints();
         List<Integer> numbers = new ArrayList<>();
         Random rand = new Random();
         int rando = rand.nextInt(spawnPoints.size());
         SpawnPoint sp = spawnPoints.get(rando);
-        bob = new Player(new Vector2(sp.getPosition()), "player", 20);
+        bob = new Player(new Vector2(sp.getPosition()), "player", 30, recipeHolder);
         numbers.add(rando);
 
         for (int i = 0; i < spawnPoints.size() -1; i++) {
@@ -161,10 +223,13 @@ public class World {
                 rando = rand.nextInt(spawnPoints.size());
             }
             sp = spawnPoints.get(rando);
-            AIPlayers.add(new AIPlayer(new Vector2(sp.getPosition()), "ai-0" + i));
+            AIPlayers.add(new AIPlayer(new Vector2(sp.getPosition()), "ai-0" + i, recipeHolder));
             numbers.add(rando);
         }
-        buttons.add(new GameButton(new Vector2(12, 3), 0.5F, GameButton.Type.USE));
+        for (AnimalSpawn animalSpawn : getLevel().getAnimalSpawnPoints()) {
+            animals.add(animalSpawn.addAnimal(""));
+        }
+//        buttons.add(new GameButton(new Vector2(12, 3), 0.5F, GameButton.Type.USE));
     }
 
     public Vector2 getLocateExplosion() {

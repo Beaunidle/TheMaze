@@ -1,5 +1,8 @@
 package com.mygdx.game.model;
 
+import com.mygdx.game.model.moveable.AIPlayer;
+import com.mygdx.game.model.moveable.Player;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,7 +11,7 @@ public class ScoreBoard {
 
     private Map<String, PlayerScore> scores;
 
-    public ScoreBoard(Player player, List<AIPlayer> aiPlayers) {
+    public ScoreBoard(Player player, List<com.mygdx.game.model.moveable.AIPlayer> aiPlayers) {
         scores = new HashMap<>();
         scores.put(player.getName(), new PlayerScore(player.getName()));
         for (AIPlayer aiPlayer : aiPlayers) {

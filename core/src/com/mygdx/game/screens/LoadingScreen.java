@@ -63,7 +63,7 @@ public class LoadingScreen extends ScreenAdapter {
 
 
 
-        TextureAtlas atlas = new TextureAtlas(Gdx.files.internal("buttons/buttons.atlas"));
+        TextureAtlas atlas = new TextureAtlas(Gdx.files.internal("buttons.atlas"));
         Button startButton = new Button(new TextureRegionDrawable(atlas.findRegion("start")));
         Button exitButton = new Button(new TextureRegionDrawable(atlas.findRegion("exit")));
         //todo title button
