@@ -1,9 +1,11 @@
 package com.mygdx.game.model.environment.blocks;
 
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Timer;
 import com.mygdx.game.model.Inventory;
 import com.mygdx.game.model.Recipe;
+import com.mygdx.game.model.items.Consumable;
 import com.mygdx.game.model.items.Item;
 import com.mygdx.game.model.items.Material;
 import com.mygdx.game.utils.RecipeHolder;
@@ -12,15 +14,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
-public class FillableBlock extends Block{
+public class FillableBlock extends Block {
 
     public enum FillableType {
-        INVSCREEN,MAPSCREEN,CAMPFIRE,BENCHHEALER,STONEANVIL
+        INVSCREEN,MAPSCREEN,CAMPFIRE,BENCHHEALER,STONEANVIL,TORCH,CHEST,HOUSE,BODYANIMAL
     }
 
-    private final Inventory input;
-    private final Inventory output;
+    private Inventory input = new Inventory(0);
+    private Inventory output = new Inventory(0);
     private final FillableType fillableType;
     private Material materialToCook;
     private boolean active = false;
@@ -35,7 +38,6 @@ public class FillableBlock extends Block{
     private final List<Recipe> recipes = new ArrayList<>();
     private final List<Material> fuels = new ArrayList<>();
     private final RecipeHolder recipeHolder;
-    private String name;
 
     private void startActiveTimer(float interval) {
         activeTimerOn = true;
@@ -47,27 +49,28 @@ public class FillableBlock extends Block{
         activeTimer.cancel();
     }
 
-    public FillableBlock(Vector2 pos, double maxDurability, FillableType type, float blockSize, int rotation, RecipeHolder recipeHolder) {
-        super(pos, maxDurability, blockSize, rotation);
+    public FillableBlock(Vector2 pos, double maxDurability, FillableType type, float width, float height, int rotation, RecipeHolder recipeHolder, String name) {
+        super(pos, maxDurability, width, height, rotation, name);
+        setBlockType(BlockType.FILLABLE);
         this.fillableType = type;
-        this.input = new Inventory(6);
-        this.output = new Inventory(6);
         this.recipeHolder = recipeHolder;
         setBlockType(Block.BlockType.FILLABLE);
 
         recipes.addAll(recipeHolder.getRecipes(type));
         switch (type) {
             case CAMPFIRE:
+                this.input = new Inventory(6);
+                this.output = new Inventory(6);
                 recipeSelect = false;
-                name = "fire";
                 break;
             case BENCHHEALER:
-                recipeSelect = true;
-                name = "bench-healer";
-                break;
             case STONEANVIL:
                 recipeSelect = true;
-                name = "bench-stone";
+                break;
+            case TORCH:
+                break;
+            case CHEST:
+                this.input = new Inventory(20);
                 break;
         }
     }
@@ -102,16 +105,18 @@ public class FillableBlock extends Block{
 
     public void toggleActive(){
         //todo hard code possible fuels, check for them all
-        if (input.checkMaterial(new Material(Material.Type.WOOD, 1))) {
+        if (input.checkMaterial(new Material(Material.Type.WOOD, 1)) || fillableType.equals(FillableType.TORCH)) {
             active = !active;
         }
         else {
             active = false;
         }
-        if (active && !activeTimerOn) {
-            startActiveTimer(5);
-        } else {
-            stopActiveTimer();
+        if (!fillableType.equals(FillableType.TORCH)) {
+            if (active && !activeTimerOn) {
+                startActiveTimer(5);
+            } else {
+                stopActiveTimer();
+            }
         }
     }
 
@@ -133,7 +138,11 @@ public class FillableBlock extends Block{
                     }
                 }
                 if (enoughIngredients) {
-                    materialToCook = new Material(recipe.getMaterialType(), 1);
+                    if (recipe.getConsumableType() != null) {
+                        materialToCook = new Consumable(recipe.getConsumableType(), 1);
+                    } else {
+                        materialToCook = new Material(recipe.getMaterialType(), 1);
+                    }
                     for (Material required : recipe.getRequirements()) {
                         input.removeMaterial(required);
                     }
@@ -155,6 +164,15 @@ public class FillableBlock extends Block{
     }
 
     public String getName() {
-        return name;
+        StringBuilder fillableName = new StringBuilder();
+        fillableName.append(super.getName());
+        if (getFillableType().equals(FillableBlock.FillableType.CAMPFIRE)) {
+            if (isActive()) fillableName.append("-burning");
+        } else if (getFillableType().equals(FillableBlock.FillableType.TORCH)) {
+            Random rand = new Random();
+            int myNum = rand.nextInt(4) + 1;
+            if (isActive()) fillableName.append("-burning-0").append(myNum);
+        }
+        return fillableName.toString();
     }
 }

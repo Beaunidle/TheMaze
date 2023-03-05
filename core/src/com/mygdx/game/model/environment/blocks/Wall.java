@@ -2,8 +2,11 @@ package com.mygdx.game.model.environment.blocks;
 
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.model.items.Material;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Wall extends Block{
@@ -14,6 +17,7 @@ public class Wall extends Block{
 
     public Wall(Vector2 pos, int rotation, float width, float height, boolean door) {
         super(pos, 20);
+        setBlockType(BlockType.WALL);
         walls = new HashMap<>();
         walls.put(90f, null);
         walls.put(180f, null);
@@ -44,9 +48,9 @@ public class Wall extends Block{
         walls.put(rotation, new WallType(door, polygon));
     }
 
-    public int hit() {
+    public List<Material> hit() {
         if (getDurability() > 0) decreaseDurability(1);
-        return 0;
+        return new ArrayList<>();
 
     }
 
@@ -100,6 +104,18 @@ public class Wall extends Block{
 
         public void toggleOpen() {
             open = !open;
+        }
+
+        public String getName() {
+            if (isDoor()) {
+                if (isOpen()) {
+                    return "doorOpen";
+                } else {
+                    return "door";
+                }
+            } else {
+                return "wall";
+            }
         }
     }
 

@@ -3,16 +3,20 @@ package com.mygdx.game.model.environment.blocks;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.model.GameObject;
+import com.mygdx.game.model.items.Material;
+import com.mygdx.game.model.items.Swingable;
 
-public class Block {
+import java.util.ArrayList;
+import java.util.List;
+
+public class Block extends GameObject {
 
     public enum BlockType {
-        ENVIRONMENT,FILLABLE,GROWER,TILLED,WALL,BED
+        ENVIRONMENT,FILLABLE,GROWER,TILLED,WALL,BED,EXPLODABLE
     }
     static final float SIZE = 1f;
 
-    private Vector2 position = new Vector2();
-    private Polygon bounds = new Polygon();
     private double durability;
     private double maxDurability;
     private boolean colibible = true;
@@ -22,47 +26,33 @@ public class Block {
         return SIZE;
     }
 
-    public Block(Vector2 pos) {
-        this.position = pos;
-        this.bounds = new Polygon(new float[]{0, 0, SIZE, SIZE, 0, SIZE, SIZE, 0});
-        this.bounds.setPosition(pos.x, pos.y);
+    public Block(Vector2 pos, String name) {
+        super(name, pos, new Polygon(new float[]{0, 0, SIZE, SIZE, 0, SIZE, SIZE, 0}));
         this.maxDurability = 100;
         this.durability = maxDurability;
     }
 
     public Block(Vector2 pos, double maxDurability) {
-        this.position = pos;
-        this.bounds = new Polygon(new float[]{0, 0, 0, SIZE, SIZE, SIZE, SIZE, 0});
-        this.bounds.setPosition(pos.x, pos.y);
+        super("", pos, new Polygon(new float[]{0, 0, SIZE, SIZE, 0, SIZE, SIZE, 0}));
         this.maxDurability = maxDurability;
         this.durability = maxDurability;
     }
 
-    public Block(Vector2 pos, double maxDurability, float size, int rotation) {
-        this.position = pos;
-        if (size == 1) {
-            this.bounds = new Polygon(new float[]{0, 0, 0, SIZE, size, SIZE, size, 0});
-        } else if (size == 2) {
-            this.bounds = new Polygon(new float[]{0, 0, 0, SIZE, size, SIZE, size, 0});
-            this.bounds.setOrigin(SIZE/2, SIZE/2);
-            this.bounds.setRotation(rotation);
-        }
-        this.bounds.setPosition(pos.x, pos.y);
+    public Block(Vector2 pos, double maxDurability, float width, float height, int rotation, String name) {
+        super(name, pos, new Polygon((new float[]{0, 0, width, 0, width, height, 0, height})));
+        getBounds().setOrigin(SIZE/2, SIZE/2);
+        getBounds().setRotation(rotation);
         this.maxDurability = maxDurability;
         this.durability = maxDurability;
     }
 
     //for beds
     public Block(Vector2 pos, double maxDurability, float size, int rotation, BlockType blockType) {
-        this.position = pos;
-        if (size == 1) {
-            this.bounds = new Polygon(new float[]{0, 0, 0, SIZE, size, SIZE, size, 0});
-        } else if (size == 2) {
-            this.bounds = new Polygon(new float[]{0, 0, 0, SIZE, size, SIZE, size, 0});
-            this.bounds.setOrigin(SIZE/2, SIZE/2);
-            this.bounds.setRotation(rotation);
+        super("bed", pos, new Polygon(new float[]{0, 0, 0, SIZE, size, SIZE, size, 0}));
+        if (size == 2) {
+            getBounds().setOrigin(SIZE/2, SIZE/2);
+            getBounds().setRotation(rotation);
         }
-        this.bounds.setPosition(pos.x, pos.y);
         this.maxDurability = maxDurability;
         this.durability = maxDurability;
         this.blockType = blockType;
@@ -70,24 +60,10 @@ public class Block {
     }
 
     public Block(Vector2 pos, double maxDurability, float width, float height) {
-        this.position = pos;
-        this.bounds = new Polygon(new float[]{0, 0, width, height, 0, width, height, 0});
-        this.bounds.setPosition(pos.x, pos.y);
+        super("", pos, new Polygon(new float[]{0, 0, SIZE, SIZE, 0, SIZE, SIZE, 0}));
         this.maxDurability = maxDurability;
         this.durability = maxDurability;
 
-    }
-
-    public Vector2 getPosition() {
-        return position;
-    }
-
-    public Polygon getBounds() {
-        return bounds;
-    }
-
-    public void setBounds(Polygon bounds) {
-        this.bounds = bounds;
     }
 
     public double getDurability() {
@@ -106,29 +82,27 @@ public class Block {
         this.maxDurability = maxDurability;
     }
 
-    public int hit() {
+    public List<Material> hit(Swingable swingable) {
         //do nothing
-        return 0;
+        return new ArrayList<>();
     }
 
-    public boolean decreaseDurability(double hit) {
-        if (durability <= 0) return false;
+    public void decreaseDurability(double hit) {
+        if (durability <= 0) return;
 
         durability = durability - hit;
         if (durability < 0) {
             durability = 0;
         }
-        return true;
     }
 
-    public boolean increaseDurability(double hit) {
-        if (durability >= maxDurability) return false;
+    public void increaseDurability(double hit) {
+        if (durability >= maxDurability) return;
 
         durability = durability + hit;
         if (durability > maxDurability) {
             durability = maxDurability;
         }
-        return true;
     }
 
     public boolean isColibible() {

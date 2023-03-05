@@ -9,19 +9,11 @@ import java.util.List;
 
 public class Irrigation extends Block {
 
-    private final String name;
-
     public Irrigation(Vector2 position, String name, float rotation) {
-        super(position);
-        this.name = name;
+        super(position, name);
         setColibible(false);
         getBounds().setRotation(rotation);
-
-
     }
 
-    public String getName() {
-        return name;
-    }
 
 }

@@ -5,15 +5,14 @@ import com.mygdx.game.model.environment.blocks.Block;
 
 public class Tilled extends Block {
 
-    String name;
 
     public Tilled(Vector2 position, String name) {
-        super(position);
-        this.name = name;
+        super(position, name);
+        setBlockType(BlockType.TILLED);
         setColibible(false);
     }
 
     public String getName() {
-        return name;
+        return super.getName();
     }
 }

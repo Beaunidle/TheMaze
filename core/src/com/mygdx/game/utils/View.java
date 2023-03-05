@@ -6,6 +6,7 @@ import com.mygdx.game.model.pads.FloorPad;
 import com.mygdx.game.model.moveable.Player;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class View {
@@ -32,6 +33,11 @@ public class View {
         return blockingWall;
     }
 
+    public Block[] getFreshBlockingWall() {
+        Arrays.fill(blockingWall, null);
+        return blockingWall;
+    }
+
     public void setBlockingWall(Block[] blockingWall) {
         this.blockingWall = blockingWall;
     }
@@ -52,6 +58,7 @@ public class View {
         System.out.println("Printing new View");
         for (Block[] block : blocks) {
             for (Block b : block) {
+                if (b == null)System.out.println("BLOCK NULL");
                 if (b != null)System.out.println("BLOCK," + (int)Math.floor(b.getPosition().x) + "," + (int)Math.floor(b.getPosition().y));
             }
         }

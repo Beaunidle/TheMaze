@@ -12,8 +12,8 @@ public class BoostPad extends Pad {
     private Timer.Task chargeTimer;
 
 
-    public BoostPad(Vector2 position) {
-        super(position);
+    public BoostPad(String name, Vector2 position) {
+        super(name, position);
         chargeTimer = new Timer.Task() {
             @Override
             public void run() {
@@ -57,6 +57,21 @@ public class BoostPad extends Pad {
             case 3:
                 boost = Player.Boost.DAMAGE;
                 break;
+        }
+    }
+
+    public String getName() {
+        switch (getBoost()) {
+            case HOMING:
+                return "homingBoost";
+            case SPEED:
+                return "speedBoost";
+            case DAMAGE:
+                return "damageBoost";
+            case SHIELD:
+                return "shieldBoost";
+            default:
+                return "";
         }
     }
 }

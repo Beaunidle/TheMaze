@@ -12,67 +12,13 @@ import java.util.Random;
 
 public class AIPlayer extends Player {
 
-    public enum Intent {
-        SEARCHING, HOMING, KILLING, FLEEING
-    }
-
-    private Intent intent = Intent.SEARCHING;
     private Random rand = new Random();
-    private Player targetPlayer;
     private String ignore;
-    private Vector2 target;
     private final PlayerAi ai;
 
     public AIPlayer(Vector2 position, String name, RecipeHolder recipeHolder) {
         super(position, name, 30, recipeHolder);
         ai = new PlayerAi();
-//        switch ((int)Math.floor(Math.random() * Math.floor(4))) {
-//            case 0:
-//                this.getGun().setType(Gun.Type.PISTOL);
-//                break;
-//            case 1:
-//                this.getGun().setType(Gun.Type.SMG);
-//                break;
-//            case 2:
-//                this.getGun().setType(Gun.Type.SHOTGUN);
-//                break;
-//            case 3:
-//                this.getGun().setType(Gun.Type.ROCKET);
-//                break;
-//        }
-//        this.getGun().setType(Gun.Type.PISTOL);
-    }
-
-    private void switchIntent() {
-        if (intent.equals(Intent.SEARCHING)) {
-            intent = Intent.KILLING;
-        } else if (intent.equals(Intent.KILLING)) {
-            intent = Intent.SEARCHING;
-        }
-    }
-
-    public Intent getIntent() {
-        return intent;
-    }
-
-    public void setIntent(Intent intent) {
-        this.intent = intent;
-    }
-
-    public Vector2 getTarget() {
-        return target;
-    }
-
-    public com.mygdx.game.model.moveable.Player getTargetPlayer() {
-        return targetPlayer;
-    }
-
-    public void setTargetPlayer(com.mygdx.game.model.moveable.Player targetPlayer) {
-        this.targetPlayer = targetPlayer;
-    }
-
-    public void setTarget(Vector2 target) {
-        this.target = target;
     }
 
     public String getIgnore() {
@@ -94,14 +40,14 @@ public class AIPlayer extends Player {
             }
         }
         if (players.isEmpty()) {
-            targetPlayer = null;
-            target = null;
+            setTargetSprite(null);
+            setTarget(null);
             getView().setBlockingWall(new Block[3]);
         } else {
-            if (targetPlayer == null || rand.nextInt(1000) > 999)  {
-                targetPlayer =  players.get(rand.nextInt(players.size()));
+            if (getTargetSprite() == null || rand.nextInt(1000) > 999)  {
+                setTargetSprite(players.get(rand.nextInt(players.size())));
             }
-            target = targetPlayer.getCentrePosition();
+            setTarget(getTargetSprite().getCentrePosition());
         }
     }
 

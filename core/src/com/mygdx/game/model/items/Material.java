@@ -3,15 +3,19 @@ package com.mygdx.game.model.items;
 public class Material {
 
     public enum Type {
-        COAL, STONE, WOOD, ITEM, MEAT, FOOD, BERRYPASTE, GRASS, STICK, PEBBLE
+        COAL, STONE, WOOD, ITEM, MEAT, CONSUMABLE, GRASS, STICK, COPPER, FLINT, BONE, SCAPULA,BONEFRAGMENT
     }
 
     private String name;
     private Type type;
-    private int maxPerStack = 100;
+    private int maxPerStack;
     private int quantity;
+    private float baseDamage;
+    private float baseDurability;
     private float useTime;
     private float useDelay;
+    private boolean mineable;
+    private boolean mineableByHand;
     private boolean holdable;
     private boolean plantable;
 
@@ -26,6 +30,10 @@ public class Material {
         this.quantity = material.getQuantity();
         this.useTime = 0.25F;
         this.useDelay = 0.25F;
+        this.holdable = material.isHoldable();
+        this.plantable = material.isPlantable();
+        this.baseDamage = material.getBaseDamage();
+        this.baseDurability = material.getBaseDurability();
     }
 
     public Material(Type type, int quantity) {
@@ -33,22 +41,27 @@ public class Material {
         this.quantity = quantity;
         useTime = 0.25F;
         useDelay = 0.25F;
+        maxPerStack = 100;
+        baseDamage = 0;
+        baseDurability = 0;
         switch (type) {
             case COAL:
                 name = "coal";
+                mineable = true;
                 break;
             case STONE:
                 name = "stone";
+                mineable = true;
                 break;
             case WOOD:
                 name = "wood";
+                mineable = true;
+                mineableByHand = true;
                 break;
             case MEAT:
                 name = "meat";
-                break;
-            case BERRYPASTE:
-                name = "berrypaste";
-                holdable = true;
+                mineable = true;
+                mineableByHand = true;
                 break;
             case GRASS:
                 name = "grass";
@@ -56,10 +69,28 @@ public class Material {
             case STICK:
                 name = "stick";
                 break;
-            case PEBBLE:
-                name = "pebble";
-                holdable = true;
+            case SCAPULA:
+                name = "scapula";
                 break;
+            case COPPER:
+                name = "copper";
+                baseDamage = 3;
+                baseDurability = 1;
+                break;
+            case FLINT:
+                name = "flint";
+                baseDamage = 2;
+                baseDurability = 2;
+                break;
+            case BONE:
+                name = "bone";
+                baseDamage =  3;
+                baseDurability = 5;
+                break;
+            case BONEFRAGMENT:
+                setName("fragment_bone");
+                setHoldable(false);
+                setMaxPerStack(10);
         }
     }
     public String getName() {
@@ -110,6 +141,14 @@ public class Material {
         this.useTime = useTime;
     }
 
+    public boolean isMineable() {
+        return mineable;
+    }
+
+    public boolean isMineableByHand() {
+        return mineableByHand;
+    }
+
     public boolean isPlantable() {
         return plantable;
     }
@@ -124,5 +163,21 @@ public class Material {
 
     public void setHoldable(boolean holdable) {
         this.holdable = holdable;
+    }
+
+    public float getBaseDamage() {
+        return baseDamage;
+    }
+
+    public void setBaseDamage(float baseDamage) {
+        this.baseDamage = baseDamage;
+    }
+
+    public float getBaseDurability() {
+        return baseDurability;
+    }
+
+    public void setBaseDurability(float baseDurability) {
+        this.baseDurability = baseDurability;
     }
 }

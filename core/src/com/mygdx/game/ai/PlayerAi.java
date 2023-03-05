@@ -2,6 +2,7 @@ package com.mygdx.game.ai;
 
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.model.items.Item;
+import com.mygdx.game.model.items.Swingable;
 import com.mygdx.game.model.moveable.AIPlayer;
 import com.mygdx.game.model.moveable.Projectile;
 import com.mygdx.game.model.moveable.Player;
@@ -27,8 +28,10 @@ public class PlayerAi extends BaseAi{
                     if (dst > 1) {
                         sprite.moveForward();
                     } else {
-                        if (sprite.getStrongHand() != null && ((Item)sprite.getStrongHand()).getItemType().equals(Item.ItemType.SWORD)) {
-                            sprite.setIntent(AIPlayer.Intent.KILLING);
+                        if (sprite.getStrongHand() != null) {
+                            if (sprite.getStrongHand() instanceof Swingable && ((Swingable) sprite.getStrongHand()).getSwingableType().equals(Swingable.SwingableType.SWORD)) {
+                                sprite.setIntent(AIPlayer.Intent.KILLING);
+                            }
                         }
                         sprite.stop();
                     }
@@ -42,10 +45,16 @@ public class PlayerAi extends BaseAi{
                 }
 
                 if (locator.locate(deg, sprite.getRotation()) < 0) {
-                    sprite.rotateAntiClockwise(delta);
+//                    sprite.rotateAntiClockwise(delta);
+                    sprite.setTurningAntiClockwise(true);
+                    sprite.setTurningClcokwise(false);
                 } else if (locator.locate(deg, sprite.getRotation()) > 0) {
-                    sprite.rotateClockwise(delta);
+//                    sprite.rotateClockwise(delta);
+                    s.setTurningAntiClockwise(false);
+                    s.setTurningClcokwise(true);
                 } else {
+                    s.setTurningAntiClockwise(false);
+                    s.setTurningClcokwise(false);
                     sprite.stop();
                 }
             } else {
@@ -77,8 +86,18 @@ public class PlayerAi extends BaseAi{
             }
 
             random = rand.nextInt(1000);
-            if (random >= 980 && random < 990) sprite.rotateClockwise(delta);
-            if (random >= 990) sprite.rotateAntiClockwise(delta);
+            if (random >= 980 && random < 990) {
+//                sprite.rotateClockwise(delta);
+                sprite.setTurningAntiClockwise(true);
+                sprite.setTurningClcokwise(false);
+            } else if (random >= 990) {
+//                sprite.rotateAntiClockwise(delta);
+                sprite.setTurningAntiClockwise(false);
+                sprite.setTurningClcokwise(true);
+            } else {
+                sprite.setTurningAntiClockwise(false);
+                sprite.setTurningClcokwise(false);
+            }
         }
 //        bullets.removeAll(bullets);
         return projectiles;

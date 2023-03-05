@@ -10,14 +10,17 @@ import com.mygdx.game.model.environment.blocks.Block;
 import com.mygdx.game.model.environment.BloodStain;
 import com.mygdx.game.model.environment.AreaAffect;
 import com.mygdx.game.model.environment.SpawnPoint;
+import com.mygdx.game.model.environment.blocks.EnvironmentBlock;
 import com.mygdx.game.model.moveable.AIPlayer;
 import com.mygdx.game.model.moveable.Animal;
 import com.mygdx.game.model.moveable.Projectile;
 import com.mygdx.game.model.moveable.Player;
+import com.mygdx.game.model.moveable.Sprite;
 import com.mygdx.game.utils.JoyStick;
 import com.mygdx.game.utils.RecipeHolder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -33,18 +36,20 @@ public class World {
     private List<AreaAffect> areaAffects = new ArrayList<>();
     private final List<AIPlayer> AIPlayers = new ArrayList<>();
     private final List<Animal> animals = new ArrayList<>();
-    private List<BloodStain> bloodStains = new ArrayList<>();
+    private final List<BloodStain> bloodStains = new ArrayList<>();
     private final List<Tilled> tilled = new ArrayList<>();
-    private List<Block> bodies = new ArrayList<>();
-    private List<GameButton> buttons = new ArrayList<>();
+    private List<EnvironmentBlock> bodies = new ArrayList<>();
+    private final List<GameButton> buttons = new ArrayList<>();
     private Level level;
-    private Array<Polygon> collisionRects = new Array<>();
-    private LevelLoader levelLoader = new LevelLoader();
+    private final Array<Polygon> collisionRects = new Array<>();
+    private final Map<Sprite, Polygon> movementRects = new HashMap<>();
+    private final LevelLoader levelLoader = new LevelLoader();
     private JoyStick moveJoystick, fireJoystick;
-    private RecipeHolder recipeHolder = new RecipeHolder();
+    private final RecipeHolder recipeHolder = new RecipeHolder();
     private String time;
-    private boolean daytime = false;
-    private int minute = 0, hour = 2, day = 0;
+    private boolean nightTime = false;
+    private boolean duskTillDawn = false;
+    private int minute = 0, hour = 10, day = 0;
 
     private Vector2 locateExplosion;
 
@@ -56,6 +61,10 @@ public class World {
 
     public Array<Polygon> getCollisionRects() {
         return collisionRects;
+    }
+
+    public Map<Sprite, Polygon> getMovementRects() {
+        return movementRects;
     }
 
     public Player getBob() {
@@ -90,11 +99,11 @@ public class World {
         return tilled;
     }
 
-    public List<Block> getBodies() {
+    public List<EnvironmentBlock> getBodies() {
         return bodies;
     }
 
-    public void setBodies(List<Block> bodies) {
+    public void setBodies(List<EnvironmentBlock> bodies) {
         this.bodies = bodies;
     }
 
@@ -138,17 +147,24 @@ public class World {
         this.time = time;
     }
 
-    public boolean isDaytime() {
-        return daytime;
+    public boolean isNightTime() {
+        return nightTime;
     }
 
-    public void setDaytime(boolean daytime) {
-        this.daytime = daytime;
+    public void setNightTime(boolean nightTime) {
+        this.nightTime = nightTime;
+    }
+
+    public boolean isDuskTillDawn() {
+        return duskTillDawn;
+    }
+
+    public void setDuskTillDawn(boolean duskTillDawn) {
+        this.duskTillDawn = duskTillDawn;
     }
 
     public void increaseMinute() {
         minute++;
-
         if (minute == 60) {
             hour++;
             minute = 0;
@@ -158,13 +174,18 @@ public class World {
             hour = 0;
         }
 
-        if (hour >= 4 && hour < 20) {
-            setDaytime(true);
+        if ((hour == 5) || (hour == 20)) {
+            setDuskTillDawn(true);
+            setNightTime(false);
+        } else if (hour <= 4 || hour >= 21) {
+            setNightTime(true);
+            setDuskTillDawn(false);
         } else {
-            setDaytime(false);
+            setNightTime(false);
+            setDuskTillDawn(false);
         }
 
-        setTime((hour < 10 ? "0" : "") + hour + ":" + (minute < 10 ? "0" : "") + minute + " on day " + day + (!isDaytime() ? " ---NIGHTTIME!!!!----" : ""));
+        setTime((hour < 10 ? "0" : "") + hour + ":" + (minute < 10 ? "0" : "") + minute + " on day " + day);
     }
 
     // --------------------
@@ -227,7 +248,10 @@ public class World {
             numbers.add(rando);
         }
         for (AnimalSpawn animalSpawn : getLevel().getAnimalSpawnPoints()) {
-            animals.add(animalSpawn.addAnimal(""));
+            Animal animal = animalSpawn.addAnimal();
+            Vector2 pos = animal.getPosition();
+            if (pos.x <= 0 || pos.x >= level.getWidth() || pos.y <= 0 || pos.y >= level.getHeight()) animal.die();
+            else animals.add(animal);
         }
 //        buttons.add(new GameButton(new Vector2(12, 3), 0.5F, GameButton.Type.USE));
     }

@@ -93,29 +93,33 @@ public class Locator {
         return  deg;
     }
 
-    public Vector2 wallInbetween(Player player, Vector2 target) {
+    public Vector2 wallInbetween(Sprite player, Vector2 target) {
 
         if (target == null) return null;
         Vector2 position = player.getCentrePosition();
         View view = player.getView();
         Block[][] blocks = view.getBlocks();
-        Block[] block = view.getBlockingWall();
-        block[0] = null;
-        block[1] = null;
-        block[2] = null;
+        Block[] block = view.getFreshBlockingWall();
+
         float dst = target.dst(position);
+        if (dst <= 1) return null;
         Vector2 distance = new Vector2(target).sub(position);
         float angle = getAngle(distance);
 
+        int xCentre = blocks.length/2;
+        int yCentre = blocks[0].length/2;
         if (angle < 45 || angle >= 315) {
             //to the right
-            for (int j = 8; j <= 11; j++) {
-                block[0] = blocks[j][3];
-                block[1] = blocks[j][4];
-                block[2] = blocks[j][5];
+            for (int j = xCentre; j <= xCentre + 4; j++) {
+                block[0] = blocks[j][yCentre -1];
+                block[1] = blocks[j][yCentre];
+                block[2] = blocks[j][yCentre + 1];
+                for (int i = 0; i < block.length; i++) {
+                    if (block[i] != null && !block[i].isColibible()) block[i] = null;
+                }
                 view.setBlockingWall(block);
                 if (block[1] != null) {
-                    System.out.println("Block distance: " + target.dst(block[1].getPosition()));
+//                    System.out.println("Block distance: " + target.dst(block[1].getPosition()));
                     for (int i = 3; i >= 0; i--) {
                         if (blocks[j][i] == null) {
                             if (j == 8 && blocks[7][3] != null) return null;
@@ -136,10 +140,13 @@ public class Locator {
             }
         } else if (angle >= 135 && angle < 225) {
             //to the left
-            for (int j = 7; j >= 4; j--) {
-                block[0] = blocks[j][3];
-                block[1] = blocks[j][4];
-                block[2] = blocks[j][5];
+            for (int j = xCentre; j >= xCentre - 4; j--) {
+                block[0] = blocks[j][yCentre - 1];
+                block[1] = blocks[j][yCentre];
+                block[2] = blocks[j][yCentre + 1];
+                for (int i = 0; i < block.length; i++) {
+                    if (block[i] != null && !block[i].isColibible()) block[i] = null;
+                }
                 view.setBlockingWall(block);
                 if (block[1] != null) {
                     for (int i = 3; i >= 0; i--) {
@@ -155,53 +162,64 @@ public class Locator {
                         }
                     }
                     if (j == 7) return null;
-                } else {
-                    if (block[0] != null) return new Vector2(position.x - 3 , position.y - 1);
-                    else if (block[2] != null) return new Vector2(position.x - 3 , position.y + 1);
                 }
+//                else {
+//                    if (block[0] != null) return new Vector2(position.x - 3 , position.y - 1);
+//                    else if (block[2] != null) return new Vector2(position.x - 3 , position.y + 1);
+//                }
             }
         } else if (angle >= 45 && angle < 135) {
             //up
-            for (int j = 5; j <= 7; j++) {
-                block[0] = blocks[7][j];
-                block[1] = blocks[8][j];
-                block[2] = blocks[9][j];
+            for (int j = yCentre; j <= yCentre + 4; j++) {
+                block[0] = blocks[xCentre - 1][j];
+                block[1] = blocks[xCentre][j];
+                block[2] = blocks[xCentre + 1][j];
+                for (int i = 0; i < block.length; i++) {
+                    if (block[i] != null && !block[i].isColibible()) block[i] = null;
+                }
                 view.setBlockingWall(block);
                 if (block[1] != null) {
                     for (int i = 3; i >= 0; i--) {
-                        if (blocks[j][i] == null) return new Vector2(position.x - 1 , position.y + 3);
+                        if (blocks[j][i] == null) return new Vector2(position.x - 1.5F, position.y + 3);
                     }
                     for (int i = 5; i < 8; i++) {
-                        if (blocks[j][i] == null) return new Vector2(position.x + 1, position.y + 3);
+                        if (blocks[j][i] == null) return new Vector2(position.x + 1.5F, position.y + 3);
                     }
                     if ( j == 7) return null;
                 } else {
-                    if (block[0] != null) return new Vector2(position.x + 1 , position.y + 3);
-                    else if (block[2] != null) return new Vector2(position.x - 1 , position.y + 3);
+                    if (block[0] != null) return new Vector2(position.x + 1.5F , position.y + 3);
+                    else if (block[2] != null) return new Vector2(position.x - 1.5F , position.y + 3);
                 }
             }
         } else if (angle >= 225 && angle < 315) {
             //down
-            for (int j = 4; j >= 2; j--) {
-                block[0] = blocks[7][j];
-                block[1] = blocks[8][j];
-                block[2] = blocks[9][j];
+            for (int j = yCentre; j >= yCentre - 4; j--) {
+                block[0] = blocks[xCentre - 1][j];
+                block[1] = blocks[xCentre][j];
+                block[2] = blocks[xCentre + 1][j];
+                for (int i = 0; i < block.length; i++) {
+                    if (block[i] != null && !block[i].isColibible()) block[i] = null;
+                }
                 view.setBlockingWall(block);
                 if (block[1] != null) {
                     for (int i = 3; i >= 0; i--) {
-                        if (blocks[j][i] == null) return new Vector2(position.x - 1 , position.y - 3);
+                        if (blocks[j][i] == null) return new Vector2(position.x - 1.5F , position.y - 3);
                     }
                     for (int i = 5; i < 8; i++) {
-                        if (blocks[j][i] == null) return new Vector2(position.x + 1, position.y - 3);
+                        if (blocks[j][i] == null) return new Vector2(position.x + 1.5F, position.y - 3);
                     }
                     if (j == 2) return null;
                 } else {
-                    if (block[0] != null) return new Vector2(position.x + 1 , position.y - 3);
-                    else if (block[2] != null) return new Vector2(position.x - 1 , position.y - 3);
+                    if (block[0] != null) return new Vector2(position.x + 1.5F , position.y - 3);
+                    else if (block[2] != null) return new Vector2(position.x - 1.5F , position.y - 3);
                 }
             }
         }
         return target;
+    }
+
+    private Block[] checkBlocksAreBlocking(Block[] blocks) {
+        return blocks;
     }
 
     public boolean wallInbetweenExplosion(Sprite player, Vector2 explosion) {

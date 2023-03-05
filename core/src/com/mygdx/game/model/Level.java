@@ -15,6 +15,7 @@ import com.mygdx.game.model.items.Ranged;
 import com.mygdx.game.model.pads.BoostPad;
 import com.mygdx.game.model.pads.FloorPad;
 import com.mygdx.game.model.pads.GunPad;
+import com.mygdx.game.model.pads.Pad;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ public class Level {
 
     private int width =  300;
     private int height = 300;
-    private Block[][] blocks;
+    private GameObject[][] blocks;
     private List<Block> environmentBlocks = new ArrayList<>();
     private final List<ExplodableBlock> explodableBlocks = new ArrayList<>();
     private final List<GunPad> gunPads = new ArrayList<>();
@@ -53,11 +54,11 @@ public class Level {
         this.height = height;
     }
 
-    public Block[][] getBlocks() {
+    public GameObject[][] getBlocks() {
         return blocks;
     }
 
-    public void setBlocks(Block[][] blocks) {
+    public void setBlocks(GameObject[][] blocks) {
         this.blocks = blocks;
     }
 
@@ -71,7 +72,7 @@ public class Level {
     }
 
     public Level() {
-        blocks = new Block[width][height];
+        blocks = new GameObject[width][height];
         for (int col = 0; col < width; col++) {
             for (int row = 0; row < height; row++) {
                 blocks[col][row] = null;
@@ -81,7 +82,14 @@ public class Level {
 
     public Block getBlock(int x, int y) {
         if (x > 0 && x < width && y > 0 && y < height) {
-            return blocks[x][y];
+            if (blocks[x][y] != null && blocks[x][y] instanceof Block) return (Block)blocks[x][y];
+        }
+        return null;
+    }
+
+    public FloorPad getPad(int x, int y) {
+        if (x > 0 && x < width && y > 0 && y < height) {
+            if (blocks[x][y] != null && blocks[x][y] instanceof FloorPad) return (FloorPad) blocks[x][y];
         }
         return null;
     }
@@ -121,7 +129,7 @@ public class Level {
     private void loadDemoLevel() {
         width = 100;
         height = 100;
-        blocks = new Block[width][height];
+        blocks = new GameObject[width][height];
         for (int col = 0; col < width; col++) {
             for (int row = 0; row < height; row++) {
                 blocks[col][row] = null;
@@ -129,10 +137,10 @@ public class Level {
         }
 
         for (int col = 10; col <= 50; col++) {
-            blocks[col][10] = new Block(new Vector2(col, 10));
-            blocks[10][col] = new Block(new Vector2(10, col));
-            blocks[col][50] = new Block(new Vector2(col, 50));
-            blocks[50][col] = new Block(new Vector2(50, col));
+            blocks[col][10] = new Block(new Vector2(col, 10), "block");
+            blocks[10][col] = new Block(new Vector2(10, col), "block");
+            blocks[col][50] = new Block(new Vector2(col, 50), "block");
+            blocks[50][col] = new Block(new Vector2(50, col), "block");
         }
         ExplodableBlock eb = new ExplodableBlock(new Vector2(24, 12));
         blocks[24][12] = eb;

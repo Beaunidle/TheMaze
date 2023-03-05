@@ -99,7 +99,7 @@ public class Projectile extends Material {
                 speed = 1F;
                 momentum = 1;
                 rotationSpeed = 1;
-                setName("none");
+                setName(null);
         }
         if (isHoming()) {
             homingTimer =  new Timer.Task() {

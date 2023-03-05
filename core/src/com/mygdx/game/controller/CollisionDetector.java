@@ -1,12 +1,12 @@
 package com.mygdx.game.controller;
 
+import static com.mygdx.game.model.environment.AreaAffect.AffectType.DAMAGE;
 import static com.mygdx.game.model.environment.AreaAffect.AffectType.EXPLOSION;
 
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.mygdx.game.model.environment.blocks.EnvironmentBlock;
 import com.mygdx.game.model.environment.blocks.Wall;
 import com.mygdx.game.model.moveable.AIPlayer;
 import com.mygdx.game.model.environment.blocks.Block;
@@ -23,6 +23,7 @@ import com.mygdx.game.model.World;
 import com.mygdx.game.utils.Locator;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 class CollisionDetector {
 
@@ -31,6 +32,7 @@ class CollisionDetector {
     private final List<AIPlayer> aiPlayers;
 
     private final Array<Block> collidable = new Array<>();
+    private final Array<Sprite> collidableSprites = new Array<>();
     private final Locator locator = new Locator();
 
     CollisionDetector(World world, Player bob, List<AIPlayer> aiPlayers) {
@@ -49,6 +51,7 @@ class CollisionDetector {
         Polygon boundingRect = player.getBounds();
         // set the rectangle to bob's bounding box
         playerRect = new Polygon(new float[]{0, 0, player.getWidth(), player.getHeight(), player.getWidth(), 0, 0, player.getHeight()});
+        playerRect.setRotation(player.getRotation());
 
         // we first check the movement on the horizontal X axis
         int startX, endX;
@@ -64,6 +67,11 @@ class CollisionDetector {
 
         // get the block(s) bob can collide with
         populateCollidableBlocks(startX, startY, endX, endY);
+        populateCollidableSprites(player);
+
+        //todo lets check a simulation of both
+        boolean wayClear = true;
+        playerRect.setPosition(player.getPosition().x + player.getVelocity().x, player.getPosition().y + player.getVelocity().y);
 
         // simulate player's movement on the X
         playerRect.setPosition(player.getPosition().x + player.getVelocity().x, player.getPosition().y);
@@ -80,16 +88,13 @@ class CollisionDetector {
                         if (Intersector.overlapConvexPolygons(playerRect, wall.getBounds())) {
                             player.getVelocity().x = 0;
                             world.getCollisionRects().add(wall.getBounds());
+                            //todo move ai classes
                             if (player instanceof AIPlayer || player instanceof Animal) {
                                 player.turnAround(90);
                             }
                         }
                     }
                 }
-//                System.out.println("Wall here");
-//                System.out.println(block.getBounds().getX() + ", " + block.getBounds().getY());
-//                System.out.println("Person: " + playerRect.getX() + ", " + playerRect.getY());
-//                break;
             } else if (Intersector.overlapConvexPolygons(playerRect, block.getBounds()) &&
                     !(block instanceof ExplodableBlock && ((ExplodableBlock) block).getState().equals(ExplodableBlock.State.RUBBLE))) {
                 player.getVelocity().x = 0;
@@ -100,7 +105,18 @@ class CollisionDetector {
                 break;
             }
         }
-
+//        if (player.getVelocity().x != 0) {
+//            for (Sprite collidableSprite : collidableSprites) {
+//                if (Intersector.overlapConvexPolygons(playerRect, collidableSprite.getBounds())) {
+//                    player.getVelocity().x = 0;
+//                    world.getCollisionRects().add(collidableSprite.getBounds());
+//                    if (player instanceof AIPlayer) {
+//                        ((AIPlayer) player).turnAround(-90);
+//                    }
+//                    break;
+//                }
+//            }
+//        }
         // reset the x position of the collision box
         playerRect.setPosition(player.getPosition().x, player.getPosition().y);
 
@@ -143,25 +159,42 @@ class CollisionDetector {
                 break;
             }
         }
-        // reset the collision box's position on Y
+//        if (player.getVelocity().y != 0) {
+//            for (Sprite collidableSprite : collidableSprites) {
+//                if (Intersector.overlapConvexPolygons(playerRect, collidableSprite.getBounds())) {
+//                    player.getVelocity().y = 0;
+//                    world.getCollisionRects().add(collidableSprite.getBounds());
+//                    if (player instanceof AIPlayer) {
+//                        ((AIPlayer) player).turnAround(-90);
+//                    }
+//                    break;
+//                }
+//            }
+//        }
+//        }
+        // reset the x position of the collision box
         playerRect.setPosition(player.getPosition().x, player.getPosition().y);
 
-        // update Player's position
-        player.getPosition().add(player.getVelocity());
-        player.getBounds().setPosition(player.getPosition().x, player.getPosition().y);
-        player.getBounds().setRotation(player.getRotation());
-        player.getViewCircle().setPosition(player.getPosition().x - 7.5F, player.getPosition().y - 4F);
-        //        player.getViewCircle().setPosition(player.getCentrePosition().x, player.getCentrePosition().y);
-
-//        if (player instanceof Player && !(player instanceof AIPlayer)) {
-        player.updateShapes();
-//        }
+        //todo calculate the full move box add it to the map
+        playerRect.setPosition(player.getPosition().x + player.getVelocity().x, player.getPosition().y + player.getVelocity().y);
+        if (player.isTurningClcokwise()) {
+            playerRect.setRotation(player.getRotation() - (player.getRotationSpeed() * delta));
+            if (playerRect.getRotation() < 0) {
+                playerRect.setRotation(playerRect.getRotation() + 360);
+            }
+        }
+        if (player.isTurningAntiClockwise()) {
+            playerRect.setRotation(player.getRotation() + (player.getRotationSpeed() * delta));
+            if (playerRect.getRotation() > 360) {
+                playerRect.setRotation(playerRect.getRotation() - 360);
+            }
+        }
+        world.getMovementRects().put(player, playerRect);
 
         // un-scale velocity (not in frame time)
         player.getVelocity().x = player.getVelocity().x * (1 / delta);
         player.getVelocity().y = player.getVelocity().y * (1 / delta);
     }
-
     /**
      * Collision checking
      **/
@@ -210,7 +243,7 @@ class CollisionDetector {
                     if (projectile.isExplosive()) {
                         projectile.setSpeed(0);
                         projectile.startExplodeTimer();
-                        world.getAreaAffects().add(new AreaAffect(new Vector2(projectile.getPosition().x, projectile.getPosition().y), projectile.getPlayerName(), 2, 2, EXPLOSION));
+                        world.getAreaAffects().add(new AreaAffect(new Vector2(projectile.getPosition().x, projectile.getPosition().y), projectile.getPlayerName(), 2, 2, EXPLOSION, projectile.getPlayerName(), null, 2));
                     }
                     return;
                 }
@@ -245,7 +278,7 @@ class CollisionDetector {
                     projectile.startExplodeTimer();
                     world.getCollisionRects().add(block.getBounds());
                     if (projectile.isExplosive()) {
-                        world.getAreaAffects().add(new AreaAffect(new Vector2(projectile.getPosition().x, projectile.getPosition().y), projectile.getPlayerName(), 2, 2, EXPLOSION));
+                        world.getAreaAffects().add(new AreaAffect(new Vector2(projectile.getPosition().x, projectile.getPosition().y), projectile.getName(), 2, 2, EXPLOSION, projectile.getPlayerName(), null, 2));
                     }
                     return;
                 }
@@ -303,7 +336,7 @@ class CollisionDetector {
                     Player player = (Player) sprite;
                     if (player.getBoost().equals(Player.Boost.SHIELD) && Intersector.overlaps(player.getShieldCircle(), bulletRect.getBoundingRectangle())) {
                         if (projectile.isExplosive()) {
-                            world.getAreaAffects().add(new AreaAffect(new Vector2(projectile.getPosition().x, projectile.getPosition().y), projectile.getPlayerName(), 2, 2, EXPLOSION));
+                            world.getAreaAffects().add(new AreaAffect(new Vector2(projectile.getPosition().x, projectile.getPosition().y), projectile.getName(), 2, 2, EXPLOSION, projectile.getPlayerName(), null, 2));
                             projectile.setSpeed(0);
                             projectile.startExplodeTimer();
                         }
@@ -313,7 +346,7 @@ class CollisionDetector {
                     projectile.setSpeed(0);
                     //todo ai player is shot
                     if (projectile.isExplosive()) {
-                        world.getAreaAffects().add(new AreaAffect(new Vector2(projectile.getPosition().x, projectile.getPosition().y), projectile.getPlayerName(), 2, 2, EXPLOSION));
+                        world.getAreaAffects().add(new AreaAffect(new Vector2(projectile.getPosition().x, projectile.getPosition().y), projectile.getPlayerName(), 2, 2, EXPLOSION, projectile.getPlayerName(), null, 2));
                         projectile.startExplodeTimer();
                     }
                     sprite.isShot(projectile.getPlayerName(), projectile.getDamage());
@@ -327,13 +360,30 @@ class CollisionDetector {
         return false;
     }
 
-    void checkPlayerCollisionWithExplosions(Sprite player) {
+    void checkPlayerCollisionWithAreaAffects(Sprite sprite) {
 
+        @SuppressWarnings("NewApi")
+        List<AreaAffect> damageAffects = world.getAreaAffects().stream().filter(ae -> ae.getAffectType().equals(DAMAGE)).collect(Collectors.toList());
+//        if (!damageAffects.isEmpty()) System.out.println(damageAffects.size());
         for (AreaAffect areaAffect : world.getAreaAffects()) {
-            boolean immune = false;
-            if (player instanceof Player && ((Player) player).getBoost().equals(Player.Boost.SHIELD) && !player.isInjured()) immune = true;
-            if (!immune && Intersector.overlaps(areaAffect.getBounds(), player.getBounds().getBoundingRectangle())) {
-                if (!locator.wallInbetweenExplosion(player, areaAffect.getPosition())) player.isShot(areaAffect.getName(), 2.5F);
+            boolean immune = sprite instanceof Player && ((Player) sprite).getBoost().equals(Player.Boost.SHIELD) && !sprite.isInjured();
+            if (!immune && Intersector.overlaps(areaAffect.getBoundingCircle(), sprite.getBounds().getBoundingRectangle())) {
+                if (!locator.wallInbetweenExplosion(sprite, areaAffect.getPosition())) {
+                    switch (areaAffect.getAffectType()) {
+                        case LIGHTNING:
+                            sprite.isShot(areaAffect.getName(), 2.5F);
+                            break;
+                        case EXPLOSION:
+                            sprite.isShot(areaAffect.getName(), 2.5F);
+                            break;
+                        case DAMAGE:
+                            Vector2 distance = new Vector2(sprite.getCentrePosition()).sub(areaAffect.getPosition());
+                            float hitRotation = locator.getAngle(distance);
+                            immune = sprite.getName().equals(areaAffect.getSpriteName()) || (sprite instanceof Animal && ((Animal) sprite).getAnimalType().equals(areaAffect.getAnimalType()));
+                            if (!immune) sprite.hit(areaAffect.getSpriteName(), areaAffect.getDamage(), hitRotation, areaAffect.getPosition());
+                            break;
+                    }
+                }
             }
         }
     }
@@ -351,7 +401,7 @@ class CollisionDetector {
 
         for (FloorPad floorPad : world.getLevel().getFloorPads()) {
             if (Intersector.overlapConvexPolygons(floorPad.getBounds(), player.getBounds())) {
-                float movespeed = 1.5f;
+                float movespeed = 0.5f;
                 switch (floorPad.getType()) {
                     case MOVE:
                         movespeed = 3F;
@@ -385,7 +435,7 @@ class CollisionDetector {
 
     void checkExplodableCollisionWithExplosion(ExplodableBlock eb) {
         for (AreaAffect areaAffect : world.getAreaAffects()) {
-            if (Intersector.overlaps(areaAffect.getBounds(), eb.getBounds().getBoundingRectangle())) {
+            if (Intersector.overlaps(areaAffect.getBoundingCircle(), eb.getBounds().getBoundingRectangle())) {
                 eb.explode(0.5F);
             }
         }
@@ -413,14 +463,28 @@ class CollisionDetector {
         for (int x = startX; x <= endX; x++) {
             for (int y = startY; y <= endY; y++) {
                 if (x >= 0 && x < world.getLevel().getWidth() && y >= 0 && y < world.getLevel().getHeight()) {
-                    Block block = world.getLevel().getBlocks()[x][y];
+                    Block block = world.getLevel().getBlock(x, y);
                     boolean colidible = true;
                     if (block != null && !block.isColibible()) colidible = false;
-                    if (colidible) collidable.add(world.getLevel().getBlocks()[x][y]);
+                    if (colidible) collidable.add(world.getLevel().getBlock(x, y));
                 }
             }
         }
     }
 
-
+    private void populateCollidableSprites(Sprite sprite) {
+        collidableSprites.clear();
+        if (!(sprite instanceof Player) && (Intersector.overlaps(sprite.getCollideCircle(), bob.getCollideCircle()))) collidableSprites.add(bob);
+        for (AIPlayer aiPlayer : world.getAIPlayers()) {
+            if (!sprite.getName().equals(aiPlayer.getName()) && Intersector.overlaps(sprite.getCollideCircle(), aiPlayer.getCollideCircle())) {
+                collidableSprites.add(aiPlayer);
+            }
+        }
+        for (Animal animal : world.getAnimals()) {
+            if (animal.getAnimalType().equals(Animal.AnimalType.SPIDER) && !(sprite instanceof Animal && ((Animal) sprite).getAnimalType().equals(Animal.AnimalType.SPIDER))) continue;
+            if (sprite != animal && Intersector.overlaps(sprite.getCollideCircle(), animal.getCollideCircle())) {
+                collidableSprites.add(animal);
+            }
+        }
+    }
 }

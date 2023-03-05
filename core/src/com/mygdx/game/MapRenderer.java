@@ -30,11 +30,13 @@ import com.mygdx.game.model.environment.blocks.ExplodableBlock;
 import com.mygdx.game.model.environment.blocks.FillableBlock;
 import com.mygdx.game.model.environment.blocks.Grower;
 import com.mygdx.game.model.environment.blocks.Wall;
+import com.mygdx.game.model.items.Consumable;
 import com.mygdx.game.model.items.Fillable;
-import com.mygdx.game.model.items.Food;
+import com.mygdx.game.model.items.Consumable;
 import com.mygdx.game.model.items.Item;
 import com.mygdx.game.model.items.Magic;
 import com.mygdx.game.model.items.Material;
+import com.mygdx.game.model.items.Placeable;
 import com.mygdx.game.model.moveable.AIPlayer;
 import com.mygdx.game.model.moveable.Animal;
 import com.mygdx.game.model.moveable.Player;
@@ -50,6 +52,7 @@ import java.util.Random;
 
 public class MapRenderer {
 
+    //0.033 if I am using 30fps
     private static final float RUNNING_FRAME_DURATION = 0.12f;
     private static final float EXPLODE_FRAME_DURATION = 0.12f;
     private static final float ITEM_USE_FRAME_DURATION = 0.065F;
@@ -309,7 +312,7 @@ public class MapRenderer {
         debugRenderer.begin(ShapeRenderer.ShapeType.Line);
         debugRenderer.setColor(Color.RED);
         for (AreaAffect areaAffect : world.getAreaAffects()) {
-            debugRenderer.circle(areaAffect.getBounds().x, areaAffect.getBounds().y, areaAffect.getBounds().radius);
+            debugRenderer.circle(areaAffect.getBoundingCircle().x, areaAffect.getBoundingCircle().y, areaAffect.getBoundingCircle().radius);
         }
         if (world.getLocateExplosion() != null) {
             debugRenderer.setColor(Color.GREEN);
@@ -451,9 +454,9 @@ public class MapRenderer {
                     case MEAT:
                         textureRegion = meatTexture;
                         break;
-                    case FOOD:
-                        if (((EnvironmentBlock) block).getMaterial() instanceof Food) {
-                            switch (((Food) ((EnvironmentBlock) block).getMaterial()).getFoodType()) {
+                    case CONSUMABLE:
+                        if (((EnvironmentBlock) block).getMaterial() instanceof Consumable) {
+                            switch (((Consumable) ((EnvironmentBlock) block).getMaterial()).getConsumableType()) {
                                 case COOKEDMEAT:
                                     textureRegion = cookedmeatTexture;
                                     break;
@@ -465,18 +468,15 @@ public class MapRenderer {
                             }
                         }
                         break;
-                    case BERRYPASTE:
-                        textureRegion = berrypasteTexture;
-                        break;
                     case GRASS:
                         textureRegion = grassTexture;
                         break;
-                    case STICK:
-                        textureRegion = stickTexture;
-                        break;
-                    case PEBBLE:
-                        textureRegion = pebbleTexture;
-                        break;
+//                    case STICK:
+//                        textureRegion = stickTexture;
+//                        break;
+//                    case PEBBLE:
+//                        textureRegion = pebbleTexture;
+//                        break;
                 }
                 if (block.getDurability() > 0 ) {
                     spriteBatch.draw(textureRegion, block.getPosition().x, block.getPosition().y, Block.getSIZE(), Block.getSIZE());
@@ -491,7 +491,7 @@ public class MapRenderer {
 
     private void drawBoostPads() {
         for (BoostPad boostPad : world.getLevel().getBoostPads()) {
-            spriteBatch.draw(boostPadTexture, boostPad.getPos().x, boostPad.getPos().y, Pad.getSIZE(), Pad.getSIZE());
+            spriteBatch.draw(boostPadTexture, boostPad.getPosition().x, boostPad.getPosition().y, Pad.getSIZE(), Pad.getSIZE());
             if (boostPad.getBoost() != null) {
                 TextureRegion boostFrame = null;
                 switch (boostPad.getBoost()) {
@@ -510,7 +510,7 @@ public class MapRenderer {
                 }
                 if (boostFrame != null) {
                     spriteBatch.draw(boostFrame,
-                            boostPad.getPos().x + 0.33F, boostPad.getPos().y + 0.35F,
+                            boostPad.getPosition().x + 0.33F, boostPad.getPosition().y + 0.35F,
                             Pad.getSIZE()*0.8F, Pad.getSIZE()*0.8F);
                 }
 
@@ -536,7 +536,7 @@ public class MapRenderer {
                     break;
             }
             if (gunFrame != null) {
-                spriteBatch.draw(gunFrame, gunPad.getPos().x, gunPad.getPos().y, GunPad.getSIZE(), GunPad.getSIZE());
+                spriteBatch.draw(gunFrame, gunPad.getPosition().x, gunPad.getPosition().y, GunPad.getSIZE(), GunPad.getSIZE());
             }
         }
     }
@@ -559,10 +559,10 @@ public class MapRenderer {
             }
             if (floorFrame != null) {
                 if (floorPad.getType().equals(MOVE) || floorPad.getType().equals(WATERFLOW)) {
-                    spriteBatch.draw(floorFrame, floorPad.getPos().x, floorPad.getPos().y, Block.getSIZE()/2, Block.getSIZE()/2,
+                    spriteBatch.draw(floorFrame, floorPad.getPosition().x, floorPad.getPosition().y, Block.getSIZE()/2, Block.getSIZE()/2,
                             Block.getSIZE(), Block.getSIZE(), 1, 1, floorPad.getRotation() + 90, true);
                 } else {
-                    spriteBatch.draw(floorFrame, floorPad.getPos().x, floorPad.getPos().y, GunPad.getSIZE(), GunPad.getSIZE());
+                    spriteBatch.draw(floorFrame, floorPad.getPosition().x, floorPad.getPosition().y, GunPad.getSIZE(), GunPad.getSIZE());
                 }
             }
         }
@@ -634,8 +634,8 @@ public class MapRenderer {
         }
     }
 
-    private void drawWall(float rotation, Player bob, Point gridRef, Item wall) {
-        String name = wall.getItemType().equals(Item.ItemType.DOOR) ? "door" : "wall";
+    private void drawWall(float rotation, Player bob, Point gridRef, Placeable wall) {
+        String name = wall.getPlaceableType().equals(Placeable.PlaceableType.DOOR) ? "door" : "wall";
         TextureRegion region = itemAtlas.findRegion(name);
         if (rotation >= 45 && rotation < 135) {
             spriteBatch.draw(region, gridRef.x + 1, gridRef.y, 0, 0, 1F, 0.5F, 1F, 0.5F, 90);
@@ -1011,27 +1011,6 @@ public class MapRenderer {
                     TextureRegion shieldFrame = (TextureRegion) (shieldAnimation.getKeyFrame(aiPlayer.getStateTime(), true));
                     Circle circle = aiPlayer.getShieldCircle();
                     spriteBatch.draw(shieldFrame, circle.x - circle.radius / 2, circle.y - circle.radius / 2, 1, 1, 2F, 2, 2.00F, 2.00F, 0);
-                }
-            }
-            if (aiPlayer.getStrongHand() != null)  {
-                if (aiPlayer.getStrongHand() instanceof Item) {
-                    Item item = (Item) aiPlayer.getStrongHand();
-                    float rotation = item.getRotation();
-                    if (aiPlayer.isUseTimerOn()) {
-                        TextureRegion itemFrame = null;
-                        switch (item.getItemType()) {
-                            case PICK:
-                                itemFrame = pickAnimation.getKeyFrame(aiPlayer.getStateTime(), true);
-                                break;
-                            case SWORD:
-                                itemFrame = swordAnimation.getKeyFrame(aiPlayer.getStateTime(), true);
-                                break;
-                            case JAR:
-                                Fillable jar = (Fillable) item;
-                                itemFrame = jar.isFilled() ? jarFullTexture : jarTexture;
-                        }
-                        drawHandItem(aiPlayer.isLeftHanded() ? aiPlayer.getRotation() + 45 : aiPlayer.getRotation() - 45, aiPlayer.getCentrePosition(), aiPlayer.getWidth() * 2, aiPlayer.getHeight() * 2, itemFrame);
-                    }
                 }
             }
             if (aiPlayer.getWeakHand() != null && aiPlayer.getWeakHand().getItemType().equals(Item.ItemType.SHIELD)) {

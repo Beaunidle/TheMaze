@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.TextureLoader;
 import com.mygdx.game.model.GameButton;
 import com.mygdx.game.model.World;
 import com.mygdx.game.WorldRenderer;
@@ -31,6 +32,7 @@ public class GameScreen implements Screen, InputProcessor {
     private Game game;
     private World world;
     private WorldRenderer renderer;
+    private TextureLoader textureLoader;
     private WorldController controller;
     private SpriteBatch spriteBatch;
     private BitmapFont font;
@@ -45,6 +47,8 @@ public class GameScreen implements Screen, InputProcessor {
     GameScreen(Game game, SpriteBatch spriteBatch, BitmapFont font) {
         this.game = game;
         this.spriteBatch = spriteBatch;
+        this.textureLoader = new TextureLoader();
+        textureLoader.initTextures();
         this.font = font;
         world = new World();
         locator = new Locator();
@@ -92,7 +96,7 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public void show() {
 //        Gdx.input.setCursorCatched(true);
-        renderer = new WorldRenderer(world, spriteBatch, false, font);
+        renderer = new WorldRenderer(world, spriteBatch, false, font, textureLoader);
         controller = new WorldController(world, game);
         controller.leftReleased();
         controller.rightReleased();
@@ -170,7 +174,7 @@ public class GameScreen implements Screen, InputProcessor {
             controller.usePressed();
         if (keycode == Input.Keys.SPACE)
             controller.firePressed();
-        if (keycode == Input.Keys.SHIFT_RIGHT)
+        if (keycode == Input.Keys.C)
             controller.shiftPressed();
         if (keycode == Input.Keys.I)
             controller.invPressed();
@@ -206,7 +210,7 @@ public class GameScreen implements Screen, InputProcessor {
             controller.useReleased();
         if (keycode == Input.Keys.SPACE)
             controller.fireReleased();
-        if (keycode == Input.Keys.SHIFT_RIGHT)
+        if (keycode == Input.Keys.C)
             controller.shiftReleased();
         if (keycode == Input.Keys.I)
             controller.invReleased();

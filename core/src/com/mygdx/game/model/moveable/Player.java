@@ -1,24 +1,22 @@
 package com.mygdx.game.model.moveable;
 
+import static com.mygdx.game.model.items.Material.Type.*;
+import static com.mygdx.game.model.moveable.Projectile.ProjectileType.FIREBALL;
+
 import com.badlogic.gdx.math.Circle;
-import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Timer;
 import com.mygdx.game.model.Inventory;
 import com.mygdx.game.model.Recipe;
-import com.mygdx.game.model.environment.Tilled;
 import com.mygdx.game.model.environment.blocks.Block;
-import com.mygdx.game.model.environment.blocks.EnvironmentBlock;
-import com.mygdx.game.model.environment.blocks.FillableBlock;
-import com.mygdx.game.model.environment.blocks.Grower;
-import com.mygdx.game.model.environment.blocks.Wall;
 import com.mygdx.game.model.items.Fillable;
-import com.mygdx.game.model.items.Food;
 import com.mygdx.game.model.items.Magic;
+import com.mygdx.game.model.items.Placeable;
 import com.mygdx.game.model.items.Ranged;
 import com.mygdx.game.model.items.Item;
 import com.mygdx.game.model.items.Material;
+import com.mygdx.game.model.items.Swingable;
 import com.mygdx.game.model.pads.FloorPad;
 import com.mygdx.game.utils.RecipeHolder;
 
@@ -45,7 +43,6 @@ public class Player extends Sprite {
     private final List<Magic> spells;
     private final List<Recipe> recipes;
     private final Circle shieldCircle;
-    private final Circle hitCircle;
     private final Polygon blockRectangle;
     private boolean leftHanded;
     private int slotNo = 0;
@@ -59,14 +56,6 @@ public class Player extends Sprite {
         }
     };
 
-    private final Timer.Task useTimer = new Timer.Task() {
-        @Override
-        public void run() {
-            stopUseTimer();
-            action = Action.IDLE;
-        }
-    };
-
     private final Timer.Task slotMoveTimer = new Timer.Task() {
         @Override
         public void run() {
@@ -74,25 +63,16 @@ public class Player extends Sprite {
         }
     };
 
-    private final Timer.Task useDelayTimer = new Timer.Task() {
-        @Override
-        public void run() {
-            stopUseDelayTimer();
-            action = Action.IDLE;
-        }
-    };
     private Timer.Task boostTimer;
 
     private boolean bulletTimerOn;
-    private boolean useTimerOn;
-    private boolean useDelayOn;
     private boolean blocking;
     private boolean slotMoving;
 
     public Player(Vector2 position, String name, float lives, RecipeHolder recipeHolder) {
-        super(position, 0.70F, 0.70F, lives);
-        shieldCircle = new Circle(getCentrePosition().x, getCentrePosition().y, 2F);
-        hitCircle = new Circle(getLeftHandPosition(45, getWidth()), 0.5F);
+        super(position, 0.70F, 0.70F, lives, 10, 10, name);
+        shieldCircle = new Circle(getCentrePosition().x, getCentrePosition().y, 5F);
+        setHitCircle(new Circle(getLeftHandPosition(45, getWidth()), 0.5F));
         leftHanded = true;//!(this instanceof AIPlayer);
 
         if (leftHanded) {
@@ -104,39 +84,37 @@ public class Player extends Sprite {
         }
         blockRectangle.setPosition(getRightHandPosition().x,getRightHandPosition().y);
         blockRectangle.setRotation(getRotation());
-        setName(name);
         ranged = null;
         inventory = new Inventory(20);
         toolBelt = new Inventory(9);
-        inventory.addInventory(new Item(Item.ItemType.SHOVEL, 100));
-        inventory.addInventory(new Item(Item.ItemType.HOE, 100));
-        inventory.addInventory(new Item(Item.ItemType.BED, 100));
-        inventory.addInventory(new Item(Item.ItemType.BED, 100));
-        inventory.addInventory(new Item(Item.ItemType.SPEAR, 100));
-        inventory.addInventory(new Item(Item.ItemType.SPEAR, 100));
-        inventory.addInventory(new Item(Item.ItemType.SPEAR, 100));
-        toolBelt.addInventory(new Material(Material.Type.PEBBLE, 10));
-        toolBelt.addInventory(new Item(Item.ItemType.BENCHHEALER, 10));
-        inventory.addInventory(new Item(Item.ItemType.STONEANVIL, 10));
-        inventory.addInventory(new Item(Item.ItemType.DOOR, 20));
-        inventory.addInventory(new Item(Item.ItemType.SHIELD, 100));
-        inventory.addInventory(new Item(Item.ItemType.ARMOUR, 100));
-        inventory.addInventory(new Item(Item.ItemType.WALL, 20));
-        inventory.addInventory(new Item(Item.ItemType.WALL, 20));
-        inventory.addInventory(new Item(Item.ItemType.WALL, 20));
-        inventory.addInventory(new Item(Item.ItemType.WALL, 20));
-        inventory.addInventory(new Item(Item.ItemType.WALL, 20));
-        inventory.addInventory(new Fillable(Item.ItemType.JAR, 20));
+        toolBelt.addInventory(new Swingable(Swingable.SwingableType.AXE, 50, new Material(FLINT, 1)));
+        toolBelt.addInventory(new Swingable(Swingable.SwingableType.PICK, 50, new Material(FLINT, 1)));
+        toolBelt.addInventory(new Swingable(Swingable.SwingableType.SWORD, 50, new Material(FLINT, 1)));
+        toolBelt.addInventory(new Swingable(Swingable.SwingableType.SWORD, 50, new Material(COPPER, 1)));
+        toolBelt.addInventory(new Swingable(Swingable.SwingableType.SHOVEL, 10, new Material(BONE, 1)));
+        toolBelt.addInventory(new Swingable(Swingable.SwingableType.HOE, 10, new Material(BONE, 1)));
+        toolBelt.addInventory(new Swingable(Swingable.SwingableType.HAMMER, 10, new Material(STONE, 1)));
+//        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.STONEANVIL, 10));
+        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.TORCH, 10));
+////        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
+////        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
+////        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
+////        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
+//        inventory.addInventory(new Material(COPPER, 20));
+//        inventory.addInventory(new Material(FLINT, 20));
+//        inventory.addInventory(new Material(Material.Type.WOOD, 10));
+//        inventory.addInventory(new Fillable(Item.ItemType.JAR, 20));
 
         //todo work out how spells can be unlocked
         spells = new ArrayList<>();
         spells.add(new Magic(Projectile.ProjectileType.FIREBALL));
         spells.add(new Magic(3, Magic.Element.ELECTRIC));
         spells.add(new Magic(5, "healing"));
-        strongHand = (Material)inventory.getSlots().get(0);
+        strongHand = spells.get(0);
 //        weakHand = (Item)inventory.getSlots().get(1);
 //        torso = (Item)inventory.getSlots().get(2);
         recipes = recipeHolder.getHandRecipes();
+        setHitTime(0.0625F);
     }
 
     public Material getStrongHand() {
@@ -179,10 +157,6 @@ public class Player extends Sprite {
         Timer.schedule(boostTimer, delay);
     }
 
-    public Circle getHitCircle() {
-        return hitCircle;
-    }
-
     public Polygon getBlockRectangle() { return  blockRectangle;}
 
     public Circle getShieldCircle() {
@@ -222,7 +196,7 @@ public class Player extends Sprite {
     }
 
     public void respawn(Vector2 newPos) {
-        System.out.println("respawn started");
+//        System.out.println("respawn started");
         setLives(getMaxLives());
         setMana(getMaxMana());
         setWater(getMaxWater());
@@ -238,7 +212,7 @@ public class Player extends Sprite {
         setStaggered(false);
 //        this.setBoost(Boost.SHIELD);
         setState(State.IDLE);
-        System.out.println("respawn finished");
+//        System.out.println("respawn finished");
     }
 
     private void startBulletTimer(float delay) {
@@ -249,28 +223,6 @@ public class Player extends Sprite {
     private void stopBulletTimer() {
         bulletTimerOn = false;
         bulletTimer.cancel();
-    }
-
-    public void startUseTimer(float delay) {
-        useTimerOn = true;
-        Timer.schedule(useTimer, delay, delay);
-    }
-    private void stopUseTimer() {
-        useTimerOn = false;
-        useTimer.cancel();
-    }
-
-    public boolean isUseTimerOn() {
-        return useTimerOn;
-    }
-
-    public void startUseDelayTimer(float delay) {
-        useDelayOn = true;
-        Timer.schedule(useDelayTimer, delay, delay);
-    }
-    private void stopUseDelayTimer() {
-        useDelayTimer.cancel();
-        useDelayOn = false;
     }
 
     public void startSlotMoveTimer(float delay) {
@@ -288,10 +240,6 @@ public class Player extends Sprite {
 
     public void setBlocking(boolean blocking) {
         this.blocking = blocking;
-    }
-
-    public boolean isUseDelayOn() {
-        return  useDelayOn;
     }
 
     public boolean isSlotMoving() {
@@ -356,173 +304,42 @@ public class Player extends Sprite {
     public  Vector2 getRightHandPosition() {
         float handRotation = getRotation() - 45;
         if (handRotation < 0) handRotation = handRotation + 360;
-        float x = getCentrePosition().x + (float)(getWidth() * Math.cos((handRotation) * Math.PI/180));
-        float y = getCentrePosition().y + (float)(getHeight() * Math.sin((handRotation) * Math.PI/180));
+        float x = getCentrePosition().x + (float)(getWidth()/2 * Math.cos((handRotation) * Math.PI/180));
+        float y = getCentrePosition().y + (float)(getHeight()/2 * Math.sin((handRotation) * Math.PI/180));
         return new Vector2(x,y);
     }
 
-    public void useItem(Player player, Item item, List<AIPlayer> aiPlayers, List<Animal> animals, List<FloorPad> floorPads) {
-//        useHand(aiPlayers, animals, floorPads);
-        if (item == null) return;
+    public void updateHitCircle() {
+        getHitCircle().setRadius(0.75f);
 
-        Block[][] blocks = getView().getBlocks();
+        Vector2 gridRef = getCentrePosition();
+        float rotation = getRotation();
 
-        hitCircle.setPosition(leftHanded ? getLeftHandPosition(45, getWidth()) : getRightHandPosition());
-        hitCircle.setRadius(0.75f);
-
-        switch (item.getItemType()) {
-            case PICK:
-            case AXE:
-//                action = Action.SWINGTOOL;
-                for (Block[] value : blocks) {
-                    for (Object o : value) {
-                        if (o instanceof EnvironmentBlock) {
-                            EnvironmentBlock eb = (EnvironmentBlock) o;
-                            if (!(eb.getMaterial().getType().equals(Material.Type.GRASS) || eb.getMaterial().getType().equals(Material.Type.FOOD))) {
-                                EnvironmentBlock block = (EnvironmentBlock) o;
-                                if (Intersector.overlaps(hitCircle, block.getBounds().getBoundingRectangle()) && block.getDurability() > 0) {
-                                    Material material = new Material (block.getMaterial().getType(), block.hit());
-                                    inventory.addInventory(material);
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
-//                    Object[] itemsInFront = whatsInFront();
-//                    if (inFront == null) return;
-//                    for (Object inFront : itemsInFront) {
-//                        if (inFront instanceof EnvironmentBlock) {
-//                            if (((EnvironmentBlock) inFront).getDurability() > 0) {
-//                                EnvironmentBlock block = (EnvironmentBlock) inFront;
-//                                Material material = new Material (block.getType(), block.hit());
-//                                inventory.addInventory(material);
-//                                return;
-//                            }
-//                        }
-//                    }
+        switch (getHitPhase()) {
+            case 0:
+                rotation = 0;
+                getHitCircle().setRadius(0.001F);
+            case 2:
+                rotation = rotation + 45;
                 break;
-            case SWORD:
-                //todo
-//                System.out.println("Swinging sword");
-                if (!player.getName().equals(this.getName()) && Intersector.overlaps(hitCircle, player.getBounds().getBoundingRectangle())) {
-                    player.hit(getName(), 2, getRotation(), getCentrePosition());
-                }
-                for (AIPlayer aiPlayer : aiPlayers) {
-                    if (!aiPlayer.getName().equals(this.getName()) && Intersector.overlaps(hitCircle, aiPlayer.getBounds().getBoundingRectangle())) {
-                        aiPlayer.hit(getName(), 2, getRotation(), getCentrePosition());
-                    }
-                }
-                for (Animal animal : animals) {
-                    if (Intersector.overlaps(hitCircle, animal.getBounds().getBoundingRectangle())) {
-                        animal.hit(getName(), 5, getRotation(), getCentrePosition());
-                    }
-                }
+            case 1:
+                rotation = rotation + 55;
                 break;
-            case HAMMER:
+            case 3:
+                rotation = rotation + 25;
                 break;
-            case JAR:
-                Fillable jar = (Fillable) item;
-                if (jar.isFilled()) {
-                    System.out.println("Slurp slurp");
-                    drink(5);
-                    jar.setFilled(false);
-                }
-                for (FloorPad floorPad : floorPads) {
-                    if (floorPad.getType().equals(FloorPad.Type.WATER) || floorPad.getType().equals(FloorPad.Type.WATERFLOW)) {
-                        if (Intersector.overlapConvexPolygons(floorPad.getBounds(), getBounds())) {
-                            System.out.println("Filling jar");
-                            jar.setFilled(true);
-                        }
-                    }
-                }
+            case 4:
+                rotation = rotation + 15;
                 break;
-            case WALL:
-//                    if (!isUseTimerOn()) {
-//                        int rotation = getStrongHand().getRotation();
-//                        Point gridRef = getGridRef(getRotation(), getCentrePosition().x, getCentrePosition().y);
-//                        blocks = getView().getBlocks();
-//                        Object o = blocks[gridRef.x][gridRef.y];
-//
-//                        if (o instanceof Wall) {
-//                            if (!((Wall) o).isWallFull(rotation)) {
-//                                //todo add another wall
-//                                if (rotation >= 45 && rotation < 135) {
-//                                    ((Wall) o).addWall(Block.getSIZE(), Block.getSIZE()/4, rotation);
-//                                } else if (rotation >= 135 && rotation < 225) {
-//                                    ((Wall) o).addWall(Block.getSIZE(), Block.getSIZE()/4, rotation);
-//                                } else if (rotation >= 225 && rotation < 315) {
-//                                    ((Wall) o).addWall(Block.getSIZE(), Block.getSIZE()/4, rotation);
-//                                } else { //if (rotation < 45 || rotation >= 315) {
-//                                    ((Wall) o).addWall(Block.getSIZE(), Block.getSIZE()/4, rotation);
-//                                }
-//
-//                            }
-//                        } else if (o == null) {
-//                            blocks[gridRef.x][gridRef.y] = new Wall(new Vector2(gridRef.x, gridRef.y), rotation, Block.getSIZE(), Block.getSIZE()/4);
-//                        }
-//                        getInventory().removeItem(new Item(Item.ItemType.WALL, 10));
-//                        if (!getInventory().checkItem(new Item(Item.ItemType.WALL, 10))) {
-//                            setStrongHand(null);
-//                        }
-//                        startUseTimer(0.5F);
-//                    }
-            }
+        }
+        if (rotation < 0) rotation = rotation + 360;
+        if (rotation > 360) rotation = rotation - 360;
+        float x = gridRef.x + (float)(getWidth()*1.4F * Math.cos(rotation * Math.PI/180));
+        float y = gridRef.y + (float)(getHeight()*1.4F * Math.sin(rotation * Math.PI/180));
+        getHitCircle().setPosition(new Vector2(x, y));
     }
 
     public Block useHand(List<AIPlayer> aiPlayers, List<Animal> animals, List<FloorPad> floorPads) {
-        for (FloorPad floorPad : floorPads) {
-            if (floorPad.getType().equals(FloorPad.Type.WATER) || floorPad.getType().equals(FloorPad.Type.WATERFLOW)) {
-                if (Intersector.overlapConvexPolygons(floorPad.getBounds(), getBounds())) {
-                    drink(5);
-                }
-            }
-        }
-        for (Block[] value : getView().getBlocks()) {
-            for (Object o : value) {
-                if (o != null && Intersector.overlaps(hitCircle, ((Block) o).getBounds().getBoundingRectangle())) {
-                    if (o instanceof EnvironmentBlock && ((EnvironmentBlock) o).getDurability() > 0) {
-                        EnvironmentBlock block = (EnvironmentBlock) o;
-                        Material material = block.getMaterial();
-                        if (material.getType().equals(Material.Type.FOOD)) {
-                            Material newMaterial = new Food (((Food) material).getFoodType(), block.hit());
-                            inventory.addInventory(newMaterial);
-                            return block;
-                        } else                     if (material.getType().equals(Material.Type.STICK)) {
-                            Material newMaterial = new Material (Material.Type.WOOD, block.hit());
-                            inventory.addInventory(newMaterial);
-                            return block;
-                        } else if (material.getType().equals(Material.Type.GRASS) || material.getType().equals(Material.Type.PEBBLE)) {
-                            Material newMaterial = new Material (material.getType(), block.hit());
-                            inventory.addInventory(newMaterial);
-                            return block;
-                        }
-                    }
-                    if (o instanceof Wall) {
-                        Wall wallBlock = (Wall)o;
-                        for (Wall.WallType wall : wallBlock.getWalls().values()) {
-                            if (wall != null && wall.isDoor()) {
-                                if (Intersector.overlaps(hitCircle, wall.getBounds().getBoundingRectangle())) {
-                                    wall.toggleOpen();
-                                }
-                            }
-                        }
-                    }
-                    if ((o instanceof FillableBlock)) {
-//                    if (fillable.getType().equals(FillableBlock.BlockType.CAMPFIRE) || fillable.getType().equals(FillableBlock.BlockType.BENCHHEALER)) {
-//                        fillable.toggleActive();
-                        return (FillableBlock) o;
-//                    }
-                    }
-                    if (o instanceof Grower) {
-                        return (Grower) o;
-                    }
-                    if (o instanceof Tilled) {
-                        return (Tilled) o;
-                    }
-                }
-            }
-        }
         return null;
     }
 
@@ -592,16 +409,41 @@ public class Player extends Sprite {
 
     public void updateShapes() {
         if (leftHanded) {
-            hitCircle.setPosition(getLeftHandPosition(45, getWidth()));
+//            hitCircle.setPosition(getLeftHandPosition(45, getWidth()));
             blockRectangle.setPosition(getRightHandPosition().x, getRightHandPosition().y);
             blockRectangle.setRotation(blocking ? getRotation() : getRotation() + 90);
         } else {
-            hitCircle.setPosition(getRightHandPosition());
+//            hitCircle.setPosition(getRightHandPosition());
             blockRectangle.setPosition(getLeftHandPosition(45, getWidth()).x, getLeftHandPosition(45, getWidth()).y);
             blockRectangle.setRotation(blocking ? getRotation() : getRotation() - 90);
         }
         if (blockRectangle.getRotation() > 360) blockRectangle.setRotation(blockRectangle.getRotation() - 360);
         if (blockRectangle.getRotation() > 0) blockRectangle.setRotation(blockRectangle.getRotation() + 360);
         shieldCircle.setPosition(getCentrePosition().x, getCentrePosition().y);
+        getCollideCircle().setPosition(getCentrePosition().x, getCentrePosition().y);
+    }
+
+    public boolean isHoldingFire() {
+        if (getStrongHand() != null && getStrongHand() instanceof Magic && ((Magic) getStrongHand()).getMagicType().equals(Magic.MagicType.PROJECTILE) && ((Magic) getStrongHand()).getProjectileType().equals(FIREBALL) ||
+                (getStrongHand() instanceof Placeable && ((Placeable) getStrongHand()).getPlaceableType().equals(Placeable.PlaceableType.TORCH))) {
+            return true;
+        }
+        return false;
+    }
+
+    public void addToInventory(Material material) {
+        int added = 0;
+        if(material.isHoldable()) {
+            added = toolBelt.addInventory(material);
+        }
+        if (added == 0) {
+            inventory.addInventory(material);
+        }
+    }
+
+    public void addAllToInventory(List<Material> materials) {
+        for (Material material : materials) {
+            addToInventory(material);
+        }
     }
 }

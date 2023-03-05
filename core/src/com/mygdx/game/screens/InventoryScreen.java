@@ -26,7 +26,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.mygdx.game.WorldRenderer;
 import com.mygdx.game.controller.InventoryButton;
 import com.mygdx.game.controller.WorldController;
 import com.mygdx.game.model.Inventory;
@@ -39,6 +38,8 @@ import com.mygdx.game.model.items.Material;
 import com.mygdx.game.model.moveable.Projectile;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -174,6 +175,7 @@ public class InventoryScreen extends ScreenAdapter implements InputProcessor {
 //        System.out.println("Printing buttons");
         drawTopButtonNumbers(topButtons);
         drawButtonNumbers(toolBeltButtons);
+//        drawButtonNumbers(Collections.singletonList((InventoryButton) leftButtons.get("strong")));
 
         InventoryButton buttonToNumber = leftButtons.get("strong");
         if (buttonToNumber.getItem() instanceof Material && ((Material) buttonToNumber.getItem()).getMaxPerStack() > 1) {
@@ -532,6 +534,7 @@ public class InventoryScreen extends ScreenAdapter implements InputProcessor {
                 Material handMaterial = null;
                 if (selectedMaterial instanceof Item && (((Item) selectedMaterial).getItemType().equals(Item.ItemType.SHIELD) || ((Item) selectedMaterial).getItemType().equals(Item.ItemType.ARMOUR))) {
                     Item selectedItem = (Item) selectedMaterial;
+                    int invQuantity = selectedItem.getQuantity();
                     if (selectedItem.getItemType().equals(Item.ItemType.SHIELD)) {
                         handMaterial = setBodyPart("weak", selectedButton);
                         world.getBob().setWeakHand((Item)selectedButton.getItem());
@@ -540,13 +543,16 @@ public class InventoryScreen extends ScreenAdapter implements InputProcessor {
                         world.getBob().setTorso((Item)selectedButton.getItem());
                     }
                     inventory.removeInventory(new Item(selectedItem));
+                    selectedItem.setQuantity(invQuantity);
                     clearSelectedButton(selectedButton);
                     if (handMaterial != null && !(handMaterial instanceof Magic)) inventory.addInventory(handMaterial);
                 } else {
                     if (selectedMaterial.isHoldable()) {
                         handMaterial = setBodyPart("strong", selectedButton);
+                        int invQuantity = selectedMaterial.getQuantity();
                         world.getBob().setStrongHand(selectedMaterial);
                         inventory.removeInventory(new Material(selectedMaterial));
+                        selectedMaterial.setQuantity(invQuantity);
                         clearSelectedButton(selectedButton);
                         if (handMaterial != null && !(handMaterial instanceof Magic)) inventory.addInventory(handMaterial);
                     }
@@ -560,6 +566,7 @@ public class InventoryScreen extends ScreenAdapter implements InputProcessor {
                 Material handMaterial = null;
                 if (selectedMaterial instanceof Item && (((Item) selectedMaterial).getItemType().equals(Item.ItemType.SHIELD) || ((Item) selectedMaterial).getItemType().equals(Item.ItemType.ARMOUR))) {
                     Item selectedItem = (Item) selectedMaterial;
+                    int invQuantity = selectedItem.getQuantity();
                     if (selectedItem.getItemType().equals(Item.ItemType.SHIELD)) {
                         handMaterial = setBodyPart("weak", selectedButton);
                         world.getBob().setWeakHand((Item)selectedButton.getItem());
@@ -568,18 +575,32 @@ public class InventoryScreen extends ScreenAdapter implements InputProcessor {
                         world.getBob().setTorso((Item)selectedButton.getItem());
                     }
                     toolBelt.removeInventory(new Item(selectedItem));
+                    selectedItem.setQuantity(invQuantity);
                     clearSelectedButton(selectedButton);
                     if (handMaterial != null && !(handMaterial instanceof Magic)) toolBelt.addInventory(handMaterial);
                 } else {
                     selectedMaterial = (Material) selectedButton.getItem();
                     if (selectedMaterial.isHoldable()) {
+                        int invQuantity = selectedMaterial.getQuantity();
                         handMaterial = setBodyPart("strong", selectedButton);
                         world.getBob().setStrongHand(selectedMaterial);
                         toolBelt.removeInventory(new Material(selectedMaterial));
+                        selectedMaterial.setQuantity(invQuantity);
                         clearSelectedButton(selectedButton);
                         if (handMaterial != null && !(handMaterial instanceof Magic)) toolBelt.addInventory(handMaterial);
                     }
                 }
+            }
+        }
+
+        if (magicButtons.contains(selectedButton)) {
+            Material selectedMaterial = (Material) selectedButton.getItem();
+            Material handMaterial = null;
+            if (selectedMaterial.isHoldable()) {
+                handMaterial = setBodyPart("strong", selectedButton);
+                world.getBob().setStrongHand(selectedMaterial);
+//                clearSelectedButton(selectedButton);
+                if (handMaterial != null && !(handMaterial instanceof Magic)) inventory.addInventory(handMaterial);
             }
         }
         resetAllButtons();
@@ -621,9 +642,11 @@ public class InventoryScreen extends ScreenAdapter implements InputProcessor {
         if (toolBeltButtons.contains(button)) {
             if (button.getItem() instanceof Material) {
                 Material selectedMaterial = (Material) button.getItem();
+                int invQuantity = selectedMaterial.getQuantity();
                 if (selectedMaterial.isHoldable()) {
                     if (selectedMaterial instanceof Magic || inventory.addInventory(selectedMaterial) != 0) {
                         toolBelt.removeInventory(selectedMaterial);
+                        selectedMaterial.setQuantity(invQuantity);
                         clearSelectedButton(button);
                     }
                     else {
@@ -638,8 +661,10 @@ public class InventoryScreen extends ScreenAdapter implements InputProcessor {
             if (button.getItem() instanceof Material) {
                 Material selectedMaterial = (Material) button.getItem();
                 if (selectedMaterial.isHoldable()) {
+                    int invQuantity = selectedMaterial.getQuantity();
                     if (toolBelt.addInventory(selectedMaterial) != 0) {
                         inventory.removeInventory(selectedMaterial);
+                        selectedMaterial.setQuantity(invQuantity);
                         clearSelectedButton(button);
                     } else {
                         System.out.println("tool belt full");

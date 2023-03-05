@@ -27,7 +27,8 @@ public class ExplodableBlock extends Block {
     };
 
     public ExplodableBlock(Vector2 pos) {
-        super(pos);
+        super(pos, "");
+        setBlockType(BlockType.EXPLODABLE);
         state = State.RED;
     }
 

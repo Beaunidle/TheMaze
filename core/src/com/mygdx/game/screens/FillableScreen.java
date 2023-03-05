@@ -122,8 +122,10 @@ public class FillableScreen extends InventoryScreen {
         if (inventoryButtons.contains(selectedButton)) {
             System.out.println("here inv");
             if (selectedButton.getItem() instanceof Material) {
+
                 Material material = (Material) selectedButton.getItem();
-                if (material.getType().equals(Material.Type.WOOD) || material.getType().equals(Material.Type.MEAT)) {
+                boolean campfire = fillableToShow.getFillableType().equals(FillableBlock.FillableType.CAMPFIRE);
+                if (!campfire || (material.getType().equals(Material.Type.WOOD) || material.getType().equals(Material.Type.MEAT))) {
                     int filled = fillableToShow.getInput().addInventory(new Material(material));
                     if (filled > 0) {
                         getInventory().removeMaterial(material);

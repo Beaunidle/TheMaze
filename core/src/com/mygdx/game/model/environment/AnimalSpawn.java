@@ -1,10 +1,10 @@
 package com.mygdx.game.model.environment;
 
-import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Timer;
+import com.mygdx.game.ai.AnimalAi;
+import com.mygdx.game.ai.CowAi;
+import com.mygdx.game.ai.SpiderAI;
 import com.mygdx.game.model.moveable.Animal;
-import com.mygdx.game.model.moveable.Player;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,29 +14,24 @@ public class AnimalSpawn extends SpawnPoint{
 
     private int population;
     private final int maxPopulation;
+    private int animalCount = 0;
     private final int radius;
     Map<Integer, Animal> animals = new HashMap<>();
     Random rand = new Random();
     private boolean readyToAdd;
-    private final Timer.Task newAnimalTimer = new Timer.Task() {
-        @Override
-        public void run() {
+    private final Animal.AnimalType animalType;
+    private final long spawnTime;
+    private long lastSpawned;
 
-            stopNewAnimalTimer();
-        }
-    };
-
-
-    public AnimalSpawn(Vector2 pos, int radius) {
+    public AnimalSpawn(Vector2 pos, int radius, Animal.AnimalType animalType, int maxPopulation, long spawnTime) {
         super(pos);
-        this.maxPopulation = 20;
+        this.maxPopulation = maxPopulation;
         this.population = 0;
         this.radius = radius;
+        this.animalType = animalType;
+        this.spawnTime = spawnTime;
+        this.lastSpawned = 0;
         readyToAdd = true;
-    }
-
-    public int getMaxPopulation() {
-        return maxPopulation;
     }
 
     public int getPopulation() {
@@ -55,26 +50,62 @@ public class AnimalSpawn extends SpawnPoint{
         return readyToAdd;
     }
 
-    public Animal addAnimal(String name) {
+    public Animal addAnimal() {
         if (population < maxPopulation) {
             float x = getPosition().x;
             float y = getPosition().y;
+            String name = null;
+            AnimalAi animalAi = null;
+            float width = 0, height = 0, rotationSpeed = 0;
+            int lives = 0, food = 0, water = 0;
+            boolean child = false;
 
+            switch (animalType) {
+                case COW:
+                    name = "cow";
+                    width = 1;
+                    height = 0.5F;
+                    rotationSpeed = 80F;
+                    animalAi = new CowAi();
+                    lives = 10;
+                    child = true;
+                    food = 6;
+                    water = 6;
+                    break;
+                case SPIDER:
+                    name = "spider";
+                    width = 0.7F;
+                    height = 0.7F;
+                    rotationSpeed = 120F;
+                    animalAi = new SpiderAI();
+                    lives = 2;
+                    food = 10;
+                    water = 10;
+                    break;
+            }
             float firstOne = rand.nextInt(radius) + x;
             float secondOne = rand.nextInt(radius) + y;
-            population++;
-            startNewAnimalTimer(5);
-            return new Animal(new Vector2(firstOne,secondOne), name, this);
+            return new Animal(new Vector2(firstOne,secondOne), name, this, animalType, width, height, rotationSpeed, animalAi, lives, food, water, animalCount, child);
         }
         return null;
     }
 
-    public void startNewAnimalTimer(float delay) {
-        readyToAdd = false;
-        Timer.schedule(newAnimalTimer, delay);
+    public int getAnimalCount() {
+        return animalCount;
     }
-    private void stopNewAnimalTimer() {
-        readyToAdd = true;
-        newAnimalTimer.cancel();
+
+    public void addAnimalToSpawn(long gameTime) {
+        animalCount++;
+        population++;
+        if (gameTime > 0) {
+            lastSpawned = gameTime;
+            readyToAdd = false;
+        }
+    }
+
+    public void checkSpawn(long gameTime) {
+        if (!readyToAdd && (gameTime - lastSpawned)/1000 > spawnTime) {
+            readyToAdd = true;
+        }
     }
 }

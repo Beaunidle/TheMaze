@@ -32,6 +32,8 @@ import com.mygdx.game.model.Recipe;
 import com.mygdx.game.model.World;
 import com.mygdx.game.model.items.Item;
 import com.mygdx.game.model.items.Material;
+import com.mygdx.game.model.items.Placeable;
+import com.mygdx.game.model.items.Swingable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,7 +46,7 @@ public class CraftScreen extends InventoryScreen  {
     private final int height = Gdx.app.getGraphics().getHeight();
     private final Screen gameScreen;
     private final List<Recipe> recipes;
-    private List<InventoryButton> inputButtons, outputButtons, inventoryButtons;
+    private List<InventoryButton> inputButtons, toolbeltButtons, inventoryButtons;
     private InventoryButton selected;
 
     public CraftScreen(Game game, SpriteBatch spriteBatch, BitmapFont font, Screen gameScreen, World world, List<Recipe> recipes) {
@@ -71,15 +73,18 @@ public class CraftScreen extends InventoryScreen  {
         Table topTable = new Table();
         Table bottomTable = new Table();
         Table centreTable = new Table();
+        Table centreBottomTable = new Table();
 
         //Set table to fill stage
         mainTable.setFillParent(true);
         inventoryButtons = createInventoryButtons(false);
         inputButtons = createCraftingButtons();
+        toolbeltButtons = createToolBeltButtons(true);
         List<Button> bottomButtons = createOtherButtons();
 
         addButtonToTable(topTable, inputButtons, 10);
         addButtonToTable(centreTable, inventoryButtons, 10);
+        addButtonToTable(centreBottomTable, toolbeltButtons, 9);
         for (Button button : bottomButtons) {
             bottomTable.add(button).width(70).height(70);
         }
@@ -88,6 +93,8 @@ public class CraftScreen extends InventoryScreen  {
         mainTable.add(topTable).top().padBottom(35);
         mainTable.row();
         mainTable.add(centreTable).padBottom(35);
+        mainTable.row();
+        mainTable.add(centreBottomTable);
         mainTable.row();
         mainTable.add(bottomTable).bottom();
 
@@ -208,7 +215,7 @@ public class CraftScreen extends InventoryScreen  {
         startButton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                //todo switch back to game screen needs to be smooth
+                //todo switch back to game screen needs to be smooth. Is it smooth yet?
                 getGame().setScreen(gameScreen);
                 ((GameScreen) gameScreen).getController().startUnpauseTimer(5);
             }
@@ -257,13 +264,15 @@ public class CraftScreen extends InventoryScreen  {
                 return;
             }
         }
-        if (recipe.getType() != null) {
-            getInventory().addInventory(new Item(recipe.getType(), recipe.getBaseDurability()));
+        if (recipe.getSwingableType() != null) {
+            getInventory().addSwingableToInventory(new Swingable(recipe.getSwingableType(), recipe.getBaseDurability(), new Material(recipe.getMaterialType(), 1)));
+        } else if (recipe.getPlaceableType() != null) {
+            getInventory().addPlacableToInventory(new Placeable(recipe.getPlaceableType(), recipe.getBaseDurability()));
+        } else if (recipe.getType() != null) {
+            getInventory().addItemToInventory(new Item(recipe.getType(), recipe.getBaseDurability()));
+        } else if (recipe.getMaterialType() != null) {
+            getInventory().addMaterialToInventory(new Material(recipe.getMaterialType(), recipe.getBaseDurability()));
         }
-        if (recipe.getMaterialType() != null) {
-            getInventory().addInventory(new Material(recipe.getMaterialType(), recipe.getBaseDurability()));
-        }
-        System.out.println(recipe.getName() + " added to inventory");
     }
 
     @Override
