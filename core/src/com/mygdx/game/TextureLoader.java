@@ -73,7 +73,7 @@ public class TextureLoader {
         textureMap.put("grass", itemAtlas.findRegion("grass"));
         textureMap.put("wall", itemAtlas.findRegion("wall"));
         textureMap.put("door", itemAtlas.findRegion("door"));
-        textureMap.put("doorOpen", itemAtlas.findRegion("doorOpen"));
+        textureMap.put("dooropen", itemAtlas.findRegion("dooropen"));
         textureMap.put("stick", itemAtlas.findRegion("stick"));
         textureMap.put("copper", itemAtlas.findRegion("copper"));
         textureMap.put("flint", itemAtlas.findRegion("flint"));

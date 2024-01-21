@@ -214,13 +214,12 @@ public class World {
         Block block;
         for (int col = x; col <= x2; col++) {
             for (int row = y; row <= y2; row++) {
-                block = level.getBlock(col, row);
+                block = bob.isInHouse() ? level.getHouseBlock(col - 1000, row - 1000) : level.getBlock(col, row);
                 if (block != null) {
                     blocks.add(block);
                 }
             }
         }
-
         return blocks;
     }
 

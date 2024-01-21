@@ -110,7 +110,7 @@ public class Wall extends Block{
         public String getName() {
             if (isDoor()) {
                 if (isOpen()) {
-                    return "doorOpen";
+                    return "dooropen";
                 } else {
                     return "door";
                 }

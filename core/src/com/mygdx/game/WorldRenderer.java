@@ -229,7 +229,7 @@ public class WorldRenderer {
 //        drawButtons();
 //        spriteBatch.disableBlending();
         spriteBatch.end();
-//        drawDebug();
+        drawDebug();
 //        aiDebug();
 //        drawCollisionBlocks();
         if (debug) drawDebug();
@@ -271,10 +271,34 @@ public class WorldRenderer {
         for(Block block : world.getDrawableHouseBlocks()) {
             if (block.getBlockType() == null) {
                 spriteBatch.draw(textureLoader.getRegion(block.getName()), block.getPosition().x, block.getPosition().y, Block.getSIZE(), Block.getSIZE());
-                continue;
+            } else {
+                switch (block.getBlockType()) {
+                    case WALL:
+                        for (float rotation : ((Wall) block).getWalls().keySet()) {
+                            Wall.WallType wall = ((Wall) block).getWalls().get(rotation);
+                            if (wall != null) {
+                                Polygon polygon = wall.getBounds();
+                                spriteBatch.draw(textureLoader.getRegion(wall.getName()), polygon.getX(), polygon.getY(), 0, 0, Block.getSIZE(), Block.getSIZE()/2, 1F, 0.5F, rotation);
+                            }
+                        }
+                        break;
+                    case FILLABLE:
+                        Polygon polygon = block.getBounds();
+                        float rotation = polygon.getRotation();
+                        Rectangle rectangle = polygon.getBoundingRectangle();
+                        if (rotation == 90 || rotation == 270) {
+                            spriteBatch.draw(textureLoader.getRegion(block.getName()), polygon.getX(), polygon.getY(), polygon.getOriginX(), polygon.getOriginY(), polygon.getBoundingRectangle().height, polygon.getBoundingRectangle().width, 1F, 1F, rotation);
+                        }
+                        else {
+                            spriteBatch.draw(textureLoader.getRegion(block.getName()), polygon.getX(), polygon.getY(), polygon.getOriginX(), polygon.getOriginY(), polygon.getBoundingRectangle().width, polygon.getBoundingRectangle().height, 1F, 1F, rotation);
+                        }
+                        break;
+                    default:
+                        spriteBatch.draw(textureLoader.getRegion(block.getName()), block.getPosition().x, block.getPosition().y, Block.getSIZE(), Block.getSIZE());
+                        break;
+                }
             }
         }
-
     }
 
     private void drawFloor() {
@@ -1298,9 +1322,9 @@ public class WorldRenderer {
 //            debugRenderer.circle(bob.getCollideCircle().x, bob.getCollideCircle().y, bob.getCollideCircle().radius);
 //        }
 
-//        for (AreaAffect areaAffect : world.getAreaAffects()) {
-//            debugRenderer.circle(areaAffect.getBoundingCircle().x, areaAffect.getBoundingCircle().y, areaAffect.getBoundingCircle().radius);
-//        }
+        for (AreaAffect areaAffect : world.getAreaAffects()) {
+            debugRenderer.circle(areaAffect.getBoundingCircle().x, areaAffect.getBoundingCircle().y, areaAffect.getBoundingCircle().radius);
+        }
 
 //        debugRenderer.circle(bob.getCentrePosition().x, bob.getCentrePosition().y, 2);
 //        debugRenderer.polygon(bob.getViewCircle().getTransformedVertices());

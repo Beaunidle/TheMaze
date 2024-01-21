@@ -1197,7 +1197,7 @@ public class WorldController {
                     player.getStrongHand().setQuantity(player.getStrongHand().getQuantity() - 1);
                 }
             } else if (o == null) {
-                blocks[gridRef.x][gridRef.y] = new Wall(new Vector2(gridRef.x, gridRef.y), rotation, Block.getSIZE(), Block.getSIZE()/4, isDoor);
+                blockToPlace = new Wall(new Vector2(gridRef.x, gridRef.y), rotation, Block.getSIZE(), Block.getSIZE()/4, isDoor);
                 player.getStrongHand().setQuantity(player.getStrongHand().getQuantity() - 1);
             }
             if (player.getStrongHand().getQuantity() <= 0 && !player.getInventory().checkItem(new Placeable(Placeable.PlaceableType.WALL, 10))) {
@@ -1208,7 +1208,7 @@ public class WorldController {
             if (o == null) {
                 //todo make this a separate method
                 if (placeable.getPlaceableType().equals(Placeable.PlaceableType.BED)) {
-                    blocks[gridRef.x][gridRef.y] = new Block(new Vector2(gridRef.x, gridRef.y), 10, placeable.getWidth(), rotation, Block.BlockType.BED);
+                    blockToPlace = new Block(new Vector2(gridRef.x, gridRef.y), 10, placeable.getWidth(), rotation, Block.BlockType.BED);
                     player.setPersonalSpawn(new Vector2(gridRef.x, gridRef.y));
                     System.out.println("Spawn point is being reset to " + player.getPersonalSpawn());
 //                } else if (placeable.getPlaceableType().equals(Placeable.PlaceableType.HOUSE)) {
@@ -1248,19 +1248,23 @@ public class WorldController {
                         for (int i = 0; i < placeable.getWidth(); i++) {
                             for (int j = 0; j < placeable.getHeight(); j++) {
                                 if (rotation == 0) {
-                                    blocks[gridRef.x + i][gridRef.y + j] = fillableBlock;
+                                    if (player.isInHouse()) world.getLevel().getHouseBlocks()[gridRef.x + i- 1000][gridRef.y + j- 1000] = fillableBlock;
+                                    else blocks[gridRef.x + i][gridRef.y + j] = fillableBlock;
                                     System.out.println((gridRef.x + i) + "," + (gridRef.y + j));
                                 }
                                 if (rotation == 90) {
-                                    blocks[gridRef.x - j][gridRef.y + i] = fillableBlock;
+                                    if (player.isInHouse()) world.getLevel().getHouseBlocks()[gridRef.x - j- 1000][gridRef.y + i- 1000] = fillableBlock;
+                                    else blocks[gridRef.x - j][gridRef.y + i] = fillableBlock;
                                     System.out.println((gridRef.x - j) + "," + (gridRef.y + i));
                                 }
                                 if (rotation == 180) {
-                                    blocks[gridRef.x - i][gridRef.y - j] = fillableBlock;
+                                    if (player.isInHouse()) world.getLevel().getHouseBlocks()[gridRef.x - i - 1000][gridRef.y - j - 1000] = fillableBlock;
+                                    else blocks[gridRef.x - i][gridRef.y - j] = fillableBlock;
                                     System.out.println((gridRef.x - i) + "," + (gridRef.y - j));
                                 }
                                 if (rotation == 270) {
-                                    blocks[gridRef.x + j][gridRef.y - i] = fillableBlock;
+                                    if (player.isInHouse()) world.getLevel().getHouseBlocks()[gridRef.x + j - 1000][gridRef.y - i - 1000] = fillableBlock;
+                                    else blocks[gridRef.x + j][gridRef.y - i] = fillableBlock;
                                     System.out.println((gridRef.x + j) + "," + (gridRef.y - i));
                                 }
                             }
@@ -1272,6 +1276,13 @@ public class WorldController {
             if (player.getStrongHand().getQuantity() <= 0) {
                 //todo look in inventory for other stacks of same item
                 player.setStrongHand(null);
+            }
+        }
+        if (blockToPlace != null) {
+            if (player.isInHouse()) {
+                world.getLevel().getHouseBlocks()[gridRef.x - 1000][gridRef.y - 1000] = blockToPlace;
+            } else {
+                blocks[gridRef.x][gridRef.y] = blockToPlace;
             }
         }
     }
@@ -1452,7 +1463,6 @@ public class WorldController {
         int xPos = (int)Math.floor(sprite.getCentrePosition().x - (float)sprite.getView().getBlocks().length/2);
         int yPos = (int)Math.floor(sprite.getCentrePosition().y - (float)sprite.getView().getBlocks()[0].length/2);
 
-        System.out.println("Start");
         for (int i = 0; i < sprite.getView().getBlocks().length; i++) {
             for (int j = 0; j < sprite.getView().getBlocks()[0].length; j++) {
                 int col = xPos + i;
@@ -1460,9 +1470,6 @@ public class WorldController {
                 Block block = null;
                 if (sprite.isInHouse()) {
                     block = world.getLevel().getHouseBlock(col, row);
-                    if (block != null) {
-                        System.out.println("Woooo");
-                    }
                 } else {
                     if (col >= 0 && row >= 0 && col < world.getLevel().getWidth() && row < world.getLevel().getHeight()) {
                         block = world.getLevel().getBlock(col, row);
@@ -1475,7 +1482,6 @@ public class WorldController {
                 }
             }
         }
-        System.out.println("End");
 //        for (FloorPad floorPad : world.getLevel().getFloorPads()) {
 //            if (Intersector.overlapConvexPolygons(floorPad.getBounds(), player.getViewCircle())) {
 //                player.getView().getFloorPads().add(floorPad);

@@ -106,7 +106,8 @@ public class Player extends Sprite {
 //        for (int i = 0; i < 100; i++) {
 //            inventory.addInventory(new Placeable(Placeable.PlaceableType.WALL, 10));
 //        }
-        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.DOOR, 10));
+        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.BED, 10));
+        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.BED, 10));
 //        inventory.addInventory(new Material(COPPER, 20));
 //        inventory.addInventory(new Material(FLINT, 20));
 //        inventory.addInventory(new Material(Material.Type.WOOD, 10));
@@ -341,7 +342,7 @@ public class Player extends Sprite {
         if (rotation < 0) rotation = rotation + 360;
         if (rotation > 360) rotation = rotation - 360;
         float x = gridRef.x + (float)(getWidth()*1.4F * Math.cos(rotation * Math.PI/180));
-        float y = gridRef.y + (float)(getHeight()*1.4F * Math.sin(rotation * Math.PI/180));
+        float y = gridRef.y + (float)(getHeight()*4.4F * Math.sin(rotation * Math.PI/180));
         getHitCircle().setPosition(new Vector2(x, y));
     }
 

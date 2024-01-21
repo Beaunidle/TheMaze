@@ -106,7 +106,6 @@ public class Level {
         int houseX = x - 1000;
         int houseY = y - 1000;
         if (houseX >= 0 && houseX < 10 && houseY >= 0 && houseY < 10) {
-            System.out.println("House X: " + houseX + ", House Y: " + houseY);
             if (houseBlocks[houseX][houseY] != null && houseBlocks[houseX][houseY] instanceof Block) return (Block)houseBlocks[houseX][houseY];
         }
         return null;
