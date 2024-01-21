@@ -51,14 +51,11 @@ public class AnimalAi extends BaseAi{
         double dif = Math.sqrt(v0*v0 + v1*v1);
 
         if (dif < 0) dif = dif * -1;
-        if (dif > 30) {
-//            System.out.println(name + ": I'mmmm so lonely here at: " + animalPos + ". I am " + dif + " tiles away from home. Waaaaaaa");
-        }
         return dif;
     }
 
     public int maximumSpawnDistance(Boolean nightTime) {
-        return nightTime ? 5 : 20;
+        return nightTime ? 10 : 30;
     }
 
     public boolean moveToTarget(Sprite s, float stop, Vector2 target, boolean shouldBeVisible) {

@@ -74,8 +74,8 @@ public class AnimalSpawn extends SpawnPoint{
                     break;
                 case SPIDER:
                     name = "spider";
-                    width = 0.7F;
-                    height = 0.7F;
+                    width = 1.5F;
+                    height = 1.5F;
                     rotationSpeed = 120F;
                     animalAi = new SpiderAI();
                     lives = 2;

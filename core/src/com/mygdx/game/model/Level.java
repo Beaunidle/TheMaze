@@ -27,6 +27,7 @@ public class Level {
     private int width =  300;
     private int height = 300;
     private GameObject[][] blocks;
+    private GameObject[][] houseBlocks;
     private List<Block> environmentBlocks = new ArrayList<>();
     private final List<ExplodableBlock> explodableBlocks = new ArrayList<>();
     private final List<GunPad> gunPads = new ArrayList<>();
@@ -58,6 +59,14 @@ public class Level {
         return blocks;
     }
 
+    public GameObject[][] getHouseBlocks() {
+        return houseBlocks;
+    }
+
+    public void setHouseBlocks(GameObject[][] houseBlocks) {
+        this.houseBlocks = houseBlocks;
+    }
+
     public void setBlocks(GameObject[][] blocks) {
         this.blocks = blocks;
     }
@@ -78,11 +87,27 @@ public class Level {
                 blocks[col][row] = null;
             }
         }
+        houseBlocks = new GameObject[10][10];
+        for (int col = 0; col < 10; col++) {
+            for (int row = 0; row < 10; row++) {
+                houseBlocks[col][row] = null;
+            }
+        }
     }
 
     public Block getBlock(int x, int y) {
         if (x > 0 && x < width && y > 0 && y < height) {
             if (blocks[x][y] != null && blocks[x][y] instanceof Block) return (Block)blocks[x][y];
+        }
+        return null;
+    }
+
+    public Block getHouseBlock(int x, int y) {
+        int houseX = x - 1000;
+        int houseY = y - 1000;
+        if (houseX >= 0 && houseX < 10 && houseY >= 0 && houseY < 10) {
+            System.out.println("House X: " + houseX + ", House Y: " + houseY);
+            if (houseBlocks[houseX][houseY] != null && houseBlocks[houseX][houseY] instanceof Block) return (Block)houseBlocks[houseX][houseY];
         }
         return null;
     }

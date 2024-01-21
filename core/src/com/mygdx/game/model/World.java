@@ -224,6 +224,21 @@ public class World {
         return blocks;
     }
 
+    public List<Block> getDrawableHouseBlocks() {
+        List<Block> blocks = new ArrayList<>();
+        Block block;
+        for (int col = 0; col < 10; col++) {
+            for (int row = 0; row < 10; row++) {
+                block = (Block)level.getHouseBlocks()[col][row];
+                if (block != null) {
+                    blocks.add(block);
+                }
+            }
+        }
+
+        return blocks;
+    }
+
     public void loadWorld(int number) {
         System.out.println("Loading level " + number);
         bloodStains.clear();
@@ -236,7 +251,7 @@ public class World {
         Random rand = new Random();
         int rando = rand.nextInt(spawnPoints.size());
         SpawnPoint sp = spawnPoints.get(rando);
-        bob = new Player(new Vector2(sp.getPosition()), "player", 30, recipeHolder);
+        bob = new Player(new Vector2(sp.getPosition()), "player", 5F, recipeHolder);
         numbers.add(rando);
 
         for (int i = 0; i < spawnPoints.size() -1; i++) {
@@ -253,7 +268,7 @@ public class World {
             if (pos.x <= 0 || pos.x >= level.getWidth() || pos.y <= 0 || pos.y >= level.getHeight()) animal.die();
             else animals.add(animal);
         }
-//        buttons.add(new GameButton(new Vector2(12, 3), 0.5F, GameButton.Type.USE));
+        buttons.add(new GameButton(new Vector2(12, 3), 0.5F, GameButton.Type.USE));
     }
 
     public Vector2 getLocateExplosion() {

@@ -40,7 +40,7 @@ public class Block extends GameObject {
 
     public Block(Vector2 pos, double maxDurability, float width, float height, int rotation, String name) {
         super(name, pos, new Polygon((new float[]{0, 0, width, 0, width, height, 0, height})));
-        getBounds().setOrigin(SIZE/2, SIZE/2);
+        getBounds().setOrigin(width/2, height/2);
         getBounds().setRotation(rotation);
         this.maxDurability = maxDurability;
         this.durability = maxDurability;
@@ -94,6 +94,7 @@ public class Block extends GameObject {
         if (durability < 0) {
             durability = 0;
         }
+        if (durability <= 0) System.out.println("Hiiiii");
     }
 
     public void increaseDurability(double hit) {

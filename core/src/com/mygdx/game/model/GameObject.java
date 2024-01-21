@@ -7,7 +7,12 @@ public class GameObject {
 
     private final String name;
     private Vector2 position;
-    private final Polygon bounds;
+
+    public void setBounds(Polygon bounds) {
+        this.bounds = bounds;
+    }
+
+    private Polygon bounds;
 
     public GameObject(String name, Vector2 position, Polygon bounds) {
         this.name = name;
@@ -33,4 +38,6 @@ public class GameObject {
     public Polygon getBounds() {
         return bounds;
     }
+
+
 }

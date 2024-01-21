@@ -24,10 +24,10 @@ public class Consumable extends Material {
                 break;
             case BERRY:
                 setName("berry");
-                food = 2;
+                food = 1;
                 protein = 0;
                 fat = 0;
-                sugar = 2;
+                sugar = 1;
                 break;
             case POTATO:
                 setName("potato");

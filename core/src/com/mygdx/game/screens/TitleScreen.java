@@ -7,12 +7,15 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -104,6 +107,10 @@ public class TitleScreen extends ScreenAdapter implements InputProcessor {
                 Gdx.app.exit();
             }
         });
+        Table table = new Table();
+        table.setBackground(new TextureRegionDrawable(new TextureRegion(atlas.findRegion("menu"))));
+        table.setFillParent(true);
+        stage.addActor(table);
         stage.addActor(startButton);
         stage.addActor(exitButton);
 
@@ -120,10 +127,12 @@ public class TitleScreen extends ScreenAdapter implements InputProcessor {
         spriteBatch.begin();
         font.getLineHeight();
 
-        if (Gdx.app.getType().equals(Application.ApplicationType.Android)) font.getData().setScale(4);
-            font.draw(spriteBatch, "Moody Mayhem!", Gdx.graphics.getWidth() * .35f, Gdx.graphics.getHeight() * .75f);
-            font.draw(spriteBatch, "Run around and don't die!!!", Gdx.graphics.getWidth() * .35f, Gdx.graphics.getHeight() * .65f);
-            font.draw(spriteBatch, "Click start to play", Gdx.graphics.getWidth() * .35f, Gdx.graphics.getHeight() * .55f);
+        if (Gdx.app.getType().equals(Application.ApplicationType.Android)) {
+            font.getData().setScale(4);
+        }
+        font.draw(spriteBatch, "Moody Mayhem!", Gdx.graphics.getWidth() * .35f, Gdx.graphics.getHeight() * .75f);
+        font.draw(spriteBatch, "Run around and don't die!!!", Gdx.graphics.getWidth() * .35f, Gdx.graphics.getHeight() * .65f);
+        font.draw(spriteBatch, "Click start to play", Gdx.graphics.getWidth() * .35f, Gdx.graphics.getHeight() * .55f);
 
         spriteBatch.end();
     }

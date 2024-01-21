@@ -7,6 +7,7 @@ import com.mygdx.game.model.environment.AnimalSpawn;
 import com.mygdx.game.model.environment.blocks.Block;
 import com.mygdx.game.model.environment.blocks.EnvironmentBlock;
 import com.mygdx.game.model.environment.blocks.Grower;
+import com.mygdx.game.model.environment.blocks.Wall;
 import com.mygdx.game.model.items.Consumable;
 import com.mygdx.game.model.items.Material;
 import com.mygdx.game.model.items.Swingable;
@@ -22,6 +23,7 @@ import com.mygdx.game.model.environment.SpawnPoint;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Random;
 
 import static com.mygdx.game.model.items.Consumable.ConsumableType.*;
 import static com.mygdx.game.model.items.Material.Type.*;
@@ -48,7 +50,7 @@ public class LevelLoader {
                  level.getBlocks()[i][level.getHeight() - 5] = new Block(new Vector2(i, level.getHeight() - 5), "block");
              }
         } catch (IOException e) {
-            System.out.println(e.toString());
+            System.out.println(e);
         }
 
         return level;
@@ -61,6 +63,7 @@ public class LevelLoader {
         int spawnCount = 0;
         BufferedReader br = new BufferedReader(new InputStreamReader(file.read()));
         String st;
+        Random rand = new Random();
         while ((st = br.readLine()) != null) {
             if (st.contains("//")) continue;
             String[] values = st.split(",");
@@ -72,13 +75,24 @@ public class LevelLoader {
                     spawnCount++;
                     break;
                 case "COW":
-                    level.getAnimalSpawnPoints().add(new AnimalSpawn(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), 6, COW, 15, 5));
+                    level.getAnimalSpawnPoints().add(new AnimalSpawn(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), 6, COW, 15, 30));
                     break;
                 case "SPIDER":
-//                    level.getAnimalSpawnPoints().add(new AnimalSpawn(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), 15, SPIDER, 30, 5));
+                    level.getAnimalSpawnPoints().add(new AnimalSpawn(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), 15, SPIDER, 30, 30));
                     break;
                 case "BLOCK":
                     level.getBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = new Block(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), "block");
+                    break;
+                case "HOUSEBLOCK":
+                    level.getHouseBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = new Block(new Vector2(Integer.parseInt(values[1])  + 1000, Integer.parseInt(values[2])  + 1000), "block");
+                    break;
+                case "HOUSEDOOR":
+                    level.getHouseBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = new Wall(new Vector2(Integer.parseInt(values[1])  + 1000, Integer.parseInt(values[2])  + 1000), 180, Block.getSIZE(), Block.getSIZE()/4, true);
+                    break;
+                case "HOUSETILE":
+                    Block block = new Block(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), "tile");
+                    block.setColibible(false);
+                    level.getHouseBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = block;
                     break;
                 case "EXPLODING":
                     ExplodableBlock eb = new ExplodableBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])));
@@ -86,24 +100,55 @@ public class LevelLoader {
                     level.getExplodableBlocks().add(eb);
                     break;
                 case "ENVIRONMENT":
+                    int num, width, height;
                     switch (values[3]) {
                         case "COAL":
-                            EnvironmentBlock coal = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Material(COAL, 1), null, 3, 5, 0, 0,true, PICK, 10, "coal", 1, 1);
+                            num = rand.nextInt(2) + 1;
+                            width = rand.nextInt(3) + 1;
+                            height = rand.nextInt(3) + 1;
+                            EnvironmentBlock coal = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Material(COAL, 1), null, 3, 720, 0, 0,true, PICK, 10, "coal" + num, width, width);
+//                            for (int i=0; i < width; i++) {
+//                                for (int j=0; j < height; j++) {
+//                                    level.getBlocks()[Integer.parseInt(values[1]) + i][Integer.parseInt(values[2]) + j] = coal;
+//                                }
+//                            }
                             level.getBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = coal;
 //                            level.getEnvironmentBlocks().add(coal);
                             break;
                         case "STONE":
-                            EnvironmentBlock stone = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Material(STONE, 1), null, 3, 5, 0, 0,true, PICK, 10, "stone", 1, 1);
+                            num = rand.nextInt(2) + 1;
+                            width = rand.nextInt(3) + 1;
+                            height = rand.nextInt(3) + 1;
+                            EnvironmentBlock stone = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Material(STONE, 1), null, 3, 720, 0, 0,true, PICK, 10, "stone" + num, width, height);
+//                            for (int i=0; i < width; i++) {
+//                                for (int j=0; j < height; j++) {
+//                                    level.getBlocks()[Integer.parseInt(values[1]) + i][Integer.parseInt(values[2]) + j] = stone;
+//                                }
+//                            }
+
                             level.getBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = stone;
 //                            level.getEnvironmentBlocks().add(stone);
                             break;
                         case "WOOD":
-                            EnvironmentBlock wood = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Material(WOOD, 1), null, 3, 5, 0, 0,true, AXE, 10, "wood", 1, 1);
+                            num = rand.nextInt(3) + 1;
+                            width = rand.nextInt(3) + 1;
+                            height = rand.nextInt(3) + 1;
+                            EnvironmentBlock wood = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Material(WOOD, 1), null, 3, 720, 0, 0,true, AXE, 10, "wood" + num, width, height);
+//                            for (int i=0; i < width; i++) {
+//                                for (int j=0; j < height; j++) {
+//                                    level.getBlocks()[Integer.parseInt(values[1]) + i][Integer.parseInt(values[2]) + j] = wood;
+//                                }
+//                            }
+
+                            //todo rethink how the physics engine is seeing blocks. This is not working
                             level.getBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = wood;
+//                            level.getBlocks()[Integer.parseInt(values[1]) + 1][Integer.parseInt(values[2])] = wood;
+//                            level.getBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2]) + 1] = wood;
+//                            level.getBlocks()[Integer.parseInt(values[1]) + 1][Integer.parseInt(values[2]) + 1] = wood;
 //                            level.getEnvironmentBlocks().add(wood);
                             break;
                         case "BERRY":
-                            EnvironmentBlock berry = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Consumable(BERRY, 1), null, 2, 5, 0, 0,false, null, 10, "berry", 1, 1);
+                            EnvironmentBlock berry = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Consumable(BERRY, 1), null, 2, 720, 0, 0,false, null, 10, "berrybush", 1, 1);
                             level.getBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = berry;
 //                            level.getEnvironmentBlocks().add(berry);
                             break;
@@ -123,24 +168,24 @@ public class LevelLoader {
                             level.getGrowers().add(carrot);
                             break;
                         case "GRASS":
-                            EnvironmentBlock grass = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Material(GRASS, 1), null, 2, 5, 0, 5,false, null, 10, "grass", 1, 1);
+                            EnvironmentBlock grass = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Material(GRASS, 1), null, 2, 720, 0, 0,false, null, 10, "grass", 1, 1);
                             level.getBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = grass;
 //                            level.getEnvironmentBlocks().add(grass);
                             break;
                         case "STICK":
-                            EnvironmentBlock stick = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Material(STICK, 1), null, 1, 5, 0, 0,false, null, 1, "stick", 1, 1);
+                            EnvironmentBlock stick = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Material(STICK, 1), null, 1, 720, 0, 0,false, null, 1, "stick", 1, 1);
                             level.getBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = stick;
                             break;
                         case "COPPER":
-                            EnvironmentBlock copper = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Material(COPPER, 1), null, 1, 5, 0, 0,false, null, 1, "copper", 1, 1);
+                            EnvironmentBlock copper = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Material(COPPER, 1), null, 1, 720, 0, 0,false, null, 1, "copper", 1, 1);
                             level.getBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = copper;
                             break;
                         case "FLINT":
-                            EnvironmentBlock flint = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Material(FLINT, 1), null, 1, 5, 0, 0,false, null, 1, "flint", 1, 1);
+                            EnvironmentBlock flint = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Material(FLINT, 1), null, 1, 720, 0, 0,false, null, 1, "flint", 1, 1);
                             level.getBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = flint;
                             break;
                         case "PEBBLE":
-                            EnvironmentBlock pebble = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Throwable(Throwable.ThrowableType.PEBBLE, 1), null, 1, 5, 0, 0,false, null, 1, "pebble", 1, 1);
+                            EnvironmentBlock pebble = new EnvironmentBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), new Throwable(Throwable.ThrowableType.PEBBLE, 1), null, 1, 720, 0, 0,false, null, 1, "pebble", 1, 1);
                             level.getBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = pebble;
 //                            level.getEnvironmentBlocks().add(pebble);
                             break;

@@ -51,7 +51,7 @@ class CollisionDetector {
         Polygon boundingRect = player.getBounds();
         // set the rectangle to bob's bounding box
         playerRect = new Polygon(new float[]{0, 0, player.getWidth(), player.getHeight(), player.getWidth(), 0, 0, player.getHeight()});
-        playerRect.setRotation(player.getRotation());
+//        playerRect.setRotation(player.getRotation());
 
         // we first check the movement on the horizontal X axis
         int startX, endX;
@@ -89,18 +89,18 @@ class CollisionDetector {
                             player.getVelocity().x = 0;
                             world.getCollisionRects().add(wall.getBounds());
                             //todo move ai classes
-                            if (player instanceof AIPlayer || player instanceof Animal) {
-                                player.turnAround(90);
-                            }
+//                            if (player instanceof AIPlayer || player instanceof Animal) {
+//                                player.turnAround(90);
+//                            }
                         }
                     }
                 }
             } else if (Intersector.overlapConvexPolygons(playerRect, block.getBounds()) &&
                     !(block instanceof ExplodableBlock && ((ExplodableBlock) block).getState().equals(ExplodableBlock.State.RUBBLE))) {
                 player.getVelocity().x = 0;
-                if (player instanceof AIPlayer || player instanceof Animal) {
-                    player.turnAround(90);
-                }
+//                if (player instanceof AIPlayer || player instanceof Animal) {
+//                    player.turnAround(90);
+//                }
                 world.getCollisionRects().add(block.getBounds());
                 break;
             }
@@ -142,9 +142,9 @@ class CollisionDetector {
                         if (Intersector.overlapConvexPolygons(playerRect, wall.getBounds())) {
                             player.getVelocity().y = 0;
                             world.getCollisionRects().add(wall.getBounds());
-                            if (player instanceof AIPlayer) {
-                                ((AIPlayer) player).turnAround(90);
-                            }
+//                            if (player instanceof AIPlayer) {
+//                                ((AIPlayer) player).turnAround(90);
+//                            }
                         }
                     }
                 }
@@ -152,9 +152,9 @@ class CollisionDetector {
             } else if (Intersector.overlapConvexPolygons(playerRect, block.getBounds()) &&
                     !(block instanceof ExplodableBlock && ((ExplodableBlock) block).getState().equals(ExplodableBlock.State.RUBBLE))) {
                 player.getVelocity().y = 0;
-                if (player instanceof AIPlayer) {
-                    ((AIPlayer) player).turnAround(-90);
-                }
+//                if (player instanceof AIPlayer) {
+//                    ((AIPlayer) player).turnAround(-90);
+//                }
                 world.getCollisionRects().add(block.getBounds());
                 break;
             }
@@ -422,7 +422,7 @@ class CollisionDetector {
                         }
                         break;
                     case SPIKE:
-                        player.isShot("Spike Floor", 0.2F);
+                        player.isShot("Spike Floor", 1F);
                         break;
                     case SLIME:
                     case WATER:
@@ -448,10 +448,7 @@ class CollisionDetector {
                 return false;
             }
         }
-        if (!name.equals(bob.getName()) && !Intersector.overlapConvexPolygons(bob.getBounds(), sp.getBounds())) {
-            return false;
-        }
-        return true;
+        return name.equals(bob.getName()) || Intersector.overlapConvexPolygons(bob.getBounds(), sp.getBounds());
         //return true if it is clear
     }
 
@@ -460,13 +457,22 @@ class CollisionDetector {
      **/
     private void populateCollidableBlocks(int startX, int startY, int endX, int endY) {
         collidable.clear();
-        for (int x = startX; x <= endX; x++) {
-            for (int y = startY; y <= endY; y++) {
-                if (x >= 0 && x < world.getLevel().getWidth() && y >= 0 && y < world.getLevel().getHeight()) {
-                    Block block = world.getLevel().getBlock(x, y);
-                    boolean colidible = true;
-                    if (block != null && !block.isColibible()) colidible = false;
-                    if (colidible) collidable.add(world.getLevel().getBlock(x, y));
+        if (bob.isInHouse()) {
+            for (int x = 0; x < 10; x++) {
+                for (int y = 0; y < 10; y++) {
+                        Block block = (Block)world.getLevel().getHouseBlocks()[x][y];
+                        boolean colidible = block != null && block.isColibible();
+                        if (colidible) collidable.add(block);
+                }
+            }
+        } else {
+            for (int x = startX-3; x <= endX+3; x++) {
+                for (int y = startY-3; y <= endY+3; y++) {
+                    if (x >= 0 && x < world.getLevel().getWidth() && y >= 0 && y < world.getLevel().getHeight()) {
+                        Block block = world.getLevel().getBlock(x, y);
+                        boolean colidible = block != null && block.isColibible();
+                        if (colidible) collidable.add(block);
+                    }
                 }
             }
         }

@@ -28,7 +28,7 @@ public class Animal extends Sprite {
     private final String damageName;
 
     public Animal(Vector2 position, String name, AnimalSpawn spawn, AnimalType animalType, float width, float height, float rotationSpeed, AnimalAi animalAi, int lives, int food, int water, int count, boolean child) {
-        super(position, width, height, lives, food, water, name);
+        super(position, width, height, lives, 0, food, water, name);
         this.animalType = animalType;
         this.ai = animalAi;
         this.spawn = spawn;
@@ -77,7 +77,7 @@ public class Animal extends Sprite {
     public EnvironmentBlock getBody() {
         Vector2 pos = getCentrePosition();
         Map<Material, Integer> secondaryMaterials = new HashMap<>();
-        String name = "";
+        String name;
         EnvironmentBlock blockToReturn = null;
         switch (animalType) {
             case COW:

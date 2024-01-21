@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Timer;
+import com.mygdx.game.model.Attributes;
 import com.mygdx.game.model.GameObject;
 import com.mygdx.game.model.items.Consumable;
 import com.mygdx.game.utils.Locator;
@@ -52,7 +53,7 @@ public class Sprite extends GameObject {
     private long birthTime;
     private boolean child;
 
-    private float maxLives, maxWater, maxFood, maxMana;
+    private float maxWater, maxFood;
     private float lives, food, water, mana;
     private boolean turningAntiClockwise = false, turningClcokwise = false, moveForward = false, moveBackward = false;
     private Timer.Task injuredTimer;
@@ -66,9 +67,10 @@ public class Sprite extends GameObject {
     private boolean useTimerOn;
     private boolean useDelayOn;
 
-    private boolean injured, healing, aging, dodging, staggered, onfire;
+    private boolean injured, healing, aging, dodging, staggered, onfire, inHouse;
     private String killedBy;
     private int rotateBy = 0;
+    private Attributes attributes;
 
     private final Timer.Task hitTimer = new Timer.Task() {
         @Override
@@ -98,7 +100,7 @@ public class Sprite extends GameObject {
         }
     };
 
-    public Sprite(Vector2 position, float width, float height, float lives, float food, float water, String name) {
+    public Sprite(Vector2 position, float width, float height, float lives, float adeptness, float food, float water, String name) {
         super(name, position, new Polygon(new float[]{0, 0, width, 0, width, height, 0, height}));
         birthTime = System.currentTimeMillis();
         getBounds().setOrigin(width/2, height/2);
@@ -108,17 +110,16 @@ public class Sprite extends GameObject {
         hitCircle = new Circle(getCentrePosition(), 5F);
         collideCircle = new Circle(getCentrePosition(), 2.5F);
         collideCircle.setPosition(getCentrePosition());
+        attributes = new Attributes(lives, adeptness);
 
         this.width = width;
         this.height = height;
-        this.maxLives = lives;
-        this.lives = lives;
-        this.mana = 20;
+        this.lives = getMaxHealth();
+        this.mana = attributes.getMaxMana();
         this.water = water;
         this.food = food;
         this.maxWater = water;
         this.maxFood = food;
-        this.maxMana = mana;
         locator = new Locator();
 
         view = new View();
@@ -240,14 +241,6 @@ public class Sprite extends GameObject {
         this.mana = mana;
     }
 
-    public float getMaxLives() {
-        return maxLives;
-    }
-
-    public void setMaxLives(float maxLives) {
-        this.maxLives = maxLives;
-    }
-
     public void setMaxWater(float maxWater) {
         this.maxWater = maxWater;
     }
@@ -260,12 +253,13 @@ public class Sprite extends GameObject {
         return maxWater;
     }
 
-    public float getMaxFood() {
-        return maxFood;
-    }
+    public float getMaxFood() { return attributes.getMaxFood(); }
+
+
+    public float getMaxHealth() {return attributes.getMaxHealth();}
 
     public float getMaxMana() {
-        return maxMana;
+        return attributes.getMaxMana();
     }
 
     public float getFood() {
@@ -290,7 +284,7 @@ public class Sprite extends GameObject {
 
     public void increaseLife(float healing) {
         lives = lives + healing;
-        if (lives > maxLives) lives = maxLives;
+        if (lives > getMaxHealth()) lives = getMaxHealth();
     }
 
     public State getState() {
@@ -392,7 +386,6 @@ public class Sprite extends GameObject {
         if (hitPhase > maxHits) {
             hitPhase = 0;
             maxHits = 0;
-            return;
         } else {
             Timer.schedule(hitTimer, hitTime);
         }
@@ -486,6 +479,14 @@ public class Sprite extends GameObject {
 
     public void setOnfire(boolean onfire) {
         this.onfire = onfire;
+    }
+
+    public boolean isInHouse() {
+        return getPosition().x > 500 && getPosition().y > 500;
+    }
+
+    public void setInHouse(boolean inHouse) {
+        this.inHouse = inHouse;
     }
 
     public void moveForward() {
@@ -625,15 +626,20 @@ public class Sprite extends GameObject {
 
     public void eat(float quantity) {
         food = food + quantity;
-        if (food > maxFood) food = maxFood;
+        if (food > getMaxFood()) food = getMaxFood();
     }
 
     public void eat(Consumable consumable) {
-        if (consumable.getFood() > 0) {
-            food = food + consumable.getFood();
-            if (food > maxFood) food = maxFood;
+        int amount = consumable.getFood();
+        if (amount > 0) {
+            food += amount;
+            if (food > getMaxFood()) food = getMaxFood();
+
+            //todo sort out nutrients. Use nutrients to decide attribute buffs :)
+            if (this instanceof Player) {
+                attributes.increaseVitality(amount);
+            }
         }
-        //todo sort out nutrients
     }
 
 
@@ -700,11 +706,14 @@ public class Sprite extends GameObject {
         if (!healing) {
             if (onfire) lives = lives - 4;
             if (food > 0 && water > 0) {
-                if (lives < maxLives ) {
+                float maxLives = getMaxHealth();
+                if (lives < maxLives) {
                     healing = true;
-                    lives = lives + 0.3F;
+                    //todo add healing factor
+                    lives = lives + attributes.getHealing();;
                     if (lives > maxLives) lives = maxLives;
                 }
+                float maxMana = attributes.getMaxMana();
                 if (mana < maxMana) {
                     healing = true;
                     mana = mana + 0.3F;
@@ -722,7 +731,7 @@ public class Sprite extends GameObject {
     public void age() {
         if (!aging && !getState().equals(State.HIDING)) {
             aging = true;
-            Timer.schedule(ageTimer, 3F);
+            Timer.schedule(ageTimer, 5F);
             if (water > 0 ) {
                 water = water- 0.25F;
             } else {
@@ -848,13 +857,20 @@ public class Sprite extends GameObject {
     //todo store this shit somewhere
     public void growUp() {
         if (this instanceof Animal &&  ((Animal) this).getAnimalType().equals(Animal.AnimalType.COW)) {
-            width = 1.80F;
-            height = 0.7F;
-            maxLives = 20;
+            width = 2.50F;
+            height = 0.9F;
+            this.setBounds(new Polygon(new float[]{0, 0, width, 0, width, height, 0, height}));
+            getBounds().setOrigin(width/2, height/2);
+            //todo don't forget max lives increase for adults
+//            maxLives = 20;
             maxFood = 10;
             maxWater = 10;
             child = false;
-            System.out.println("I am an adult!!!");
+//            System.out.println("I am an adult!!!");
         }
+    }
+
+    public boolean isMaxHealth() {
+        return  (lives >= getMaxHealth());
     }
 }

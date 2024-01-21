@@ -20,6 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygdx.game.MapRenderer;
+import com.mygdx.game.TextureLoader;
 import com.mygdx.game.WorldRenderer;
 import com.mygdx.game.model.GameButton;
 import com.mygdx.game.model.ScoreBoard;
@@ -38,13 +39,15 @@ public class MapScreen extends ScreenAdapter implements InputProcessor {
     float xRatio;
     float yRatio;
     boolean camUp, camDown, camLeft, camRight, zoomIn, zoomOut;
+    private TextureLoader textureLoader;
 
-    MapScreen(Game game, SpriteBatch spriteBatch, BitmapFont font, GameScreen gameScreen, World world) {
+    MapScreen(Game game, SpriteBatch spriteBatch, BitmapFont font, GameScreen gameScreen, World world, TextureLoader textureLoader) {
         this.game = game;
         this.spriteBatch = spriteBatch;
         this.font = font;
         this.gameScreen = gameScreen;
         this.world = world;
+        this.textureLoader = textureLoader;
 
         this.width = Gdx.app.getGraphics().getWidth();
         this.height = Gdx.app.getGraphics().getHeight();
@@ -62,7 +65,7 @@ public class MapScreen extends ScreenAdapter implements InputProcessor {
     }
 
     public void show(){
-        renderer = new MapRenderer(world, spriteBatch, false, font);
+        renderer = new MapRenderer(world, spriteBatch, false, font, textureLoader);
         Gdx.input.setCursorCatched(false);
         Gdx.input.setInputProcessor(this);
 

@@ -16,7 +16,7 @@ public class Placeable extends Item {
         switch (placeableType) {
             case WALL:
                 setName("wall");
-                setMaxPerStack(10);
+                setMaxPerStack(20);
                 break;
             case DOOR:
                 setName("door");
@@ -49,7 +49,7 @@ public class Placeable extends Item {
                 setMaxPerStack(5);
                 break;
             case HOUSE:
-                setName("house");
+                setName("tipi");
                 setMaxPerStack(1);
                 width = 3;
                 height = 3;

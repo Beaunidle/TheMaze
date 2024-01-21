@@ -167,7 +167,11 @@ public class FillableBlock extends Block {
         StringBuilder fillableName = new StringBuilder();
         fillableName.append(super.getName());
         if (getFillableType().equals(FillableBlock.FillableType.CAMPFIRE)) {
-            if (isActive()) fillableName.append("-burning");
+            if (isActive()) {
+                Random rand = new Random();
+                int num = rand.nextInt(3) + 1;
+                fillableName.append("-burning").append(num);
+            }
         } else if (getFillableType().equals(FillableBlock.FillableType.TORCH)) {
             Random rand = new Random();
             int myNum = rand.nextInt(4) + 1;

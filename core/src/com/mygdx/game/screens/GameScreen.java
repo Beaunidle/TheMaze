@@ -17,6 +17,7 @@ import com.mygdx.game.model.World;
 import com.mygdx.game.WorldRenderer;
 import com.mygdx.game.controller.WorldController;
 import com.mygdx.game.model.environment.blocks.FillableBlock;
+import com.mygdx.game.model.items.Fillable;
 import com.mygdx.game.utils.JoyStick;
 import com.mygdx.game.utils.Locator;
 
@@ -61,27 +62,33 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0.5f, 0.1f, 0.5f, 1);
+        Gdx.gl.glClearColor(0f, 0f, 0f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         if (controller.isLevelFinished()) {
             BitmapFont font = new BitmapFont();
             game.setScreen(new LoadingScreen(game, spriteBatch, font, controller.getScoreBoard()));
         }
-        if (controller.isPaused() && controller.getFillableToShow() == null) {
+        FillableBlock fillableBlock = controller.getFillableToShow();
+        if (controller.isPaused() && fillableBlock == null) {
             game.setScreen(new InstructionsScreen(game, spriteBatch, font, this));
             return;
         }
-        if (controller.getFillableToShow() != null) {
-            if (controller.getFillableToShow().getFillableType().equals(FillableBlock.FillableType.INVSCREEN)) {
+        if (fillableBlock != null) {
+            if (fillableBlock.getFillableType().equals(FillableBlock.FillableType.HOUSE)) {
+                world.getBob().setPosition(new Vector2(1004.5F,1001));
+//                world.getBob().setInHouse(true);
+                getController().setFillableToShow(null);
+            } else if (fillableBlock.getFillableType().equals(FillableBlock.FillableType.INVSCREEN)) {
                 game.setScreen(new InventoryScreen(game, spriteBatch, font, this, world));
                 return;
-            }
-            if (controller.getFillableToShow().getFillableType().equals(FillableBlock.FillableType.MAPSCREEN)) {
-                game.setScreen(new MapScreen(game, spriteBatch, font, this, world));
+            } else if (fillableBlock.getFillableType().equals(FillableBlock.FillableType.MAPSCREEN)) {
+                game.setScreen(new MapScreen(game, spriteBatch, font, this, world, textureLoader));
                 return;
+            } else if (fillableBlock.isRecipeSelect()) {
+                game.setScreen(new FillableScreen(game, spriteBatch, font, this, world, fillableBlock));
+            } else {
+                game.setScreen(new CraftScreen(game, spriteBatch, font, this, world, fillableBlock.getRecipes()));
             }
-            if (!controller.getFillableToShow().isRecipeSelect())game.setScreen(new FillableScreen(game, spriteBatch, font, this, world, controller.getFillableToShow()));
-            else game.setScreen(new CraftScreen(game, spriteBatch, font, this, world, controller.getFillableToShow().getRecipes()));
         }
         controller.update(delta);
         renderer.render();

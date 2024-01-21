@@ -96,26 +96,26 @@ public class CowAi extends AnimalAi {
                     setTargetCoordinates(null);
                     s.setTarget(null);
                     s.setTargetSprite(null);
-                } else
-                if ((System.currentTimeMillis() - s.getBirthTime())/1000 > 100) {
+                } else if ((System.currentTimeMillis() - s.getBirthTime())/1000 > 100) {
                     if (s.isChild()) {
                         s.growUp();
-                    } else if (!s.getState().equals(Sprite.State.HORNY)) {
-                        System.out.println(((Animal) s).getDamageName() + " is horny");
-                        s.setState(Sprite.State.HORNY);
-                        s.setIntent(Sprite.Intent.SEARCHING);
-                        setTargetCoordinates(null);
-                        s.setTarget(null);
                     }
-//                    else if (s.getTarget() == null || !s.getTarget().equals(((Animal)s).getSpawn())) {
-//                        Vector2 spawnPos = ((Animal)s).getSpawn();
-//                        if (checkSpawnDistance(s.getCentrePosition(), spawnPos, ((Animal) s).getDamageName()) > maximumSpawnDistance(nightTime)) {
-//                            s.setTarget(new Vector2(spawnPos.x + 0.5F, spawnPos.y + 0.5F));
-//                            s.setTargetSprite(null);
-//                            setTargetCoordinates(null);
-//                            s.setIntent(Sprite.Intent.HOMEWARD);
-//                        }
+//                    else if (!s.getState().equals(Sprite.State.HORNY)) {
+////                        System.out.println(((Animal) s).getDamageName() + " is horny");
+//                        s.setState(Sprite.State.HORNY);
+//                        s.setIntent(Sprite.Intent.SEARCHING);
+//                        setTargetCoordinates(null);
+//                        s.setTarget(null);
 //                    }
+                    if (s.getTarget() == null || !s.getTarget().equals(((Animal)s).getSpawn())) {
+                        Vector2 spawnPos = ((Animal)s).getSpawn();
+                        if (checkSpawnDistance(s.getCentrePosition(), spawnPos, ((Animal) s).getDamageName()) > maximumSpawnDistance(nightTime)) {
+                            s.setTarget(new Vector2(spawnPos.x + 0.5F, spawnPos.y + 0.5F));
+                            s.setTargetSprite(null);
+                            setTargetCoordinates(null);
+                            s.setIntent(Sprite.Intent.HOMEWARD);
+                        }
+                    }
                 }
             }
         }

@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Timer;
+import com.mygdx.game.model.Attributes;
 import com.mygdx.game.model.Inventory;
 import com.mygdx.game.model.Recipe;
 import com.mygdx.game.model.environment.blocks.Block;
@@ -29,7 +30,7 @@ public class Player extends Sprite {
         IDLE, SWINGTOOL, SWINGSWORD
     }
     public enum Boost {
-        HOMING, SPEED, DAMAGE, SHIELD, HEALING, NOTHING;
+        HOMING, SPEED, DAMAGE, SHIELD, HEALING, NOTHING
     }
 
     private Material strongHand;
@@ -70,7 +71,7 @@ public class Player extends Sprite {
     private boolean slotMoving;
 
     public Player(Vector2 position, String name, float lives, RecipeHolder recipeHolder) {
-        super(position, 0.70F, 0.70F, lives, 10, 10, name);
+        super(position, 0.70F, 0.70F, lives, 10, 5, 5, name);
         shieldCircle = new Circle(getCentrePosition().x, getCentrePosition().y, 5F);
         setHitCircle(new Circle(getLeftHandPosition(45, getWidth()), 0.5F));
         leftHanded = true;//!(this instanceof AIPlayer);
@@ -88,18 +89,24 @@ public class Player extends Sprite {
         inventory = new Inventory(20);
         toolBelt = new Inventory(9);
         toolBelt.addInventory(new Swingable(Swingable.SwingableType.AXE, 50, new Material(FLINT, 1)));
+//        toolBelt.addInventory(new Swingable(Swingable.SwingableType.AXE, 50, new Material(COPPER, 1)));
         toolBelt.addInventory(new Swingable(Swingable.SwingableType.PICK, 50, new Material(FLINT, 1)));
         toolBelt.addInventory(new Swingable(Swingable.SwingableType.SWORD, 50, new Material(FLINT, 1)));
-        toolBelt.addInventory(new Swingable(Swingable.SwingableType.SWORD, 50, new Material(COPPER, 1)));
-        toolBelt.addInventory(new Swingable(Swingable.SwingableType.SHOVEL, 10, new Material(BONE, 1)));
-        toolBelt.addInventory(new Swingable(Swingable.SwingableType.HOE, 10, new Material(BONE, 1)));
+//        toolBelt.addInventory(new Swingable(Swingable.SwingableType.SWORD, 50, new Material(COPPER, 1)));
+//        toolBelt.addInventory(new Swingable(Swingable.SwingableType.SHOVEL, 10, new Material(BONE, 1)));
+//        toolBelt.addInventory(new Swingable(Swingable.SwingableType.HOE, 10, new Material(BONE, 1)));
         toolBelt.addInventory(new Swingable(Swingable.SwingableType.HAMMER, 10, new Material(STONE, 1)));
-//        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.STONEANVIL, 10));
+//        toolBelt.addInventory(new Swingable(Swingable.SwingableType.CLUB, 10, new Material(BONE, 1)));
+//        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.CAMPFIRE, 10));
+        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.STONEANVIL, 10));
         toolBelt.addInventory(new Placeable(Placeable.PlaceableType.TORCH, 10));
-////        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
-////        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
-////        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
-////        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
+        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
+//        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
+//        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
+//        for (int i = 0; i < 100; i++) {
+//            inventory.addInventory(new Placeable(Placeable.PlaceableType.WALL, 10));
+//        }
+        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.DOOR, 10));
 //        inventory.addInventory(new Material(COPPER, 20));
 //        inventory.addInventory(new Material(FLINT, 20));
 //        inventory.addInventory(new Material(Material.Type.WOOD, 10));
@@ -107,10 +114,10 @@ public class Player extends Sprite {
 
         //todo work out how spells can be unlocked
         spells = new ArrayList<>();
-        spells.add(new Magic(Projectile.ProjectileType.FIREBALL));
-        spells.add(new Magic(3, Magic.Element.ELECTRIC));
-        spells.add(new Magic(5, "healing"));
-        strongHand = spells.get(0);
+//        spells.add(new Magic(Projectile.ProjectileType.FIREBALL));
+//        spells.add(new Magic(3, Magic.Element.ELECTRIC));
+//        spells.add(new Magic(5, "healing"));
+//        strongHand = spells.get(0);
 //        weakHand = (Item)inventory.getSlots().get(1);
 //        torso = (Item)inventory.getSlots().get(2);
         recipes = recipeHolder.getHandRecipes();
@@ -197,7 +204,7 @@ public class Player extends Sprite {
 
     public void respawn(Vector2 newPos) {
 //        System.out.println("respawn started");
-        setLives(getMaxLives());
+        setLives(getMaxHealth());
         setMana(getMaxMana());
         setWater(getMaxWater());
         setFood(getMaxFood());
@@ -294,7 +301,6 @@ public class Player extends Sprite {
 
     public Vector2 getLeftHandPosition(float rotation, float width) {
         float handRotation = getRotation() + rotation;
-//        float handRotation = getRotation() + 45;
         if (handRotation > 360) handRotation = handRotation - 360;
         float x = getCentrePosition().x + (float)(width * Math.cos((handRotation) * Math.PI/180));
         float y = getCentrePosition().y + (float)(width * Math.sin((handRotation) * Math.PI/180));
@@ -424,11 +430,9 @@ public class Player extends Sprite {
     }
 
     public boolean isHoldingFire() {
-        if (getStrongHand() != null && getStrongHand() instanceof Magic && ((Magic) getStrongHand()).getMagicType().equals(Magic.MagicType.PROJECTILE) && ((Magic) getStrongHand()).getProjectileType().equals(FIREBALL) ||
-                (getStrongHand() instanceof Placeable && ((Placeable) getStrongHand()).getPlaceableType().equals(Placeable.PlaceableType.TORCH))) {
-            return true;
-        }
-        return false;
+        return getStrongHand() != null && getStrongHand() instanceof Magic && ((Magic) getStrongHand()).getMagicType().equals(Magic.MagicType.PROJECTILE)
+                && ((Magic) getStrongHand()).getProjectileType().equals(FIREBALL)
+                || (getStrongHand() instanceof Placeable && ((Placeable) getStrongHand()).getPlaceableType().equals(Placeable.PlaceableType.TORCH));
     }
 
     public void addToInventory(Material material) {

@@ -26,8 +26,10 @@ public class Grower extends Block {
         this.cropType = type;
         this.growthState = GrowthState.SEEDLING;
         //todo different triggers for different growers
-        this.middlingTrigger = 2000;
-        this.matureTrigger = 6000;
+//        this.middlingTrigger = 43000;
+//        this.matureTrigger = 90000;
+        this.middlingTrigger = 430;
+        this.matureTrigger = 900;
         this.growth = 0;
         setColibible(false);
     }

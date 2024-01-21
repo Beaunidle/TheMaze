@@ -290,14 +290,14 @@ public class WorldController {
 //        if (aiPlayers.isEmpty()) {
 //             levelFinished = true;
 //        }
-        for (int i = 0; i < world.getLevel().getWidth(); i++) {
-            for (int j = 0; j < world.getLevel().getHeight(); j++) {
-                Block block = world.getLevel().getBlock(i,j);
-                if (block != null && !(i == block.getPosition().x && j == block.getPosition().y)) {
-//                    System.out.println("Blocks gone wrong. Block: " + block.getPosition() + ", i and j: " + i + ", " +j + ". " + block.getName());
-                }
-            }
-        }
+//        for (int i = 0; i < world.getLevel().getWidth(); i++) {
+//            for (int j = 0; j < world.getLevel().getHeight(); j++) {
+//                Block block = world.getLevel().getBlock(i,j);
+//                if (block != null && !(i == block.getPosition().x && j == block.getPosition().y)) {
+////                    System.out.println("Blocks gone wrong. Block: " + block.getPosition() + ", i and j: " + i + ", " +j + ". " + block.getName());
+//                }
+//            }
+//        }
         if (keys.get(Keys.PAUSE)) {
             if (!pauseButtonRestricted) {
                 startPauseButtonTimer(0.5F);
@@ -309,7 +309,7 @@ public class WorldController {
         }
 
         baseTime++;
-        if (baseTime == 40) {
+        if (baseTime == 60) {
             world.increaseMinute();
             baseTime = 0;
         }
@@ -362,6 +362,7 @@ public class WorldController {
                 System.out.println("I am breaking the bounds of reality says " + animal.getDamageName() + ", " + animal.getPosition());
                 animal.die();
                 animalIterator.remove();
+                continue;
             }
             if (animal.getLives() <= 0) animal.setState(Sprite.State.DEAD);
             if (animal.getState().equals(Player.State.DEAD)) {
@@ -511,7 +512,7 @@ public class WorldController {
                     }
                 }
             }
-            grower.grow((nearWater ? 10 : 5));
+            grower.grow((nearWater ? 1.5F : 1));
         }
 
         for (FloorPad irrigation : world.getLevel().getFloorPads()) {
@@ -657,17 +658,18 @@ public class WorldController {
                 if (block instanceof EnvironmentBlock) {
                     EnvironmentBlock eb = (EnvironmentBlock) block;
 
-                    eb.replenish(gameTime);
+                    //todo put check here for if player or player structures are too close to the block
+                    eb.replenish(gameTime, bob.getPosition());
                     eb.degrade(gameTime);
-                    eb.checkSpread(gameTime);
+//                    eb.checkSpread(gameTime);
                     //todo handle chosen place somewhere else, call it with a method
-                    if (eb.isWantToSpread() && eb.getDurability() == eb.getMaxDurability()) {
-                        Vector2 chosenPlace = choosePlaceToGrow(eb, world.getLevel().getBlocks());
-                        boolean withinWorld = chosenPlace != null && chosenPlace.x > 5 && chosenPlace.x < 295 && chosenPlace.y > 5 && chosenPlace.y < 295;
-                        if (withinWorld) world.getLevel().getBlocks()[(int) chosenPlace.x][(int) chosenPlace.y] = new EnvironmentBlock(chosenPlace, new Material(GRASS, 1), null, 2, 30, 0, 200, false, null, 10, "grass", 1, 1);;
-                        eb.setWantToSpread(false);
-                        eb.setLastSpread(gameTime);
-                    }
+//                    if (eb.isWantToSpread() && eb.getDurability() == eb.getMaxDurability()) {
+//                        Vector2 chosenPlace = choosePlaceToGrow(eb, world.getLevel().getBlocks());
+//                        boolean withinWorld = chosenPlace != null && chosenPlace.x > 5 && chosenPlace.x < 295 && chosenPlace.y > 5 && chosenPlace.y < 295;
+//                        if (withinWorld) world.getLevel().getBlocks()[(int) chosenPlace.x][(int) chosenPlace.y] = new EnvironmentBlock(chosenPlace, new Material(GRASS, 1), null, 2, 30, 0, 200, false, null, 10, "grass", 1, 1);;
+//                        eb.setWantToSpread(false);
+//                        eb.setLastSpread(gameTime);
+//                    }
                 }
             }
         }
@@ -1044,7 +1046,12 @@ public class WorldController {
                 player.startUseTimer(player.getStrongHand().getUseTime());
                 player.startUseDelayTimer(player.getStrongHand().getUseDelay());
                 if (player.getStrongHand() instanceof Item) {
-                    Object o = blocks[gridRef.x][gridRef.y];
+                    Object o;
+                    if (player.isInHouse()) {
+                        o = world.getLevel().getHouseBlock(gridRef.x, gridRef.y);
+                    } else {
+                        o =blocks[gridRef.x][gridRef.y];
+                    }
                     Item item = (Item) player.getStrongHand();
 //                    player.updateHitCircle(item);
                     switch (item.getItemType()) {
@@ -1113,7 +1120,7 @@ public class WorldController {
                 case SELF:
                     switch (magic.getAttribute()) {
                         case "healing":
-                            if (player.getLives() < player.getMaxLives()) {
+                            if (!player.isMaxHealth()) {
                                 player.increaseLife(magic.getEffect());
                                 player.useMana(magic.getManaRequired() + (poweredUp ? 2 : 0));
                                 player.setBoost(Player.Boost.HEALING, poweredUp ? 4 : 2);
@@ -1156,7 +1163,6 @@ public class WorldController {
                             swingable.use();
                         }
                     }
-                    swingable.use();
                     player.hitPhaseIncrease(1);
                     player.increaseCombo();
                     break;
@@ -1181,10 +1187,10 @@ public class WorldController {
     public void handleUsePlaceable(Player player, Item item, GameObject[][] blocks, Point gridRef, Object o) {
         Placeable placeable = (Placeable) item;
 
+        Block blockToPlace = null;
         if (placeable.getPlaceableType().equals(Placeable.PlaceableType.WALL) || placeable.getPlaceableType().equals(Placeable.PlaceableType.DOOR)) {
             boolean isDoor = placeable.getPlaceableType().equals(Placeable.PlaceableType.DOOR);
             int rotation = placeable.getRotation();
-
             if (o instanceof Wall) {
                 if (!((Wall) o).isWallFull(rotation)) {
                     ((Wall) o).addWall(Block.getSIZE(), Block.getSIZE()/4, rotation, isDoor);
@@ -1205,8 +1211,8 @@ public class WorldController {
                     blocks[gridRef.x][gridRef.y] = new Block(new Vector2(gridRef.x, gridRef.y), 10, placeable.getWidth(), rotation, Block.BlockType.BED);
                     player.setPersonalSpawn(new Vector2(gridRef.x, gridRef.y));
                     System.out.println("Spawn point is being reset to " + player.getPersonalSpawn());
-                } else if (placeable.getPlaceableType().equals(Placeable.PlaceableType.HOUSE)) {
-                    //todo buildings with an interior
+//                } else if (placeable.getPlaceableType().equals(Placeable.PlaceableType.HOUSE)) {
+//                    todo buildings with an interior
                 } else {
                     FillableBlock.FillableType fillableType = null;
                     String name = null;
@@ -1231,6 +1237,9 @@ public class WorldController {
                             fillableType = FillableBlock.FillableType.CHEST;
                             name = "chest";
                             break;
+                        case HOUSE:
+                            fillableType = FillableBlock.FillableType.HOUSE;
+                            name = "tipi";
                     }
                     if (fillableType != null) {
                         FillableBlock fillableBlock = new FillableBlock(new Vector2(gridRef.x, gridRef.y), 10, fillableType, placeable.getWidth(), placeable.getHeight(), rotation, world.getRecipeHolder(), name);
@@ -1335,20 +1344,26 @@ public class WorldController {
             }
 
             for (Block[] value : player.getView().getBlocks()) {
-                for (Object o : value) {
-                    if (o != null && Intersector.overlaps(new Circle(player.getLeftHandPosition(45, 0.5F).x, player.getLeftHandPosition(45, 0.5F).y, 0.5F), ((Block) o).getBounds().getBoundingRectangle())) {
+                for (Block o : value) {
+                    if (player.isInHouse() && o != null) {
+                        System.out.println("Block: " + o.getPosition());
+                        System.out.println("Hand: " + new Circle(player.getLeftHandPosition(0, 0.5F), 0.8F));
+                    }
+                    if (o != null && Intersector.overlaps(new Circle(player.getLeftHandPosition(0, 0.5F), 0.8F), o.getBounds().getBoundingRectangle())) {
                         if (o instanceof EnvironmentBlock) {
                             EnvironmentBlock eb = (EnvironmentBlock) o;
                             if (eb.getDurability() > 0) {
                                 player.addAllToInventory(eb.hit(null));
-                                if (eb.getMaterial().getType().equals(GRASS) && eb.getDurability() <= 0) world.getLevel().getBlocks()[(int) eb.getPosition().x][(int) eb.getPosition().y] = null;
+//                                if (eb.getMaterial().getType().equals(GRASS) && eb.getDurability() <= 0) world.getLevel().getBlocks()[(int) eb.getPosition().x][(int) eb.getPosition().y] = null;
                             }
                         }
                         if (o instanceof Wall) {
                             Wall wallBlock = (Wall) o;
                             for (Wall.WallType wall : wallBlock.getWalls().values()) {
                                 if (wall != null && wall.isDoor()) {
-                                    if (Intersector.overlaps(player.getHitCircle(), wall.getBounds().getBoundingRectangle())) {
+                                    if (player.isInHouse()) {
+                                        world.getBob().setPosition(new Vector2(50,52));
+                                    } else {
                                         wall.toggleOpen();
                                     }
                                 }
@@ -1437,20 +1452,30 @@ public class WorldController {
         int xPos = (int)Math.floor(sprite.getCentrePosition().x - (float)sprite.getView().getBlocks().length/2);
         int yPos = (int)Math.floor(sprite.getCentrePosition().y - (float)sprite.getView().getBlocks()[0].length/2);
 
+        System.out.println("Start");
         for (int i = 0; i < sprite.getView().getBlocks().length; i++) {
             for (int j = 0; j < sprite.getView().getBlocks()[0].length; j++) {
                 int col = xPos + i;
                 int row = yPos + j;
-                if (col >= 0 && row >= 0 && col < world.getLevel().getWidth() && row < world.getLevel().getHeight()) {
-                    Block block = world.getLevel().getBlock(col, row);
-
-                    //&& locator.wallInbetween(sprite, block.getPosition()) != null
+                Block block = null;
+                if (sprite.isInHouse()) {
+                    block = world.getLevel().getHouseBlock(col, row);
                     if (block != null) {
-                        sprite.getView().getBlocks()[i][j] = block;
+                        System.out.println("Woooo");
                     }
+                } else {
+                    if (col >= 0 && row >= 0 && col < world.getLevel().getWidth() && row < world.getLevel().getHeight()) {
+                        block = world.getLevel().getBlock(col, row);
+
+                        //&& locator.wallInbetween(sprite, block.getPosition()) != null
+                    }
+                }
+                if (block != null) {
+                    sprite.getView().getBlocks()[i][j] = block;
                 }
             }
         }
+        System.out.println("End");
 //        for (FloorPad floorPad : world.getLevel().getFloorPads()) {
 //            if (Intersector.overlapConvexPolygons(floorPad.getBounds(), player.getViewCircle())) {
 //                player.getView().getFloorPads().add(floorPad);

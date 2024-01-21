@@ -61,8 +61,10 @@ import com.mygdx.game.utils.JoyStick;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 
 public class WorldRenderer {
@@ -160,23 +162,23 @@ public class WorldRenderer {
         shieldAnimation = new Animation(RUNNING_FRAME_DURATION, shieldFrames);
 
 
-        TextureRegion[] pickFrames = new TextureRegion[5];
-        pickFrames[0] = inventoryAtlas.findRegion("inv_pick01");
-        pickFrames[1] = inventoryAtlas.findRegion("inv_pick02");
-        pickFrames[2] = inventoryAtlas.findRegion("inv_pick03");
-        pickFrames[3] = inventoryAtlas.findRegion("inv_pick04");
-        pickFrames[4] = inventoryAtlas.findRegion("inv_pick05");
+//        TextureRegion[] pickFrames = new TextureRegion[5];
+//        pickFrames[0] = inventoryAtlas.findRegion("inv_pick01");
+//        pickFrames[1] = inventoryAtlas.findRegion("inv_pick02");
+//        pickFrames[2] = inventoryAtlas.findRegion("inv_pick03");
+//        pickFrames[3] = inventoryAtlas.findRegion("inv_pick04");
+//        pickFrames[4] = inventoryAtlas.findRegion("inv_pick05");
 
-        pickAnimation = new Animation(ITEM_USE_FRAME_DURATION, pickFrames);
+//        pickAnimation = new Animation(ITEM_USE_FRAME_DURATION, pickFrames);
 
-        TextureRegion[] swordFrames = new TextureRegion[5];
-        swordFrames[0] = inventoryAtlas.findRegion("inv_sword01");
-        swordFrames[1] = inventoryAtlas.findRegion("inv_sword02");
-        swordFrames[2] = inventoryAtlas.findRegion("inv_sword03");
-        swordFrames[3] = inventoryAtlas.findRegion("inv_sword04");
-        swordFrames[4] = inventoryAtlas.findRegion("inv_sword05");
-
-        swordAnimation = new Animation(ITEM_USE_FRAME_DURATION, swordFrames);
+//        TextureRegion[] swordFrames = new TextureRegion[5];
+//        swordFrames[0] = inventoryAtlas.findRegion("inv_sword01");
+//        swordFrames[1] = inventoryAtlas.findRegion("inv_sword02");
+//        swordFrames[2] = inventoryAtlas.findRegion("inv_sword03");
+//        swordFrames[3] = inventoryAtlas.findRegion("inv_sword04");
+//        swordFrames[4] = inventoryAtlas.findRegion("inv_sword05");
+//
+//        swordAnimation = new Animation(ITEM_USE_FRAME_DURATION, swordFrames);
 
         TextureAtlas buttonAtlas = new TextureAtlas(Gdx.files.internal("buttons.atlas"));
         fireButtonTexture = buttonAtlas.findRegion("start");
@@ -187,7 +189,10 @@ public class WorldRenderer {
         spriteBatch.setProjectionMatrix(cam.combined);
         Player bob = world.getBob();
 
-        if (!bob.getShieldCircle().contains(this.cam.position.x, this.cam.position.y)) {
+        if (cam.position.x > 500 && bob.getPosition().x < 500) {
+            this.cam.position.x = bob.getCentrePosition().x;
+            this.cam.position.y = bob.getCentrePosition().y;
+        } else if (!bob.getShieldCircle().contains(this.cam.position.x, this.cam.position.y)) {
             Vector2 camPosition = new Vector2(cam.position.x, cam.position.y);
             Vector2 distance = new Vector2(bob.getCentrePosition()).sub(camPosition);
             this.cam.position.x +=distance.x/35;
@@ -197,16 +202,23 @@ public class WorldRenderer {
         this.cam.update();
         this.textCamera.update();
         spriteBatch.begin();
-        drawFloor();
-        drawBlocks();
-        drawBoostPads();
-        drawGunPads();
-        drawFloorPads();
-        drawBloodStains();
-        drawAreaAffects();
-        drawProjectiles();
-        drawAnimals();
-        drawAis();
+//        spriteBatch.enableBlending();
+        if (bob.isInHouse()) {
+            this.cam.position.x = 1005;
+            this.cam.position.y = 1005;
+            drawHouseBlocks();
+        } else {
+            drawFloor();
+            drawBlocks();
+            drawBoostPads();
+            drawGunPads();
+            drawFloorPads();
+            drawBloodStains();
+            drawAreaAffects();
+            drawProjectiles();
+            drawAnimals();
+            drawAis();
+        }
         TextureRegion holdingFrame = drawBob();
         if (world.isNightTime() || world.isDuskTillDawn()) {
             drawDark(bob);
@@ -214,7 +226,8 @@ public class WorldRenderer {
         drawHUD(bob, holdingFrame);
         if (world.getMoveJoystick() != null) drawJoystick(world.getMoveJoystick());
         if (world.getFireJoystick() != null) drawJoystick(world.getFireJoystick());
-        drawButtons();
+//        drawButtons();
+//        spriteBatch.disableBlending();
         spriteBatch.end();
 //        drawDebug();
 //        aiDebug();
@@ -236,7 +249,7 @@ public class WorldRenderer {
                     if (block != null) debugRenderer.polygon(block.getBounds().getTransformedVertices());
                 }
             }
-            debugRenderer.setColor(Color.PURPLE);
+            debugRenderer.setColor(Color.BLACK);
             Block[] blocking = aiPlayer.getView().getBlockingWall();
             for (Block block : blocking) {
                 if (block != null)
@@ -248,20 +261,36 @@ public class WorldRenderer {
         debugRenderer.end();
     }
 
+    private void drawHouseBlocks() {
+        for (int i = 1000; i < 1010; i++) {
+            for (int j = 1000; j < 1010; j++) {
+                //todo add tile texture
+                spriteBatch.draw(textureLoader.getRegion("tile"), i, j, Block.getSIZE(), Block.getSIZE());
+            }
+        }
+        for(Block block : world.getDrawableHouseBlocks()) {
+            if (block.getBlockType() == null) {
+                spriteBatch.draw(textureLoader.getRegion(block.getName()), block.getPosition().x, block.getPosition().y, Block.getSIZE(), Block.getSIZE());
+                continue;
+            }
+        }
+
+    }
+
     private void drawFloor() {
         for (int i = 0; i < world.getLevel().getWidth(); i++) {
             for (int j = 0; j < world.getLevel().getHeight(); j++) {
-                spriteBatch.draw(textureLoader.getRegion("floor"), i, j, Block.getSIZE(), Block.getSIZE());
+                if (i % 10 == 0 && j % 10 == 0) spriteBatch.draw(textureLoader.getRegion("floor5"), i, j, Block.getSIZE()*10, Block.getSIZE()*10);
             }
         }
     }
 
     private void drawDark(Player player) {
         //todo make this a separate method getFires()
-        List<Block> campfires = populateCampfires(new ArrayList<Block>());
-        List<Projectile> fireballs = populateProjectiles(new ArrayList<Projectile>());
-        List<Sprite> burningSprites = populateBurningSprites(new ArrayList<Sprite>());
-        List<AreaAffect> lightingAreas = populateAreaAffects(new ArrayList<AreaAffect>());
+        List<Block> campfires = populateCampfires(new ArrayList<>());
+        List<Projectile> fireballs = populateProjectiles(new ArrayList<>());
+        List<Sprite> burningSprites = populateBurningSprites(new ArrayList<>());
+        List<AreaAffect> lightingAreas = populateAreaAffects(new ArrayList<>());
 
         for (int i = 0; i < world.getLevel().getWidth(); i++) {
             for (int j = 0; j < world.getLevel().getHeight(); j++) {
@@ -390,7 +419,7 @@ public class WorldRenderer {
                     if (block.getDurability() > 0 ) {
                         spriteBatch.draw(textureLoader.getRegion(block.getName()), block.getPosition().x, block.getPosition().y, block.getBounds().getBoundingRectangle().width, block.getBounds().getBoundingRectangle().height);
                     } else {
-                        spriteBatch.draw(textureLoader.getRegion("floor"), block.getPosition().x, block.getPosition().y, Block.getSIZE(), Block.getSIZE());
+//                        spriteBatch.draw(textureLoader.getRegion("floor"), block.getPosition().x, block.getPosition().y, Block.getSIZE(), Block.getSIZE());
                     }
                     break;
                 case WALL:
@@ -1018,7 +1047,6 @@ public class WorldRenderer {
                 spriteBatch.draw(textureLoader.getRegion("reloading"), x, y, 1, 1, 6.0F, 2.0F, 1.00F, 1.00F, 0);
             }
         }
-
 //        if (world.getFireJoystick() != null && world.getFireJoystick().getDrag() != null) drawAngle = world.getFireJoystick().getAngle();
         return holdingFrame;
         //todo make injured sprites
@@ -1065,17 +1093,17 @@ public class WorldRenderer {
                         if (aiPlayer.isUseTimerOn()) {
                             TextureRegion itemFrame = null;
                             switch (item.getItemType()) {
-                                case SWINGABLE:
-                                    Swingable swingable = (Swingable) item;
-                                    switch (swingable.getSwingableType()) {
-                                        case PICK:
-                                            itemFrame = pickAnimation.getKeyFrame(aiPlayer.getStateTime(), true);
-                                            break;
-                                        case SWORD:
-                                            itemFrame = swordAnimation.getKeyFrame(aiPlayer.getStateTime(), true);
-                                            break;
-                                    }
-                                    break;
+//                                case SWINGABLE:
+//                                    Swingable swingable = (Swingable) item;
+//                                    switch (swingable.getSwingableType()) {
+//                                        case PICK:
+//                                            itemFrame = pickAnimation.getKeyFrame(aiPlayer.getStateTime(), true);
+//                                            break;
+//                                        case SWORD:
+//                                            itemFrame = swordAnimation.getKeyFrame(aiPlayer.getStateTime(), true);
+//                                            break;
+//                                    }
+//                                    break;
                                 case JAR:
                                     Fillable jar = (Fillable) item;
                                     itemFrame = jar.isFilled() ? textureLoader.getRegion("inv_jarFull") : textureLoader.getRegion("inv_jar");
@@ -1102,11 +1130,11 @@ public class WorldRenderer {
                 Vector2 livesPos = animal.getCentrePosition();
 
 ////            if (animal.getLives() < animal.getMaxLives()) {
-//                for (float i = 0; i < animal.getLives(); i++) {
-//                    float xPos = livesPos.x - (i/2);
-//                    float yPos = livesPos.y;
-//                    spriteBatch.draw(textureLoader.getRegion("heart"), xPos, yPos, 1, 1, 1, 1, 0.5F, 0.5F, 0);
-//                }
+                for (float i = 0; i < animal.getLives(); i++) {
+                    float xPos = livesPos.x - (i/5);
+                    float yPos = livesPos.y;
+                    spriteBatch.draw(textureLoader.getRegion("heart"), xPos, yPos, 1, 1, 0.2F, 0.2F, 0.5F, 0.5F, 0);
+                }
 ////            }
 //            for (float i = 0; i < animal.getFood(); i++) {
 //                float xPos = livesPos.x - (i/2);
@@ -1262,99 +1290,109 @@ public class WorldRenderer {
 
         //get position for the hitcircle for area magic
 
-        if (bob.getStrongHand() != null && bob.getStrongHand() instanceof Magic && ((Magic) bob.getStrongHand()).getMagicType().equals(Magic.MagicType.AREA)) {
-            debugRenderer.setColor(Color.NAVY);
-            Vector2 pos = bob.getLeftHandPosition(0, 6);
-            debugRenderer.circle(pos.x,pos.y, 1.5F);
-            debugRenderer.setColor(Color.BLACK);
-            debugRenderer.circle(bob.getCollideCircle().x, bob.getCollideCircle().y, bob.getCollideCircle().radius);
-        }
+//        if (bob.getStrongHand() != null && bob.getStrongHand() instanceof Magic && ((Magic) bob.getStrongHand()).getMagicType().equals(Magic.MagicType.AREA)) {
+//            debugRenderer.setColor(Color.NAVY);
+//            Vector2 pos = bob.getLeftHandPosition(0, 6);
+//            debugRenderer.circle(pos.x,pos.y, 1.5F);
+//            debugRenderer.setColor(Color.BLACK);
+//            debugRenderer.circle(bob.getCollideCircle().x, bob.getCollideCircle().y, bob.getCollideCircle().radius);
+//        }
 
-        for (AreaAffect areaAffect : world.getAreaAffects()) {
-            debugRenderer.circle(areaAffect.getBoundingCircle().x, areaAffect.getBoundingCircle().y, areaAffect.getBoundingCircle().radius);
-        }
+//        for (AreaAffect areaAffect : world.getAreaAffects()) {
+//            debugRenderer.circle(areaAffect.getBoundingCircle().x, areaAffect.getBoundingCircle().y, areaAffect.getBoundingCircle().radius);
+//        }
 
 //        debugRenderer.circle(bob.getCentrePosition().x, bob.getCentrePosition().y, 2);
 //        debugRenderer.polygon(bob.getViewCircle().getTransformedVertices());
 //        debugRenderer.circle(world.getBob().getViewCircle().getX(), world.getBob().getViewCircle().y, world.getBob().getViewCircle().radius);
-        for (AIPlayer aiPlayer :  world.getAIPlayers()) {
-            debugRenderer.polygon(aiPlayer.getViewCircle().getTransformedVertices());
-//            debugRenderer.polygon(aiPlayer.getViewCircle().getX(), aiPlayer.getViewCircle().getY(), aiPlayer.getViewCircle().);
-            debugRenderer.setColor(Color.BLACK);
-            debugRenderer.polygon(aiPlayer.getBlockRectangle().getTransformedVertices());
-            debugRenderer.setColor(Color.ROYAL);
-            debugRenderer.circle(aiPlayer.getRightHandPosition().x, aiPlayer.getRightHandPosition().y, 1F);
-            debugRenderer.circle(aiPlayer.getLeftHandPosition(45, aiPlayer.getWidth()).x, aiPlayer.getLeftHandPosition(45, aiPlayer.getWidth()).y, 1F);
-            debugRenderer.setColor(Color.BLACK);
-            debugRenderer.circle(aiPlayer.getCollideCircle().x, aiPlayer.getCollideCircle().y, aiPlayer.getCollideCircle().radius);
-        }
+//        for (AIPlayer aiPlayer :  world.getAIPlayers()) {
+//            debugRenderer.polygon(aiPlayer.getViewCircle().getTransformedVertices());
+////            debugRenderer.polygon(aiPlayer.getViewCircle().getX(), aiPlayer.getViewCircle().getY(), aiPlayer.getViewCircle().);
+//            debugRenderer.setColor(Color.BLACK);
+//            debugRenderer.polygon(aiPlayer.getBlockRectangle().getTransformedVertices());
+//            debugRenderer.setColor(Color.ROYAL);
+//            debugRenderer.circle(aiPlayer.getRightHandPosition().x, aiPlayer.getRightHandPosition().y, 1F);
+//            debugRenderer.circle(aiPlayer.getLeftHandPosition(45, aiPlayer.getWidth()).x, aiPlayer.getLeftHandPosition(45, aiPlayer.getWidth()).y, 1F);
+//            debugRenderer.setColor(Color.BLACK);
+//            debugRenderer.circle(aiPlayer.getCollideCircle().x, aiPlayer.getCollideCircle().y, aiPlayer.getCollideCircle().radius);
+//        }
         for (Animal animal : world.getAnimals()) {
-//            debugRenderer.setColor(Color.GREEN);
-//            debugRenderer.polygon(animal.getBounds().getTransformedVertices());
-            debugRenderer.setColor(Color.PURPLE);
-            debugRenderer.circle(animal.getHitCircle().x, animal.getHitCircle().y, animal.getHitCircle().radius);
+            debugRenderer.setColor(Color.GREEN);
+            debugRenderer.polygon(animal.getBounds().getTransformedVertices());
+//            debugRenderer.setColor(Color.PURPLE);
 //            debugRenderer.circle(animal.getHitCircle().x, animal.getHitCircle().y, animal.getHitCircle().radius);
-            debugRenderer.setColor(Color.BLACK);
-//            debugRenderer.circle(animal.getCollideCircle().x, animal.getCollideCircle().y, animal.getCollideCircle().radius);
-            Block[] blocks = animal.getView().getBlockingWall();
-            for (Block block : blocks) {
-                if (block != null) debugRenderer.polygon(block.getBounds().getTransformedVertices());
-            }
-            Block[][] viewBlocks = animal.getView().getBlocks();
-            for (Block[] viewBlock : viewBlocks) {
-                for (int j = 0; j < viewBlocks[0].length; j++) {
-                    if (viewBlock[j] != null) {
-                        debugRenderer.setColor(Color.RED);
-                        debugRenderer.polygon(viewBlock[j].getBounds().getTransformedVertices());
-                    }
-                }
-            }
-            if (animal.getAi() != null) {
-                if (animal.getAi().getTargetCoordinates() != null) {
-                    for (Vector2 coor : animal.getAi().getTargetCoordinates()) {
-                        debugRenderer.setColor(Color.ORANGE);
-                        debugRenderer.circle(coor.x, coor.y, 2);
-                    }
-                }
-            }
-            if (animal.getTarget() != null) {
-                debugRenderer.setColor(Color.BLACK);
-                debugRenderer.circle(animal.getTarget().x, animal.getTarget().y, 2);
-            }
+////            debugRenderer.circle(animal.getHitCircle().x, animal.getHitCircle().y, animal.getHitCircle().radius);
+//            debugRenderer.setColor(Color.BLACK);
+////            debugRenderer.circle(animal.getCollideCircle().x, animal.getCollideCircle().y, animal.getCollideCircle().radius);
+//            Block[] blocks = animal.getView().getBlockingWall();
+//            for (Block block : blocks) {
+//                if (block != null) debugRenderer.polygon(block.getBounds().getTransformedVertices());
+//            }
+//            Block[][] viewBlocks = animal.getView().getBlocks();
+//            for (Block[] viewBlock : viewBlocks) {
+//                for (int j = 0; j < viewBlocks[0].length; j++) {
+//                    if (viewBlock[j] != null) {
+//                        debugRenderer.setColor(Color.RED);
+//                        debugRenderer.polygon(viewBlock[j].getBounds().getTransformedVertices());
+//                    }
+//                }
+//            }
+//            if (animal.getAi() != null) {
+//                if (animal.getAi().getTargetCoordinates() != null) {
+//                    for (Vector2 coor : animal.getAi().getTargetCoordinates()) {
+//                        debugRenderer.setColor(Color.ORANGE);
+//                        debugRenderer.circle(coor.x, coor.y, 2);
+//                    }
+//                }
+//            }
+//            if (animal.getTarget() != null) {
+//                debugRenderer.setColor(Color.BLACK);
+//                debugRenderer.circle(animal.getTarget().x, animal.getTarget().y, 2);
+//            }
+//        }
+//        debugRenderer.setColor(Color.RED);
+//        for (Projectile projectile : world.getProjectiles()) {
+//            if (projectile.isHoming()) {
+//                debugRenderer.circle(projectile.getViewCircle().x, projectile.getViewCircle().y, projectile.getViewCircle().radius);
+//            }
+//            debugRenderer.polygon(projectile.getBounds().getTransformedVertices());
         }
-        debugRenderer.setColor(Color.RED);
-        for (Projectile projectile : world.getProjectiles()) {
-            if (projectile.isHoming()) {
-                debugRenderer.circle(projectile.getViewCircle().x, projectile.getViewCircle().y, projectile.getViewCircle().radius);
-            }
-            debugRenderer.polygon(projectile.getBounds().getTransformedVertices());
-        }
-        for (Block block : world.getDrawableBlocks((int)CAMERA_WIDTH, (int)CAMERA_HEIGHT)) {
-            if (block instanceof Wall) {
-                for (Wall.WallType wall : ((Wall) block).getWalls().values()) {
-                    if (wall != null) {
-//                        debugRenderer.polygon(wall.getBounds().getTransformedVertices());
-                    }
-                }
-            } else {
-//                debugRenderer.polygon(block.getBounds().getTransformedVertices());
-            }
-        }
+//        for (Block block : world.getDrawableBlocks((int)CAMERA_WIDTH, (int)CAMERA_HEIGHT)) {
+//            if (block instanceof Wall) {
+//                for (Wall.WallType wall : ((Wall) block).getWalls().values()) {
+//                    if (wall != null) {
+////                        debugRenderer.polygon(wall.getBounds().getTransformedVertices());
+//                    }
+//                }
+//            } else {
+////                debugRenderer.polygon(block.getBounds().getTransformedVertices());
+//            }
+//        }
         debugRenderer.setColor(Color.FIREBRICK);
 //        debugRenderer.circle(bob.getHitCircle().x, bob.getHitCircle().y, bob.getHitCircle().radius);
-        debugRenderer.setColor(Color.BLACK);
-        debugRenderer.polygon(bob.getBlockRectangle().getTransformedVertices());
+//        debugRenderer.setColor(Color.BLACK);
+//        debugRenderer.polygon(bob.getBlockRectangle().getTransformedVertices());
 //        Rectangle rect = bob.getBlockRectangle().getBoundingRectangle();
 //        debugRenderer.rect(rect.x, rect.y, rect.width, rect.height);
 //        debugRenderer.circle(bob.getBlockRectangle().getX(), bob.getBlockRectangle().getY(), 2F);
-        debugRenderer.setColor(Color.YELLOW);
-        debugRenderer.circle(bob.getRightHandPosition().x, bob.getRightHandPosition().y, 1F);
-        debugRenderer.circle(bob.getLeftHandPosition(45, bob.getWidth()).x, bob.getLeftHandPosition(45, bob.getWidth()).y, 1F);
-        debugRenderer.setColor(Color.RED);
-        debugRenderer.circle(bob.getHitCircle().x, bob.getHitCircle().y, bob.getHitCircle().radius);
-        if (bob.isUseTimerOn()) {
-            debugRenderer.setColor(Color.GREEN);
-            debugRenderer.polygon(bob.getBounds().getTransformedVertices());
+//        debugRenderer.setColor(Color.YELLOW);
+//        debugRenderer.circle(bob.getRightHandPosition().x, bob.getRightHandPosition().y, 1F);
+//        debugRenderer.circle(bob.getLeftHandPosition(45, bob.getWidth()).x, bob.getLeftHandPosition(45, bob.getWidth()).y, 1F);
+//        debugRenderer.setColor(Color.RED);
+//        debugRenderer.circle(bob.getHitCircle().x, bob.getHitCircle().y, bob.getHitCircle().radius);
+
+        //grab circle
+        Circle circle = new Circle(bob.getLeftHandPosition(0, 0.5F), 0.8F);
+        debugRenderer.circle(circle.x, circle.y, circle.radius);
+
+        for (Block[] value : bob.getView().getBlocks()) {
+            for (Block o : value) {
+                if (o != null) debugRenderer.polygon(o.getBounds().getTransformedVertices());
+            }
+        }
+//        if (bob.isUseTimerOn()) {
+//            debugRenderer.setColor(Color.GREEN);
+//            debugRenderer.polygon(bob.getBounds().getTransformedVertices());
 
 //            Block[][] blocks = bob.getView().getBlocks();
 //            for (Block[] value : blocks) {
@@ -1377,7 +1415,7 @@ public class WorldRenderer {
 //                    }
 //                }
 //            }
-        }
+//        }
 
         for (AnimalSpawn animalSpawn : world.getLevel().getAnimalSpawnPoints()) {
             debugRenderer.setColor(Color.ORANGE);
@@ -1385,9 +1423,9 @@ public class WorldRenderer {
         }
 
         // render Bob
-        debugRenderer.setColor(Color.BLACK);
+//        debugRenderer.setColor(Color.BLACK);
 //        debugRenderer.polygon(bob.getBounds().getVertices());
-        debugRenderer.setColor(Color.RED);
+//        debugRenderer.setColor(Color.RED);
 //        debugRenderer.circle(bob.getShieldCircle().x, bob.getShieldCircle().y, bob.getShieldCircle().radius);
 
 //        rect = bob.getBounds().getBoundingRectangle();

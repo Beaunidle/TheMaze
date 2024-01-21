@@ -20,6 +20,7 @@ public class EnvironmentBlock extends Block{
     private final Swingable.SwingableType weakness;
     private final long replenishTime;
     private long lastReplenished;
+    private final long replenishDistance;
     private final long degradeTime;
     private long lastDegraded;
     private final long spreadTime;
@@ -32,8 +33,10 @@ public class EnvironmentBlock extends Block{
         this.secondaryMaterials = secondaryMaterials;
         this.returnPerHit = returnPerHit;
         this.weakness = swingableType;
-        this.replenishTime = replenishTime;
-        this.lastReplenished = 0;
+//        this.replenishTime = replenishTime;
+        this.replenishTime = 2;
+        this.replenishDistance = 50;
+        this.lastReplenished = System.currentTimeMillis();
         this.degradeTime = degradeTime;
         this.lastDegraded = 0;
         this.spreadTime = spreadTime;
@@ -51,7 +54,7 @@ public class EnvironmentBlock extends Block{
             material.setQuantity(0);
             if (swingable != null) {
                 material.setQuantity(weakness == null || swingable.getSwingableType().equals(weakness) ? returnPerHit : 1);
-                if (secondaryMaterials != null && !secondaryMaterials.isEmpty()) {
+                  if (secondaryMaterials != null && !secondaryMaterials.isEmpty()) {
                     checkSecondaries(materials);
                 }
             } else if (material.isMineableByHand()) {
@@ -70,14 +73,23 @@ public class EnvironmentBlock extends Block{
     }
 
     private void checkSecondaries(List<Material> materials) {
-        for(Iterator<Map.Entry<Material, Integer>> it = secondaryMaterials.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry<Material, Integer> entry = it.next();
+        Iterator<Material> iterator = secondaryMaterials.keySet().iterator();
+        while (iterator.hasNext()) {
+            Material material = iterator.next();
             Random rand = new Random();
-            if (rand.nextInt(10) > entry.getValue()) {
-                materials.add(castMaterial(entry.getKey()));
-                it.remove();
+            if (rand.nextInt(10) > secondaryMaterials.get(material)) {
+                materials.add(castMaterial(material));
+                iterator.remove();
             }
         }
+//        for(Iterator<Map.Entry<Material, Integer>> it = secondaryMaterials.entrySet().iterator(); it.hasNext(); ) {
+//            Map.Entry<Material, Integer> entry = it.next();
+//            Random rand = new Random();
+//            if (rand.nextInt(10) > entry.getValue()) {
+//                materials.add(castMaterial(entry.getKey()));
+//               it.remove();
+//            }
+//        }
     }
 
     private Material castMaterial(Material materialToCast) {
@@ -93,11 +105,23 @@ public class EnvironmentBlock extends Block{
         return new Material(materialToCast.getType(), materialToCast.getQuantity());
     }
 
-    public void replenish(long gameTime) {
-        if ((replenishTime > 0 && getDurability() < getMaxDurability()) && (lastReplenished == 0 || (gameTime - lastReplenished)/1000 > replenishTime)) {
+    public void replenish(long gameTime, Vector2 playerPos) {
+
+        if ((replenishTime > 0 && getDurability() < getMaxDurability())
+                && (lastReplenished == 0 || (gameTime - lastReplenished)/1000 > replenishTime)
+                && checkSpawnDistance(playerPos, replenishDistance)) {
             increaseDurability(1);
             lastReplenished = gameTime;
         }
+    }
+
+    protected boolean checkSpawnDistance(Vector2 spritePos, float minDistance) {
+        float v0 = spritePos.x - getPosition().x;
+        float v1 = spritePos.y - getPosition().y;
+        double dif = Math.sqrt(v0*v0 + v1*v1);
+
+        if (dif < 0) dif = dif * -1;
+        return dif >= minDistance;
     }
 
     public void degrade(long gameTime) {

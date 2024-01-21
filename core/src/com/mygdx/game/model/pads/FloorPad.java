@@ -7,11 +7,12 @@ import com.mygdx.game.model.environment.blocks.Irrigation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 public class FloorPad extends Pad {
 
     public enum Type {
-        SPIKE, SLIME, MOVE, WATER, WATERFLOW, IRRIGATION;
+        SPIKE, SLIME, MOVE, WATER, WATERFLOW, IRRIGATION
     }
 
     public enum Connection {
@@ -181,6 +182,16 @@ public class FloorPad extends Pad {
             if (!isStraightPiece()) padString.append("Bend");
             if (isConnected()) padString.append("-full");
             else padString.append("-empty");
+        }
+        if (type.equals(Type.WATERFLOW)) {
+            Random rand = new Random();
+            int num = rand.nextInt(2) + 1;
+            padString.append(1);
+        }
+        if (type.equals(Type.WATER)) {
+            Random rand = new Random();
+            int num = rand.nextInt(3) + 1;
+            padString.append(1);
         }
         return padString.toString();
     }

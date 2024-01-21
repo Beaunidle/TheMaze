@@ -103,6 +103,7 @@ public class Wall extends Block{
         }
 
         public void toggleOpen() {
+
             open = !open;
         }
 
