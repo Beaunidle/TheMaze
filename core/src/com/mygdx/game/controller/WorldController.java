@@ -892,7 +892,11 @@ public class WorldController {
                 bob.setState(Player.State.MOVING);
                 bob.setAcceleration(bob.getBoost().equals(Player.Boost.SPEED) ? -8F : -4F);
             } else {
-                bob.setAcceleration(0F);
+                if (bob.getAcceleration() > 20 ) {
+                    bob.setAcceleration(bob.getAcceleration() * 0.8F);
+                } else {
+                    bob.setAcceleration(0F);
+                }
                 bob.setState(Player.State.IDLE);
             }
             if (keys.get(Keys.DODGE)) {

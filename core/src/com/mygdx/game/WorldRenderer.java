@@ -596,7 +596,7 @@ public class WorldRenderer {
 
     private void drawHandItem(Player sprite, float rotation, Vector2 gridRef, float width, float height, TextureRegion textureToDraw) {
         Vector2 drawVector = getDrawVector(sprite, rotation, gridRef);
-        spriteBatch.draw(textureToDraw, drawVector.x, drawVector.y,0, 0, width, height, 1F, 1F, rotation - 45);
+        spriteBatch.draw(textureToDraw, drawVector.x, drawVector.y,0, 0, 1.5F, 1.5F, 1F, 1F, rotation - 45);
     }
 
     private void drawTargetCircle(Vector2 gridRef, float width, float height, TextureRegion textureToDraw) {
@@ -604,8 +604,9 @@ public class WorldRenderer {
     }
 
     private void drawHand(Player sprite, float rotation, Vector2 gridRef, float width, float height, TextureRegion textureToDraw) {
+        //todo sort out right hand
         Vector2 drawVector = getDrawVector(sprite, rotation, gridRef);
-        spriteBatch.draw(textureToDraw, drawVector.x, drawVector.y, 0, 0, width, height, 0.5F, 0.5F, rotation);
+        spriteBatch.draw(textureToDraw, drawVector.x, drawVector.y, 0, 0, width, height, 1F, 1F, rotation);
     }
 
     public Vector2 getDrawVector(Player sprite, float rotation, Vector2 gridRef) {
@@ -657,83 +658,15 @@ public class WorldRenderer {
     }
 
     public Vector2 drawStab(Player sprite, Vector2 gridRef, float rotation) {
-        float x = 0;
-        float y = 0;
-        switch (sprite.getHitPhase()) {
-            case 0:
-                x = gridRef.x + (float)(sprite.getWidth()/1.5 * Math.cos((rotation) * Math.PI/180));
-                y = gridRef.y + (float)(sprite.getHeight()/1.5 * Math.sin((rotation) * Math.PI/180));
-                break;
-            case 1:
-                x = gridRef.x + (float)(sprite.getWidth()/2 * Math.cos((rotation + 15) * Math.PI/180));
-                y = gridRef.y + (float)(sprite.getHeight()/2 * Math.sin((rotation + 15) * Math.PI/180));
-                break;
-            case 2:
-                x = gridRef.x + (float)(sprite.getWidth()/2 * Math.cos((rotation) * Math.PI/180));
-                y = gridRef.y + (float)(sprite.getHeight()/2 * Math.sin((rotation) * Math.PI/180));
-                break;
-            case 3:
-                x = gridRef.x + (float)(sprite.getWidth()/1.75 * Math.cos((rotation - 10) * Math.PI/180));
-                y = gridRef.y + (float)(sprite.getHeight()/1.75 * Math.sin((rotation - 10) * Math.PI/180));
-                break;
-            case 4:
-                x = gridRef.x + (float)(sprite.getWidth() * Math.cos((rotation - 15) * Math.PI/180));
-                y = gridRef.y + (float)(sprite.getHeight() * Math.sin((rotation - 15) * Math.PI/180));
-                break;
-        }
-        return new Vector2(x,y);
+        return new Vector2(sprite.getHitCircle().x,sprite.getHitCircle().y);
     }
 
     public Vector2 drawLunge(Player sprite, Vector2 gridRef, float rotation) {
-        float x = 0;
-        float y = 0;
-        switch (sprite.getHitPhase()) {
-            case 0:
-                x = gridRef.x + (float)(sprite.getWidth()/1.5 * Math.cos((rotation) * Math.PI/180));
-                y = gridRef.y + (float)(sprite.getHeight()/1.5 * Math.sin((rotation) * Math.PI/180));
-                break;
-            case 1:
-                x = gridRef.x + (float)(sprite.getWidth()/2 * Math.cos((rotation + 15) * Math.PI/180));
-                y = gridRef.y + (float)(sprite.getHeight()/2 * Math.sin((rotation + 15) * Math.PI/180));
-                break;
-            case 2:
-                x = gridRef.x + (float)(sprite.getWidth()/1.5 * Math.cos((rotation) * Math.PI/180));
-                y = gridRef.y + (float)(sprite.getHeight()/1.5 * Math.sin((rotation) * Math.PI/180));
-                break;
-            case 3:
-                x = gridRef.x + (float)(sprite.getWidth() * Math.cos((rotation - 10) * Math.PI/180));
-                y = gridRef.y + (float)(sprite.getHeight() * Math.sin((rotation - 10) * Math.PI/180));
-                break;
-            case 4:
-                x = gridRef.x + (float)(sprite.getWidth() * 1.5 * Math.cos((rotation - 15) * Math.PI/180));
-                y = gridRef.y + (float)(sprite.getHeight() * 1.5 * Math.sin((rotation - 15) * Math.PI/180));
-                break;
-        }
-        return new Vector2(x,y);
+        return new Vector2(sprite.getHitCircle().x,sprite.getHitCircle().y);
     }
 
     public Vector2 drawSlash(Player sprite, Vector2 gridRef, float rotation) {
-        float x = 0;
-        float y = 0;
-        switch (sprite.getHitPhase()) {
-            case 1:
-                x = gridRef.x + (float)(sprite.getWidth() * Math.cos((rotation) * Math.PI/180));
-                y = gridRef.y + (float)(sprite.getHeight() * Math.sin((rotation) * Math.PI/180));
-                break;
-            case 2:
-                x = gridRef.x + (float)(sprite.getWidth() * Math.cos((rotation - 15)* Math.PI/180));
-                y = gridRef.y + (float)(sprite.getHeight() * Math.sin((rotation - 15) * Math.PI/180));
-                break;
-            case 3:
-                x = gridRef.x + (float)(sprite.getWidth() * Math.cos((rotation - 35) * Math.PI/180));
-                y = gridRef.y + (float)(sprite.getHeight() * Math.sin((rotation - 35) * Math.PI/180));
-                break;
-            case 4:
-                x = gridRef.x + (float)(sprite.getWidth() * Math.cos((rotation - 50) * Math.PI/180));
-                y = gridRef.y + (float)(sprite.getHeight() * Math.sin((rotation - 50) * Math.PI/180));
-                break;
-        }
-        return new Vector2(x,y);
+        return new Vector2(sprite.getHitCircle().x,sprite.getHitCircle().y);
     }
 
     private void drawHUD(Player bob, TextureRegion holdingFrame) {
@@ -830,8 +763,8 @@ public class WorldRenderer {
             }
         }
         float drawAngle = bob.getRotation();
-        drawHand(bob,bob.getRotation() - 45, bob.getCentrePosition(), bob.getWidth(), bob.getHeight(), textureLoader.getRegion("hand-01"));
-        drawHand(bob,bob.getRotation() + 45, bob.getCentrePosition(), bob.getWidth(), bob.getHeight(), textureLoader.getRegion("hand-01"));
+        drawHand(bob,bob.getRotation() - 35, bob.getCentrePosition(), bob.getWidth(), bob.getHeight(), textureLoader.getRegion("hand-01"));
+        drawHand(bob,bob.getRotation() + 55, bob.getCentrePosition(), bob.getWidth(), bob.getHeight(), textureLoader.getRegion("hand-01"));
         spriteBatch.draw(bobFrame, bob.getPosition().x, bob.getPosition().y, bob.getWidth()/2, bob.getHeight()/2, bob.getWidth(), bob.getHeight(),
                 1, 1, drawAngle, true);
         spriteBatch.draw(textureLoader.getRegion("head-01"), bob.getPosition().x, bob.getPosition().y, bob.getWidth()/2, bob.getHeight()/2, bob.getWidth(), bob.getHeight(),

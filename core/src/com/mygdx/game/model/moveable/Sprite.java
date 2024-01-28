@@ -395,8 +395,8 @@ public class Sprite extends GameObject {
     public void increaseCombo() {
         startComboTimer(0.75F);
         comboPhase = comboPhase + 1;
-        if (comboPhase >= 3) {
-            setAcceleration(getAcceleration() + 30F);
+        if (comboPhase >= 4) {
+            setAcceleration(100F);
             comboPhase = 0;
         }
     }

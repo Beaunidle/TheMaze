@@ -308,7 +308,7 @@ public class Player extends Sprite {
         return new Vector2(x,y);
     }
 
-    public  Vector2 getRightHandPosition() {
+    public Vector2 getRightHandPosition() {
         float handRotation = getRotation() - 45;
         if (handRotation < 0) handRotation = handRotation + 360;
         float x = getCentrePosition().x + (float)(getWidth()/2 * Math.cos((handRotation) * Math.PI/180));
@@ -317,32 +317,49 @@ public class Player extends Sprite {
     }
 
     public void updateHitCircle() {
+        //todo here is where to think about stab/swing/lunge ect
         getHitCircle().setRadius(0.75f);
 
         Vector2 gridRef = getCentrePosition();
         float rotation = getRotation();
-
+        float x = 0;
+        float y = 0;
+        if (rotation < 0) rotation = rotation + 360;
+        if (rotation > 360) rotation = rotation - 360;
         switch (getHitPhase()) {
             case 0:
                 rotation = 0;
                 getHitCircle().setRadius(0.001F);
-            case 2:
-                rotation = rotation + 45;
+                x = gridRef.x + (float)(getWidth() * Math.cos((rotation)) * Math.PI/180);
+                y = gridRef.y + (float)(getHeight() * Math.sin((rotation)) * Math.PI/180);
                 break;
             case 1:
-                rotation = rotation + 55;
-                break;
+            case 2:
             case 3:
-                rotation = rotation + 25;
-                break;
             case 4:
-                rotation = rotation + 15;
+                x = getLeftHandPosition(45, getWidth()).x + (float)(getWidth() * 1.5 * Math.cos(rotation * Math.PI/180));
+                y = getLeftHandPosition(45, getWidth()).y + (float)(getHeight() * 1.5 * Math.sin((rotation * Math.PI/180)));
+                System.out.println("Case 1: Player position: " + getCentrePosition() + ", x:" + x + ", y: " + y + ", Rotation: " + rotation);
                 break;
+//            case 2:
+//                x = gridRef.x + (float)(getWidth()*2 * Math.cos((rotation) * Math.PI/180));
+//                y = gridRef.y + (float)(getHeight()*2 * Math.sin((rotation) * Math.PI/180));
+//                System.out.println("Case 2: x:" + x + ", y: " + y + ". Rotation: " + rotation);
+//                break;
+//            case 3:
+//                x = gridRef.x + (float)(getWidth()*1.75 * Math.cos((rotation - 10) * Math.PI/180));
+//                y = gridRef.y + (float)(getHeight()*1.75 * Math.sin((rotation - 10) * Math.PI/180));
+//                System.out.println("Case 3: x:" + x + ", y: " + y + ". Rotation: " + rotation);
+//                break;
+//            case 4:
+//                x = gridRef.x + (float)(getWidth()*5 * Math.cos((rotation - 15) * Math.PI/180));
+//                y = gridRef.y + (float)(getHeight()*5 * Math.sin((rotation - 15) * Math.PI/180));
+//                System.out.println("Case 4: x:" + x + ", y: " + y + ". Rotation: " + rotation);
+//                break;
         }
-        if (rotation < 0) rotation = rotation + 360;
-        if (rotation > 360) rotation = rotation - 360;
-        float x = gridRef.x + (float)(getWidth()*1.4F * Math.cos(rotation * Math.PI/180));
-        float y = gridRef.y + (float)(getHeight()*4.4F * Math.sin(rotation * Math.PI/180));
+
+//        x = gridRef.x + (float)(getWidth()*1.4F * Math.cos(rotation * Math.PI/180));
+//        y = gridRef.y + (float)(getHeight()*4.4F * Math.sin(rotation * Math.PI/180));
         getHitCircle().setPosition(new Vector2(x, y));
     }
 
