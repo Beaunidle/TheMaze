@@ -1,18 +1,14 @@
 package com.mygdx.game.model.environment.blocks;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Timer;
 import com.mygdx.game.model.Inventory;
 import com.mygdx.game.model.Recipe;
 import com.mygdx.game.model.items.Consumable;
-import com.mygdx.game.model.items.Item;
 import com.mygdx.game.model.items.Material;
 import com.mygdx.game.utils.RecipeHolder;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 

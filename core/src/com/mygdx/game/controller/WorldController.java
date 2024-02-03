@@ -18,6 +18,7 @@ import com.mygdx.game.model.GameObject;
 import com.mygdx.game.model.environment.AnimalSpawn;
 import com.mygdx.game.model.environment.Tilled;
 import com.mygdx.game.model.environment.blocks.Block;
+import com.mygdx.game.model.environment.blocks.Building;
 import com.mygdx.game.model.environment.blocks.EnvironmentBlock;
 import com.mygdx.game.model.environment.blocks.FillableBlock;
 import com.mygdx.game.model.environment.blocks.Grower;
@@ -69,7 +70,7 @@ public class WorldController {
     private List<AIPlayer> aiPlayers;
 //    private List<Animal> animals;
     private CollisionDetector collisionDetector;
-    private FillableBlock fillableToShow;
+    private Block fillableToShow;
     private int level = 1;
     private int frameSkipCount = 0;
     private boolean levelFinished;
@@ -133,11 +134,11 @@ public class WorldController {
 //        Timer.schedule(gameTimer, 1000);
     }
 
-    public FillableBlock getFillableToShow() {
+    public Block getFillableToShow() {
         return fillableToShow;
     }
 
-    public void setFillableToShow(FillableBlock fillableToShow) {
+    public void setFillableToShow(Block fillableToShow) {
         this.fillableToShow = fillableToShow;
     }
 
@@ -758,7 +759,7 @@ public class WorldController {
         }
         world.getBloodStains().add(new BloodStain(player.getPosition(), player.getName()));
 
-        player.respawn(player.getPersonalSpawn() != null ? player.getPersonalSpawn() : findSpawnPoint(player.getName()).getPosition());
+        player.respawn(findSpawnPoint(player.getName()).getPosition());
     }
 
     private void setAction (float delta, Sprite sprite) {
@@ -1052,7 +1053,7 @@ public class WorldController {
                 if (player.getStrongHand() instanceof Item) {
                     Object o;
                     if (player.isInHouse()) {
-                        o = world.getLevel().getHouseBlock(gridRef.x, gridRef.y);
+                        o = world.getLevel().getBuildings().get(player.getHouseNumber()).getBlock(gridRef.x, gridRef.y);
                     } else {
                         o =blocks[gridRef.x][gridRef.y];
                     }
@@ -1214,9 +1215,12 @@ public class WorldController {
                 if (placeable.getPlaceableType().equals(Placeable.PlaceableType.BED)) {
                     blockToPlace = new Block(new Vector2(gridRef.x, gridRef.y), 10, placeable.getWidth(), rotation, Block.BlockType.BED);
                     player.setPersonalSpawn(new Vector2(gridRef.x, gridRef.y));
+                    player.setSpawnHouse(player.getHouseNumber());
                     System.out.println("Spawn point is being reset to " + player.getPersonalSpawn());
-//                } else if (placeable.getPlaceableType().equals(Placeable.PlaceableType.HOUSE)) {
-//                    todo buildings with an interior
+                } else if (placeable.getPlaceableType().equals(Placeable.PlaceableType.HOUSE)) {
+                    int nextNumber = world.getLevel().getBuildings().size() + 1;
+                    blockToPlace = new Building(new Vector2(gridRef.x, gridRef.y), 10, placeable.getWidth(), placeable.getHeight(), 0, placeable.getName(), 1, nextNumber);
+                    world.getLevel().getBuildings().put(nextNumber, (Building)blockToPlace);
                 } else {
                     FillableBlock.FillableType fillableType = null;
                     String name = null;
@@ -1252,24 +1256,20 @@ public class WorldController {
                         for (int i = 0; i < placeable.getWidth(); i++) {
                             for (int j = 0; j < placeable.getHeight(); j++) {
                                 if (rotation == 0) {
-                                    if (player.isInHouse()) world.getLevel().getHouseBlocks()[gridRef.x + i- 1000][gridRef.y + j- 1000] = fillableBlock;
+                                    if (player.isInHouse()) world.getLevel().getBuildings().get(player.getHouseNumber()).putBlock(gridRef.x + i,gridRef.y + j, fillableBlock);
                                     else blocks[gridRef.x + i][gridRef.y + j] = fillableBlock;
-                                    System.out.println((gridRef.x + i) + "," + (gridRef.y + j));
                                 }
                                 if (rotation == 90) {
-                                    if (player.isInHouse()) world.getLevel().getHouseBlocks()[gridRef.x - j- 1000][gridRef.y + i- 1000] = fillableBlock;
+                                    if (player.isInHouse()) world.getLevel().getBuildings().get(player.getHouseNumber()).putBlock(gridRef.x - j,gridRef.y + i, fillableBlock);
                                     else blocks[gridRef.x - j][gridRef.y + i] = fillableBlock;
-                                    System.out.println((gridRef.x - j) + "," + (gridRef.y + i));
                                 }
                                 if (rotation == 180) {
-                                    if (player.isInHouse()) world.getLevel().getHouseBlocks()[gridRef.x - i - 1000][gridRef.y - j - 1000] = fillableBlock;
+                                    if (player.isInHouse()) world.getLevel().getBuildings().get(player.getHouseNumber()).putBlock(gridRef.x - i ,gridRef.y - j , fillableBlock);
                                     else blocks[gridRef.x - i][gridRef.y - j] = fillableBlock;
-                                    System.out.println((gridRef.x - i) + "," + (gridRef.y - j));
                                 }
                                 if (rotation == 270) {
-                                    if (player.isInHouse()) world.getLevel().getHouseBlocks()[gridRef.x + j - 1000][gridRef.y - i - 1000] = fillableBlock;
+                                    if (player.isInHouse()) world.getLevel().getBuildings().get(player.getHouseNumber()).putBlock(gridRef.x + j ,gridRef.y - i , fillableBlock);
                                     else blocks[gridRef.x + j][gridRef.y - i] = fillableBlock;
-                                    System.out.println((gridRef.x + j) + "," + (gridRef.y - i));
                                 }
                             }
                         }
@@ -1284,7 +1284,7 @@ public class WorldController {
         }
         if (blockToPlace != null) {
             if (player.isInHouse()) {
-                world.getLevel().getHouseBlocks()[gridRef.x - 1000][gridRef.y - 1000] = blockToPlace;
+                world.getLevel().getBuildings().get(player.getHouseNumber()).putBlock(gridRef.x, gridRef.y, blockToPlace);
             } else {
                 blocks[gridRef.x][gridRef.y] = blockToPlace;
             }
@@ -1360,10 +1360,6 @@ public class WorldController {
 
             for (Block[] value : player.getView().getBlocks()) {
                 for (Block o : value) {
-                    if (player.isInHouse() && o != null) {
-                        System.out.println("Block: " + o.getPosition());
-                        System.out.println("Hand: " + new Circle(player.getLeftHandPosition(0, 0.5F), 0.8F));
-                    }
                     if (o != null && Intersector.overlaps(new Circle(player.getLeftHandPosition(0, 0.5F), 0.8F), o.getBounds().getBoundingRectangle())) {
                         if (o instanceof EnvironmentBlock) {
                             EnvironmentBlock eb = (EnvironmentBlock) o;
@@ -1377,7 +1373,9 @@ public class WorldController {
                             for (Wall.WallType wall : wallBlock.getWalls().values()) {
                                 if (wall != null && wall.isDoor()) {
                                     if (player.isInHouse()) {
-                                        world.getBob().setPosition(new Vector2(50,52));
+                                        Building house = world.getLevel().getBuildings().get(player.getHouseNumber());
+                                        player.setPosition(new Vector2(house.getPosition().x,house.getPosition().y - 1));
+                                        player.setHouseNumber(0);
                                     } else {
                                         wall.toggleOpen();
                                     }
@@ -1391,6 +1389,9 @@ public class WorldController {
                             }
                             setFillableToShow((FillableBlock) o);
                             return;
+                        }
+                        if (o instanceof Building) {
+                            setFillableToShow(o);
                         }
                         if (o instanceof Grower) {
                             Grower grower = (Grower) o;
@@ -1473,7 +1474,7 @@ public class WorldController {
                 int row = yPos + j;
                 Block block = null;
                 if (sprite.isInHouse()) {
-                    block = world.getLevel().getHouseBlock(col, row);
+                    block = world.getLevel().getBuildings().get(sprite.getHouseNumber()).getBlock(col, row);
                 } else {
                     if (col >= 0 && row >= 0 && col < world.getLevel().getWidth() && row < world.getLevel().getHeight()) {
                         block = world.getLevel().getBlock(col, row);

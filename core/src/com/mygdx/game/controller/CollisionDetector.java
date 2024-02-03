@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.mygdx.game.model.environment.blocks.Building;
 import com.mygdx.game.model.environment.blocks.Wall;
 import com.mygdx.game.model.moveable.AIPlayer;
 import com.mygdx.game.model.environment.blocks.Block;
@@ -66,7 +67,7 @@ class CollisionDetector {
         }
 
         // get the block(s) bob can collide with
-        populateCollidableBlocks(startX, startY, endX, endY);
+        populateCollidableBlocks(startX, startY, endX, endY, player);
         populateCollidableSprites(player);
 
         //todo lets check a simulation of both
@@ -130,7 +131,7 @@ class CollisionDetector {
             startY = endY = (int) Math.floor(boundingRect.getY() + player.getHeight() + player.getVelocity().y);
         }
 
-        populateCollidableBlocks(startX, startY, endX, endY);
+        populateCollidableBlocks(startX, startY, endX, endY, player);
 
         playerRect.setPosition(player.getPosition().x, player.getPosition().y + player.getVelocity().y);
 
@@ -223,7 +224,7 @@ class CollisionDetector {
             }
 
             // get the block(s) bob can collide with
-            populateCollidableBlocks(startX, startY, endX, endY);
+            populateCollidableBlocks(startX, startY, endX, endY, null);
 
             // simulate player's movement on the X
             bulletRect.setPosition(projectile.getPosition().x + projectile.getSpeed(), projectile.getPosition().y);
@@ -263,7 +264,9 @@ class CollisionDetector {
                 startY = endY = (int) Math.floor(boundingRect.getY() + projectile.getHeight() + projectile.getSpeed());
             }
 
-            populateCollidableBlocks(startX, startY, endX, endY);
+            //todo make sure projectiles don't go funny when player is in house
+            // also sort out the damn naming in this class, it should be sprite, not player
+            populateCollidableBlocks(startX, startY, endX, endY, null);
 
             bulletRect.setPosition(projectile.getPosition().x, projectile.getPosition().y + projectile.getSpeed());
 
@@ -455,14 +458,20 @@ class CollisionDetector {
     /**
      * populate the collidable array with the blocks found in the enclosing coordinates
      **/
-    private void populateCollidableBlocks(int startX, int startY, int endX, int endY) {
+    private void populateCollidableBlocks(int startX, int startY, int endX, int endY, Sprite sprite) {
         collidable.clear();
-        if (bob.isInHouse()) {
-            for (int x = 0; x < 10; x++) {
-                for (int y = 0; y < 10; y++) {
-                        Block block = (Block)world.getLevel().getHouseBlocks()[x][y];
+        if (sprite != null && sprite.isInHouse()) {
+            Building house = world.getLevel().getBuildings().get(sprite.getHouseNumber());
+            for (int x = startX-3; x <= endX+3; x++) {
+                for (int y = startY-3; y <= endY+3; y++) {
+                    if (x >= house.getNumber()*1000
+                            && x < house.getNumber() * 1000 + house.getInternalWidth()
+                            && y >= house.getNumber()*1000
+                            && y < house.getNumber() *1000 + house.getInternalHeight()) {
+                        Block block = house.getBlock(x,y);
                         boolean colidible = block != null && block.isColibible();
                         if (colidible) collidable.add(block);
+                    }
                 }
             }
         } else {

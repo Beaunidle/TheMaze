@@ -83,17 +83,17 @@ public class LevelLoader {
                 case "BLOCK":
                     level.getBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = new Block(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), "block");
                     break;
-                case "HOUSEBLOCK":
-                    level.getHouseBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = new Block(new Vector2(Integer.parseInt(values[1])  + 1000, Integer.parseInt(values[2])  + 1000), "block");
-                    break;
-                case "HOUSEDOOR":
-                    level.getHouseBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = new Wall(new Vector2(Integer.parseInt(values[1])  + 1000, Integer.parseInt(values[2])  + 1000), 180, Block.getSIZE(), Block.getSIZE()/4, true);
-                    break;
-                case "HOUSETILE":
-                    Block block = new Block(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), "tile");
-                    block.setColibible(false);
-                    level.getHouseBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = block;
-                    break;
+//                case "HOUSEBLOCK":
+//                    level.getHouseBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = new Block(new Vector2(Integer.parseInt(values[1])  + 1000, Integer.parseInt(values[2])  + 1000), "block");
+//                    break;
+//                case "HOUSEDOOR":
+//                    level.getHouseBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = new Wall(new Vector2(Integer.parseInt(values[1])  + 1000, Integer.parseInt(values[2])  + 1000), 180, Block.getSIZE(), Block.getSIZE()/4, true);
+//                    break;
+//                case "HOUSETILE":
+//                    Block block = new Block(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), "tile");
+//                    block.setColibible(false);
+//                    level.getHouseBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = block;
+//                    break;
                 case "EXPLODING":
                     ExplodableBlock eb = new ExplodableBlock(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])));
                     level.getBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = eb;

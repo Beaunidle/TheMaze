@@ -30,6 +30,7 @@ import com.mygdx.game.model.Inventory;
 import com.mygdx.game.model.Recipe;
 import com.mygdx.game.model.environment.AnimalSpawn;
 import com.mygdx.game.model.environment.Tilled;
+import com.mygdx.game.model.environment.blocks.Building;
 import com.mygdx.game.model.environment.blocks.EnvironmentBlock;
 import com.mygdx.game.model.environment.blocks.FillableBlock;
 import com.mygdx.game.model.environment.blocks.Grower;
@@ -204,9 +205,9 @@ public class WorldRenderer {
         spriteBatch.begin();
 //        spriteBatch.enableBlending();
         if (bob.isInHouse()) {
-            this.cam.position.x = 1005;
-            this.cam.position.y = 1005;
-            drawHouseBlocks();
+            this.cam.position.x = 1000 * bob.getHouseNumber() + 5;
+            this.cam.position.y = 1000 * bob.getHouseNumber() + 5;
+            drawHouseBlocks(world.getLevel().getBuildings().get(bob.getHouseNumber()));
         } else {
             drawFloor();
             drawBlocks();
@@ -261,9 +262,9 @@ public class WorldRenderer {
         debugRenderer.end();
     }
 
-    private void drawHouseBlocks() {
-        for (int i = 1000; i < 1010; i++) {
-            for (int j = 1000; j < 1010; j++) {
+    private void drawHouseBlocks(Building building) {
+        for (int i = building.getNumber() * 1000; i < building.getNumber() * 1000 + building.getInternalWidth(); i++) {
+            for (int j = building.getNumber() * 1000; j < building.getNumber() * 1000 + building.getInternalHeight(); j++) {
                 //todo add tile texture
                 spriteBatch.draw(textureLoader.getRegion("tile"), i, j, Block.getSIZE(), Block.getSIZE());
             }
@@ -457,6 +458,7 @@ public class WorldRenderer {
                     break;
                 case BED:
                 case FILLABLE:
+                case BUILDING:
                     Polygon polygon = block.getBounds();
                     float rotation = polygon.getRotation();
                     Rectangle rectangle = polygon.getBoundingRectangle();

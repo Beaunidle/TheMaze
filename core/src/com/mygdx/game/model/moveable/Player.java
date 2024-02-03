@@ -48,6 +48,7 @@ public class Player extends Sprite {
     private boolean leftHanded;
     private int slotNo = 0;
     private Vector2 personalSpawn;
+    private int spawnHouse;
 //    private Circle viewCircle;
 
     private final Timer.Task bulletTimer = new Timer.Task() {
@@ -88,20 +89,20 @@ public class Player extends Sprite {
         ranged = null;
         inventory = new Inventory(20);
         toolBelt = new Inventory(9);
-        toolBelt.addInventory(new Swingable(Swingable.SwingableType.AXE, 50, new Material(FLINT, 1)));
+//        toolBelt.addInventory(new Swingable(Swingable.SwingableType.AXE, 50, new Material(FLINT, 1)));
 //        toolBelt.addInventory(new Swingable(Swingable.SwingableType.AXE, 50, new Material(COPPER, 1)));
         toolBelt.addInventory(new Swingable(Swingable.SwingableType.PICK, 50, new Material(FLINT, 1)));
         toolBelt.addInventory(new Swingable(Swingable.SwingableType.SWORD, 50, new Material(FLINT, 1)));
 //        toolBelt.addInventory(new Swingable(Swingable.SwingableType.SWORD, 50, new Material(COPPER, 1)));
 //        toolBelt.addInventory(new Swingable(Swingable.SwingableType.SHOVEL, 10, new Material(BONE, 1)));
 //        toolBelt.addInventory(new Swingable(Swingable.SwingableType.HOE, 10, new Material(BONE, 1)));
-        toolBelt.addInventory(new Swingable(Swingable.SwingableType.HAMMER, 10, new Material(STONE, 1)));
+//        toolBelt.addInventory(new Swingable(Swingable.SwingableType.HAMMER, 10, new Material(STONE, 1)));
 //        toolBelt.addInventory(new Swingable(Swingable.SwingableType.CLUB, 10, new Material(BONE, 1)));
 //        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.CAMPFIRE, 10));
         toolBelt.addInventory(new Placeable(Placeable.PlaceableType.STONEANVIL, 10));
         toolBelt.addInventory(new Placeable(Placeable.PlaceableType.TORCH, 10));
         toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
-//        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
+        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
 //        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
 //        for (int i = 0; i < 100; i++) {
 //            inventory.addInventory(new Placeable(Placeable.PlaceableType.WALL, 10));
@@ -210,7 +211,8 @@ public class Player extends Sprite {
         setWater(getMaxWater());
         setFood(getMaxFood());
 //        this.gun = new Gun(Gun.Type.ROCKET);
-        setPosition(new Vector2(newPos));
+        setPosition(new Vector2(getPersonalSpawn() != null ? getPersonalSpawn() : newPos));
+        setHouseNumber(spawnHouse);
         getBounds().setPosition(getPosition().x, getPosition().y);
         getBounds().setRotation(getRotation());
 //        this.viewCircle.setPosition(getCentrePosition().x, getCentrePosition().y);
@@ -260,6 +262,14 @@ public class Player extends Sprite {
 
     public void setPersonalSpawn(Vector2 personalSpawn) {
         this.personalSpawn = personalSpawn;
+    }
+
+    public int getSpawnHouse() {
+        return spawnHouse;
+    }
+
+    public void setSpawnHouse(int spawnHouse) {
+        this.spawnHouse = spawnHouse;
     }
 
     //    public void update(float delta) {

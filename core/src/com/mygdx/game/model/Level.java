@@ -8,6 +8,7 @@ import static com.mygdx.game.model.items.Ranged.RangedType.SMG;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.model.environment.AnimalSpawn;
 import com.mygdx.game.model.environment.blocks.Block;
+import com.mygdx.game.model.environment.blocks.Building;
 import com.mygdx.game.model.environment.blocks.ExplodableBlock;
 import com.mygdx.game.model.environment.SpawnPoint;
 import com.mygdx.game.model.environment.blocks.Grower;
@@ -27,7 +28,8 @@ public class Level {
     private int width =  300;
     private int height = 300;
     private GameObject[][] blocks;
-    private GameObject[][] houseBlocks;
+//    private GameObject[][] houseBlocks;
+    private Map<Integer, Building> buildings = new HashMap<>();
     private List<Block> environmentBlocks = new ArrayList<>();
     private final List<ExplodableBlock> explodableBlocks = new ArrayList<>();
     private final List<GunPad> gunPads = new ArrayList<>();
@@ -59,12 +61,21 @@ public class Level {
         return blocks;
     }
 
-    public GameObject[][] getHouseBlocks() {
-        return houseBlocks;
+//    public GameObject[][] getHouseBlocks() {
+//        return houseBlocks;
+//    }
+
+//    public void setHouseBlocks(GameObject[][] houseBlocks) {
+//        this.houseBlocks = houseBlocks;
+//    }
+
+
+    public Map<Integer, Building> getBuildings() {
+        return buildings;
     }
 
-    public void setHouseBlocks(GameObject[][] houseBlocks) {
-        this.houseBlocks = houseBlocks;
+    public void setBuildings(Map<Integer, Building> buildings) {
+        this.buildings = buildings;
     }
 
     public void setBlocks(GameObject[][] blocks) {
@@ -87,12 +98,12 @@ public class Level {
                 blocks[col][row] = null;
             }
         }
-        houseBlocks = new GameObject[10][10];
-        for (int col = 0; col < 10; col++) {
-            for (int row = 0; row < 10; row++) {
-                houseBlocks[col][row] = null;
-            }
-        }
+//        houseBlocks = new GameObject[10][10];
+//        for (int col = 0; col < 10; col++) {
+//            for (int row = 0; row < 10; row++) {
+//                houseBlocks[col][row] = null;
+//            }
+//        }
     }
 
     public Block getBlock(int x, int y) {
@@ -102,14 +113,14 @@ public class Level {
         return null;
     }
 
-    public Block getHouseBlock(int x, int y) {
-        int houseX = x - 1000;
-        int houseY = y - 1000;
-        if (houseX >= 0 && houseX < 10 && houseY >= 0 && houseY < 10) {
-            if (houseBlocks[houseX][houseY] != null && houseBlocks[houseX][houseY] instanceof Block) return (Block)houseBlocks[houseX][houseY];
-        }
-        return null;
-    }
+//    public Block getHouseBlock(int x, int y) {
+//        int houseX = x - 1000;
+//        int houseY = y - 1000;
+//        if (houseX >= 0 && houseX < 10 && houseY >= 0 && houseY < 10) {
+//            if (houseBlocks[houseX][houseY] != null && houseBlocks[houseX][houseY] instanceof Block) return (Block)houseBlocks[houseX][houseY];
+//        }
+//        return null;
+//    }
 
     public FloorPad getPad(int x, int y) {
         if (x > 0 && x < width && y > 0 && y < height) {

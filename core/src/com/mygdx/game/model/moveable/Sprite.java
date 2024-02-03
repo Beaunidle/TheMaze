@@ -67,7 +67,8 @@ public class Sprite extends GameObject {
     private boolean useTimerOn;
     private boolean useDelayOn;
 
-    private boolean injured, healing, aging, dodging, staggered, onfire, inHouse;
+    private int houseNumber = 0;
+    private boolean injured, healing, aging, dodging, staggered, onfire;
     private String killedBy;
     private int rotateBy = 0;
     private Attributes attributes;
@@ -482,11 +483,15 @@ public class Sprite extends GameObject {
     }
 
     public boolean isInHouse() {
-        return getPosition().x > 500 && getPosition().y > 500;
+        return getPosition().x > 500 && getPosition().y > 500 && houseNumber > 0;
     }
 
-    public void setInHouse(boolean inHouse) {
-        this.inHouse = inHouse;
+    public int getHouseNumber() {
+        return houseNumber;
+    }
+
+    public void setHouseNumber(int houseNumber) {
+        this.houseNumber = houseNumber;
     }
 
     public void moveForward() {

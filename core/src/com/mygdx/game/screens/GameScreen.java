@@ -16,6 +16,8 @@ import com.mygdx.game.model.GameButton;
 import com.mygdx.game.model.World;
 import com.mygdx.game.WorldRenderer;
 import com.mygdx.game.controller.WorldController;
+import com.mygdx.game.model.environment.blocks.Block;
+import com.mygdx.game.model.environment.blocks.Building;
 import com.mygdx.game.model.environment.blocks.FillableBlock;
 import com.mygdx.game.model.items.Fillable;
 import com.mygdx.game.utils.JoyStick;
@@ -68,26 +70,31 @@ public class GameScreen implements Screen, InputProcessor {
             BitmapFont font = new BitmapFont();
             game.setScreen(new LoadingScreen(game, spriteBatch, font, controller.getScoreBoard()));
         }
-        FillableBlock fillableBlock = controller.getFillableToShow();
-        if (controller.isPaused() && fillableBlock == null) {
+        Block block = controller.getFillableToShow();
+        if (controller.isPaused() && block == null) {
             game.setScreen(new InstructionsScreen(game, spriteBatch, font, this));
             return;
         }
-        if (fillableBlock != null) {
-            if (fillableBlock.getFillableType().equals(FillableBlock.FillableType.HOUSE)) {
-                world.getBob().setPosition(new Vector2(1004.5F,1001));
-//                world.getBob().setInHouse(true);
+
+        if (block != null) {
+            if (block instanceof Building) {
+                int houseNumber = ((Building) block).getNumber();
+                world.getBob().setHouseNumber(houseNumber);
+                world.getBob().setPosition(new Vector2(houseNumber*1000 + (float)Math.floor(((Building) block).getInternalWidth()/2F), houseNumber*1000 + 1));
                 getController().setFillableToShow(null);
-            } else if (fillableBlock.getFillableType().equals(FillableBlock.FillableType.INVSCREEN)) {
-                game.setScreen(new InventoryScreen(game, spriteBatch, font, this, world));
-                return;
-            } else if (fillableBlock.getFillableType().equals(FillableBlock.FillableType.MAPSCREEN)) {
-                game.setScreen(new MapScreen(game, spriteBatch, font, this, world, textureLoader));
-                return;
-            } else if (fillableBlock.isRecipeSelect()) {
-                game.setScreen(new FillableScreen(game, spriteBatch, font, this, world, fillableBlock));
-            } else {
-                game.setScreen(new CraftScreen(game, spriteBatch, font, this, world, fillableBlock.getRecipes()));
+            } else if (block instanceof  FillableBlock) {
+                FillableBlock fillableBlock = (FillableBlock) block;
+                if (fillableBlock.getFillableType().equals(FillableBlock.FillableType.INVSCREEN)) {
+                    game.setScreen(new InventoryScreen(game, spriteBatch, font, this, world));
+                    return;
+                } else if (fillableBlock.getFillableType().equals(FillableBlock.FillableType.MAPSCREEN)) {
+                    game.setScreen(new MapScreen(game, spriteBatch, font, this, world, textureLoader));
+                    return;
+                } else if (fillableBlock.isRecipeSelect()) {
+                    game.setScreen(new FillableScreen(game, spriteBatch, font, this, world, fillableBlock));
+                } else {
+                    game.setScreen(new CraftScreen(game, spriteBatch, font, this, world, fillableBlock.getRecipes()));
+                }
             }
         }
         controller.update(delta);

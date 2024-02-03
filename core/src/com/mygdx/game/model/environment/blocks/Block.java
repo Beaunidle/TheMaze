@@ -13,7 +13,7 @@ import java.util.List;
 public class Block extends GameObject {
 
     public enum BlockType {
-        ENVIRONMENT,FILLABLE,GROWER,TILLED,WALL,BED,EXPLODABLE
+        ENVIRONMENT,FILLABLE,GROWER,TILLED,WALL,BED,EXPLODABLE,BUILDING
     }
     static final float SIZE = 1f;
 

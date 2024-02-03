@@ -214,7 +214,7 @@ public class World {
         Block block;
         for (int col = x; col <= x2; col++) {
             for (int row = y; row <= y2; row++) {
-                block = bob.isInHouse() ? level.getHouseBlock(col - 1000, row - 1000) : level.getBlock(col, row);
+                block = bob.isInHouse() ? level.getBuildings().get(bob.getHouseNumber()).getBlock(col, row) : level.getBlock(col, row);
                 if (block != null) {
                     blocks.add(block);
                 }
@@ -228,7 +228,7 @@ public class World {
         Block block;
         for (int col = 0; col < 10; col++) {
             for (int row = 0; row < 10; row++) {
-                block = (Block)level.getHouseBlocks()[col][row];
+                block = level.getBuildings().get(bob.getHouseNumber()).getBlock(col + bob.getHouseNumber()*1000,row + bob.getHouseNumber()*1000);
                 if (block != null) {
                     blocks.add(block);
                 }
