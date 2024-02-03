@@ -230,7 +230,7 @@ public class WorldRenderer {
 //        drawButtons();
 //        spriteBatch.disableBlending();
         spriteBatch.end();
-        drawDebug();
+//        drawDebug();
 //        aiDebug();
 //        drawCollisionBlocks();
         if (debug) drawDebug();
@@ -597,17 +597,19 @@ public class WorldRenderer {
     }
 
     private void drawHandItem(Player sprite, float rotation, Vector2 gridRef, float width, float height, TextureRegion textureToDraw) {
-        Vector2 drawVector = getDrawVector(sprite, rotation, gridRef);
-        spriteBatch.draw(textureToDraw, drawVector.x, drawVector.y,0, 0, 1.5F, 1.5F, 1F, 1F, rotation - 45);
+//        Vector2 drawVector = getDrawVector(sprite, rotation, gridRef);
+        Vector2 drawVector = new Vector2(sprite.getHitCircle().x, sprite.getHitCircle().y);
+        spriteBatch.draw(textureToDraw, drawVector.x, drawVector.y,0, 0, 1.5F, 1.5F, 1F, 1F, rotation);
     }
 
     private void drawTargetCircle(Vector2 gridRef, float width, float height, TextureRegion textureToDraw) {
         spriteBatch.draw(textureToDraw, gridRef.x - width/2, gridRef.y - height/2,width/2, height/2, width, height, 1F, 1F, 0);
     }
 
-    private void drawHand(Player sprite, float rotation, Vector2 gridRef, float width, float height, TextureRegion textureToDraw) {
+    private void drawHand(Player sprite, float rotation, Vector2 gridRef, float width, float height, TextureRegion textureToDraw, boolean left) {
         //todo sort out right hand
-        Vector2 drawVector = getDrawVector(sprite, rotation, gridRef);
+//        Vector2 drawVector = getDrawVector(sprite, rotation, gridRef);
+        Vector2 drawVector = left ? sprite.getHitPhase() == 0 ? getDrawVector(sprite, rotation, gridRef) : new Vector2(sprite.getHitCircle().x, sprite.getHitCircle().y) : gridRef;
         spriteBatch.draw(textureToDraw, drawVector.x, drawVector.y, 0, 0, width, height, 1F, 1F, rotation);
     }
 
@@ -765,8 +767,10 @@ public class WorldRenderer {
             }
         }
         float drawAngle = bob.getRotation();
-        drawHand(bob,bob.getRotation() - 35, bob.getCentrePosition(), bob.getWidth(), bob.getHeight(), textureLoader.getRegion("hand-01"));
-        drawHand(bob,bob.getRotation() + 55, bob.getCentrePosition(), bob.getWidth(), bob.getHeight(), textureLoader.getRegion("hand-01"));
+        //right hand
+        drawHand(bob,bob.getRotation() - 75, bob.getRightHandPosition(), bob.getWidth(), bob.getHeight(), textureLoader.getRegion("hand-02"), false);
+        //left hand
+        drawHand(bob,bob.getRotation() + 45, bob.getCentrePosition(), bob.getWidth(), bob.getHeight(), textureLoader.getRegion("hand-01"), true);
         spriteBatch.draw(bobFrame, bob.getPosition().x, bob.getPosition().y, bob.getWidth()/2, bob.getHeight()/2, bob.getWidth(), bob.getHeight(),
                 1, 1, drawAngle, true);
         spriteBatch.draw(textureLoader.getRegion("head-01"), bob.getPosition().x, bob.getPosition().y, bob.getWidth()/2, bob.getHeight()/2, bob.getWidth(), bob.getHeight(),
@@ -916,7 +920,7 @@ public class WorldRenderer {
                         itemWidth = bob.getWidth()/2;
                         itemHeight = bob.getHeight()/2;
                     }
-                    drawHandItem(bob,bob.getRotation() + 45, bob.getCentrePosition(), itemWidth, itemHeight, itemFrame);
+                    drawHandItem(bob,bob.getRotation(), bob.getCentrePosition(), itemWidth, itemHeight, itemFrame);
                 }
 
                 if (item instanceof Swingable) {

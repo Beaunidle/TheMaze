@@ -349,7 +349,6 @@ public class Player extends Sprite {
             case 4:
                 x = getLeftHandPosition(45, getWidth()).x + (float)(getWidth() * 1.5 * Math.cos(rotation * Math.PI/180));
                 y = getLeftHandPosition(45, getWidth()).y + (float)(getHeight() * 1.5 * Math.sin((rotation * Math.PI/180)));
-                System.out.println("Case 1: Player position: " + getCentrePosition() + ", x:" + x + ", y: " + y + ", Rotation: " + rotation);
                 break;
 //            case 2:
 //                x = gridRef.x + (float)(getWidth()*2 * Math.cos((rotation) * Math.PI/180));

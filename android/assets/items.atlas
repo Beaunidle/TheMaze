@@ -1,207 +1,207 @@
 items.png
-size: 2048, 2093
+size: 2048, 2105
 format: RGBA8888
-filter: Linear,Linear
+filter: Nearest,Nearest
 repeat: none
 armour-01
   rotate: false
-  xy: 396, 66
+  xy: 250, 66
   size: 125, 76
   orig: 125, 76
   offset: 0, 0
   index: -1
 bed
   rotate: false
-  xy: 296, 0
+  xy: 373, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 bench-healer
   rotate: false
-  xy: 0, 190
+  xy: 962, 66
   size: 113, 125
   orig: 113, 125
   offset: 0, 0
   index: -1
 bench-stone
   rotate: false
-  xy: 977, 517
+  xy: 1004, 529
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 berry
   rotate: false
-  xy: 289, 315
+  xy: 164, 317
   size: 209, 156
   orig: 209, 156
   offset: 0, 0
   index: -1
 berrybush
   rotate: false
-  xy: 1233, 517
+  xy: 1260, 529
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 berrypaste
   rotate: false
-  xy: 366, 0
+  xy: 443, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 block
   rotate: false
-  xy: 1603, 66
+  xy: 852, 66
   size: 110, 123
   orig: 110, 123
   offset: 0, 0
   index: -1
 body-spider
   rotate: false
-  xy: 436, 0
+  xy: 513, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 body_cow
   rotate: false
-  xy: 110, 0
+  xy: 180, 0
   size: 42, 29
   orig: 42, 29
   offset: 0, 0
   index: -1
 boostPad
   rotate: false
-  xy: 0, 315
+  xy: 1875, 191
   size: 125, 126
   orig: 125, 126
   offset: 0, 0
   index: -1
 bullet90
   rotate: false
-  xy: 152, 0
+  xy: 0, 0
   size: 13, 37
   orig: 13, 37
   offset: 0, 0
   index: -1
 bullet180
   rotate: false
-  xy: 73, 0
+  xy: 13, 0
   size: 37, 13
   orig: 37, 13
   offset: 0, 0
   index: -1
 carrot-mature
   rotate: false
-  xy: 506, 0
+  xy: 583, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 carrot-middling
   rotate: false
-  xy: 576, 0
+  xy: 653, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 carrot-seedling
   rotate: false
-  xy: 646, 0
+  xy: 723, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 carrot
   rotate: false
-  xy: 1489, 517
+  xy: 1516, 529
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 chest
   rotate: false
-  xy: 716, 0
+  xy: 793, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 coal
   rotate: false
-  xy: 498, 315
+  xy: 373, 317
   size: 209, 156
   orig: 209, 156
   offset: 0, 0
   index: -1
 coal1
   rotate: false
-  xy: 372, 517
+  xy: 1209, 317
   size: 155, 212
   orig: 155, 212
   offset: 0, 0
   index: -1
 coal2
   rotate: false
-  xy: 113, 190
+  xy: 746, 66
   size: 106, 125
   orig: 106, 125
   offset: 0, 0
   index: -1
 cookedmeat
   rotate: false
-  xy: 786, 0
+  xy: 863, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 copper
   rotate: false
-  xy: 1745, 517
+  xy: 1772, 529
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 cow
   rotate: false
-  xy: 1792, 1797
+  xy: 402, 529
   size: 152, 296
   orig: 152, 296
   offset: 0, 0
   index: -1
 damageBoost
   rotate: false
-  xy: 1778, 0
+  xy: 1904, 0
   size: 125, 65
   orig: 125, 65
   offset: 0, 0
   index: -1
 dark
   rotate: false
-  xy: 856, 0
+  xy: 933, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 dead
   rotate: false
-  xy: 219, 190
+  xy: 1075, 66
   size: 113, 125
   orig: 113, 125
   offset: 0, 0
   index: -1
 door
   rotate: false
-  xy: 926, 0
+  xy: 123, 0
   size: 19, 63
   orig: 19, 63
   offset: 0, 0
   index: -1
 dooropen
   rotate: false
-  xy: 945, 0
+  xy: 142, 0
   size: 19, 63
   orig: 19, 63
   offset: 0, 0
@@ -222,644 +222,651 @@ explode-02
   index: -1
 explode-03
   rotate: false
-  xy: 746, 66
+  xy: 1188, 66
   size: 122, 122
   orig: 122, 122
   offset: 0, 0
   index: -1
 explodingBlockYellow
   rotate: false
-  xy: 964, 0
+  xy: 1003, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 fire-burning1
   rotate: false
-  xy: 0, 773
+  xy: 0, 825
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 fire-burning2
   rotate: false
-  xy: 256, 773
+  xy: 256, 825
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 fire-burning3
   rotate: false
-  xy: 512, 773
+  xy: 512, 825
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 fire
   rotate: false
-  xy: 768, 773
+  xy: 768, 825
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 fireball-01
   rotate: false
-  xy: 332, 190
+  xy: 250, 191
   size: 125, 125
   orig: 125, 125
   offset: 0, 0
   index: -1
 fireball-02
   rotate: false
-  xy: 457, 190
+  xy: 375, 191
   size: 125, 125
   orig: 125, 125
   offset: 0, 0
   index: -1
 fireball-03
   rotate: false
-  xy: 582, 190
+  xy: 500, 191
   size: 125, 125
   orig: 125, 125
   offset: 0, 0
   index: -1
 fireball-04
   rotate: false
-  xy: 707, 190
+  xy: 625, 191
   size: 125, 125
   orig: 125, 125
   offset: 0, 0
   index: -1
 flint
   rotate: false
-  xy: 1024, 773
+  xy: 1024, 825
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 floor
   rotate: false
-  xy: 1280, 773
+  xy: 1280, 825
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 floor2
   rotate: false
-  xy: 1536, 773
+  xy: 1536, 825
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 floor3
   rotate: false
-  xy: 1792, 773
+  xy: 1792, 825
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 floor4
   rotate: false
-  xy: 0, 1029
+  xy: 0, 1081
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 floor5
   rotate: false
-  xy: 256, 1029
+  xy: 256, 1081
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 floor6
   rotate: false
-  xy: 512, 1029
+  xy: 512, 1081
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 fragment_bone
   rotate: false
-  xy: 768, 1029
+  xy: 768, 1081
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 grass
   rotate: false
-  xy: 1024, 1029
+  xy: 1024, 1081
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 grassbush
   rotate: false
-  xy: 707, 315
+  xy: 582, 317
   size: 209, 156
   orig: 209, 156
   offset: 0, 0
   index: -1
 hand-01
   rotate: false
-  xy: 1280, 1029
+  xy: 1280, 1081
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+hand-02
+  rotate: false
+  xy: 1536, 1081
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 head-01
   rotate: false
-  xy: 1536, 1029
+  xy: 1792, 1081
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 healing
   rotate: false
-  xy: 832, 190
+  xy: 750, 191
   size: 125, 125
   orig: 125, 125
   offset: 0, 0
   index: -1
 heart
   rotate: false
-  xy: 1713, 66
+  xy: 0, 191
   size: 125, 124
   orig: 125, 124
   offset: 0, 0
   index: -1
 homingBoost
   rotate: false
-  xy: 0, 66
+  xy: 375, 66
   size: 146, 67
   orig: 146, 67
   offset: 0, 0
   index: -1
 house
   rotate: false
-  xy: 1034, 0
+  xy: 1073, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 inv_hoe_bone
   rotate: false
-  xy: 1792, 1029
+  xy: 0, 1337
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 inv_shovel_bone
   rotate: false
-  xy: 0, 1285
+  xy: 256, 1337
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 irrigation-empty
   rotate: false
-  xy: 1104, 0
+  xy: 1143, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 irrigation-full
   rotate: false
-  xy: 1174, 0
+  xy: 1213, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 irrigationBend-empty
   rotate: false
-  xy: 1903, 0
+  xy: 247, 0
   size: 63, 66
   orig: 63, 66
   offset: 0, 0
   index: -1
 irrigationBend-full
   rotate: false
-  xy: 1966, 0
+  xy: 310, 0
   size: 63, 66
   orig: 63, 66
   offset: 0, 0
   index: -1
 lightning-01
   rotate: false
-  xy: 868, 66
+  xy: 1310, 66
   size: 122, 122
   orig: 122, 122
   offset: 0, 0
   index: -1
 lightning-02
   rotate: false
-  xy: 990, 66
+  xy: 1432, 66
   size: 122, 122
   orig: 122, 122
   offset: 0, 0
   index: -1
 lightning-03
   rotate: false
-  xy: 1112, 66
+  xy: 1554, 66
   size: 122, 122
   orig: 122, 122
   offset: 0, 0
   index: -1
 lightning-04
   rotate: false
-  xy: 1234, 66
+  xy: 1676, 66
   size: 122, 122
   orig: 122, 122
   offset: 0, 0
   index: -1
 mana
   rotate: false
-  xy: 1838, 66
+  xy: 125, 191
   size: 125, 124
   orig: 125, 124
   offset: 0, 0
   index: -1
 meat
   rotate: false
-  xy: 1244, 0
+  xy: 1283, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 melon-mature
   rotate: false
-  xy: 256, 1285
+  xy: 512, 1337
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 melon-middling
   rotate: false
-  xy: 512, 1285
+  xy: 768, 1337
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 melon-seedling
   rotate: false
-  xy: 768, 1285
+  xy: 1024, 1337
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 melon
   rotate: false
-  xy: 1024, 1285
+  xy: 1280, 1337
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 onfire-01
   rotate: false
-  xy: 957, 190
+  xy: 875, 191
   size: 125, 125
   orig: 125, 125
   offset: 0, 0
   index: -1
 onfire-02
   rotate: false
-  xy: 1082, 190
+  xy: 1000, 191
   size: 125, 125
   orig: 125, 125
   offset: 0, 0
   index: -1
 onfire-03
   rotate: false
-  xy: 1207, 190
+  xy: 1125, 191
   size: 125, 125
   orig: 125, 125
   offset: 0, 0
   index: -1
 onfire-04
   rotate: false
-  xy: 1332, 190
+  xy: 1250, 191
   size: 125, 125
   orig: 125, 125
   offset: 0, 0
   index: -1
 padMove1
   rotate: false
-  xy: 1280, 1285
+  xy: 1536, 1337
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 padMove2
   rotate: false
-  xy: 1536, 1285
+  xy: 1792, 1337
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 padSpike
   rotate: false
-  xy: 1457, 190
+  xy: 1375, 191
   size: 125, 125
   orig: 125, 125
   offset: 0, 0
   index: -1
 padSticky
   rotate: false
-  xy: 1582, 190
+  xy: 1500, 191
   size: 125, 125
   orig: 125, 125
   offset: 0, 0
   index: -1
 padSticky1
   rotate: false
-  xy: 1792, 1285
+  xy: 0, 1593
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 padSticky2
   rotate: false
-  xy: 0, 1541
+  xy: 256, 1593
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 padSticky3
   rotate: false
-  xy: 256, 1541
+  xy: 512, 1593
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 pebble
   rotate: false
-  xy: 512, 1541
+  xy: 768, 1593
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 potato-mature
   rotate: false
-  xy: 1314, 0
+  xy: 1353, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 potato-middling
   rotate: false
-  xy: 1384, 0
+  xy: 1423, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 potato-seedling
   rotate: false
-  xy: 1454, 0
+  xy: 1493, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 potato
   rotate: false
-  xy: 768, 1541
+  xy: 1024, 1593
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 reloading
   rotate: false
-  xy: 165, 0
+  xy: 1773, 0
   size: 131, 40
   orig: 131, 40
   offset: 0, 0
   index: -1
 rubbleBlock
   rotate: false
-  xy: 1524, 0
+  xy: 1563, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 scapula
   rotate: false
-  xy: 1024, 1541
+  xy: 1280, 1593
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 shield-01
   rotate: false
-  xy: 1594, 0
+  xy: 222, 0
   size: 25, 63
   orig: 25, 63
   offset: 0, 0
   index: -1
 shieldBlue
   rotate: false
-  xy: 1707, 190
+  xy: 1625, 191
   size: 125, 125
   orig: 125, 125
   offset: 0, 0
   index: -1
 shieldBoost
   rotate: false
-  xy: 146, 66
+  xy: 0, 66
   size: 125, 75
   orig: 125, 75
   offset: 0, 0
   index: -1
 shieldGreen
   rotate: false
-  xy: 1832, 190
+  xy: 1750, 191
   size: 125, 125
   orig: 125, 125
   offset: 0, 0
   index: -1
 shieldOrange
   rotate: false
-  xy: 1356, 66
+  xy: 1920, 66
   size: 125, 122
   orig: 125, 122
   offset: 0, 0
   index: -1
 spear
   rotate: false
-  xy: 0, 0
+  xy: 50, 0
   size: 73, 8
   orig: 73, 8
   offset: 0, 0
   index: -1
 speedBoost
   rotate: false
-  xy: 271, 66
+  xy: 125, 66
   size: 125, 75
   orig: 125, 75
   offset: 0, 0
   index: -1
 spider-big
   rotate: false
-  xy: 1280, 1541
+  xy: 1536, 1593
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 spider-hiding
   rotate: false
-  xy: 1619, 0
+  xy: 1633, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 spider
   rotate: false
-  xy: 1536, 1541
+  xy: 1792, 1593
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 sprite-01
   rotate: false
-  xy: 1792, 1541
+  xy: 0, 1849
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 stick
   rotate: false
-  xy: 0, 1797
+  xy: 256, 1849
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 stone
   rotate: false
-  xy: 916, 315
+  xy: 791, 317
   size: 209, 156
   orig: 209, 156
   offset: 0, 0
   index: -1
 stone1
   rotate: false
-  xy: 745, 517
+  xy: 772, 529
   size: 232, 232
   orig: 232, 232
   offset: 0, 0
   index: -1
 stone2
   rotate: false
-  xy: 175, 517
+  xy: 205, 529
   size: 197, 211
   orig: 197, 211
   offset: 0, 0
   index: -1
 stone3
   rotate: false
-  xy: 0, 517
+  xy: 1707, 317
   size: 175, 205
   orig: 175, 205
   offset: 0, 0
   index: -1
 target
   rotate: false
-  xy: 1481, 66
+  xy: 1798, 66
   size: 122, 122
   orig: 122, 122
   offset: 0, 0
   index: -1
 tile
   rotate: false
-  xy: 256, 1797
+  xy: 512, 1849
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 tilled
   rotate: false
-  xy: 1689, 0
+  xy: 1703, 0
   size: 70, 63
   orig: 70, 63
   offset: 0, 0
   index: -1
 tipi
   rotate: false
-  xy: 1715, 315
+  xy: 1540, 317
   size: 167, 202
   orig: 167, 202
   offset: 0, 0
   index: -1
 torch-burning-01
   rotate: false
-  xy: 512, 1797
+  xy: 768, 1849
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 torch-burning-02
   rotate: false
-  xy: 768, 1797
+  xy: 1024, 1849
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 torch-burning-03
   rotate: false
-  xy: 1024, 1797
+  xy: 1280, 1849
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 torch-burning-04
   rotate: false
-  xy: 1280, 1797
+  xy: 1536, 1849
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 torch
   rotate: false
-  xy: 1536, 1797
+  xy: 1792, 1849
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 wall
   rotate: false
-  xy: 1759, 0
+  xy: 161, 0
   size: 19, 63
   orig: 19, 63
   offset: 0, 0
   index: -1
 wood
   rotate: false
-  xy: 1125, 315
+  xy: 1000, 317
   size: 209, 156
   orig: 209, 156
   offset: 0, 0
   index: -1
 wood1
   rotate: false
-  xy: 125, 315
+  xy: 0, 317
   size: 164, 153
   orig: 164, 153
   offset: 0, 0
   index: -1
 wood2
   rotate: false
-  xy: 527, 517
+  xy: 554, 529
   size: 218, 230
   orig: 218, 230
   offset: 0, 0
   index: -1
 wood3
   rotate: false
-  xy: 1510, 315
+  xy: 0, 529
   size: 205, 201
   orig: 205, 201
   offset: 0, 0
   index: -1
 wood4
   rotate: false
-  xy: 1334, 315
+  xy: 1364, 317
   size: 176, 187
   orig: 176, 187
   offset: 0, 0

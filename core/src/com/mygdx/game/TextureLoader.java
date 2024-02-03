@@ -23,6 +23,7 @@ public class TextureLoader {
         textureMap.put("armour-01", itemAtlas.findRegion("armour-01"));
         textureMap.put("dead", itemAtlas.findRegion("dead"));
         textureMap.put("hand-01", itemAtlas.findRegion("hand-01"));
+        textureMap.put("hand-02", itemAtlas.findRegion("hand-02"));
         textureMap.put("head-01", itemAtlas.findRegion("head-01"));
         textureMap.put("inv_shovel_bone", itemAtlas.findRegion("inv_shovel_bone"));
         textureMap.put("inv_hoe_bone", itemAtlas.findRegion("inv_hoe_bone"));
