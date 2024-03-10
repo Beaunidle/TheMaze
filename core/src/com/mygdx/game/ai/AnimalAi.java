@@ -58,34 +58,41 @@ public class AnimalAi extends BaseAi{
         return nightTime ? 10 : 30;
     }
 
-    public boolean moveToTarget(Sprite s, float stop, Vector2 target, boolean shouldBeVisible) {
-        if (target != null && (!shouldBeVisible || s.getViewCircle().contains(target))) {
+    public boolean moveToTarget(Sprite s, float stop, Vector2 target, boolean shouldBeVisible, boolean backaway) {
+        if (target != null) {
             //todo plan a fucking route
-            float dst = target.dst(s.getCentrePosition());
-            float deg = locator.getAngle(new Vector2(target).sub(s.getCentrePosition()));
-            //if angle is within a cone in front then move forward
-            if (-20 < (deg - s.getRotation())  && (deg - s.getRotation()) < 20) {
-                if (dst >= stop) {
-                    s.moveForward();
-                } else {
-                    return true;
-                }
-            } else {
-                s.stop();
-                int random = rand.nextInt(100);
-                if (random > 95) s.moveForward();
-            }
 
-            if (locator.locate(deg, s.getRotation()) < 0) {
-                s.setTurningAntiClockwise(true);
-                s.setTurningClcokwise(false);
-            } else if (locator.locate(deg, s.getRotation()) > -0) {
-                s.setTurningAntiClockwise(false);
-                s.setTurningClcokwise(true);
-            } else {
-                s.setTurningAntiClockwise(false);
-                s.setTurningClcokwise(false);
-                s.stop();
+            boolean wallInTheWay = locator.wallInbetween(s.getCentrePosition(), target, s.getView().getBlocks(), 0) == null;
+            if (!shouldBeVisible || (s.getViewCircle().contains(target) && !wallInTheWay)) {
+                float dst = target.dst(s.getCentrePosition());
+                float deg = locator.getAngle(new Vector2(target).sub(s.getCentrePosition()));
+                //if angle is within a cone in front then move forward
+                if (-20 < (deg - s.getRotation())  && (deg - s.getRotation()) < 20) {
+                    if (dst >= stop) {
+                        s.moveForward();
+                    } else if (dst < stop - 0.5 && backaway) {
+                        s.moveBackward();
+                        return true;
+                    } else {
+                        return true;
+                    }
+                } else {
+                    s.stop();
+                    int random = rand.nextInt(100);
+                    if (random > 95) s.moveForward();
+                }
+
+                if (locator.locate(deg, s.getRotation()) < 0) {
+                    s.setTurningAntiClockwise(true);
+                    s.setTurningClcokwise(false);
+                } else if (locator.locate(deg, s.getRotation()) > -0) {
+                    s.setTurningAntiClockwise(false);
+                    s.setTurningClcokwise(true);
+                } else {
+                    s.setTurningAntiClockwise(false);
+                    s.setTurningClcokwise(false);
+                    s.stop();
+                }
             }
         } else {
             s.setTarget(null);

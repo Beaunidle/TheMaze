@@ -31,7 +31,7 @@ public class Swingable extends Item {
             case SWORD:
                 damage = 3 + material.getBaseDamage();
                 setName("inv_sword");
-                setUseTime(0.30F);
+                setUseTime(0.20F);
                 setUseDelay(0.30F);
                 break;
             case HOE:

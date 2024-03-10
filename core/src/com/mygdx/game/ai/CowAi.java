@@ -22,7 +22,7 @@ public class CowAi extends AnimalAi {
 
         //chase mate
         if (s.getTargetSprite() != null) {
-            if (moveToTarget(s, 1F, s.getTargetSprite().getPosition(), true)) {
+            if (moveToTarget(s, 1F, s.getTargetSprite().getPosition(), true, true)) {
                 s.setIntent(Sprite.Intent.MATING);
                 return null;
             }
@@ -47,20 +47,20 @@ public class CowAi extends AnimalAi {
 
                 if (getTargetCoordinates() != null) {
                     Iterator<Vector2> iterator = getTargetCoordinates().iterator();
-                    if (iterator.hasNext() && moveToTarget(s, 0.2F, iterator.next(), true)) iterator.remove();
+                    if (iterator.hasNext() && moveToTarget(s, 0.2F, iterator.next(), true, true)) iterator.remove();
 
                     if (getTargetCoordinates().isEmpty()) {
                         s.setIntent(s.getState().equals(Sprite.State.THIRSTY) ? Sprite.Intent.DRINKING : Sprite.Intent.EATING);
                         setTargetCoordinates(null);
                     }
                     return null;
-                } else if (moveToTarget(s, 1.5F, s.getTarget(), true)) {
+                } else if (moveToTarget(s, 1.5F, s.getTarget(), true, true)) {
                     s.setIntent(s.getState().equals(Sprite.State.THIRSTY) ? Sprite.Intent.DRINKING : Sprite.Intent.EATING);
                     return null;
                 }
             } else if (s.getIntent().equals(Sprite.Intent.HOMEWARD)) {
                 s.setState(Sprite.State.MOVING);
-                if (moveToTarget(s, 4F, s.getTarget(), false)) {
+                if (moveToTarget(s, 4F, s.getTarget(), false, true)) {
                     s.setIntent(Sprite.Intent.SEARCHING);
                     s.setTarget(null);
                     setTargetCoordinates(null);
@@ -69,11 +69,11 @@ public class CowAi extends AnimalAi {
             }
         } else {
             if (s.getState().equals(Sprite.State.THIRSTY) && s.getLastWaterPos() != null) {
-                if (moveToTarget(s, 5F, s.getLastWaterPos(), false)) s.setIntent(Sprite.Intent.SEARCHING);
+                if (moveToTarget(s, 5F, s.getLastWaterPos(), false, true)) s.setIntent(Sprite.Intent.SEARCHING);
                 return null;
             }
             if (s.getState().equals(Sprite.State.HUNGRY) && s.getLastFoodPos() != null) {
-                if (moveToTarget(s, 5F, s.getLastFoodPos(), false)) s.setIntent(Sprite.Intent.SEARCHING);
+                if (moveToTarget(s, 5F, s.getLastFoodPos(), false, true)) s.setIntent(Sprite.Intent.SEARCHING);
                 return null;
             }
         }

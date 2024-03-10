@@ -3,12 +3,13 @@ package com.mygdx.game.model.pads;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Timer;
 import com.mygdx.game.model.moveable.Player;
+import com.mygdx.game.model.moveable.Sprite;
 
 import java.util.Random;
 
 public class BoostPad extends Pad {
 
-    private Player.Boost boost;
+    private Sprite.Effect boost;
     private Timer.Task chargeTimer;
 
 
@@ -24,12 +25,12 @@ public class BoostPad extends Pad {
         Timer.schedule(chargeTimer, 5);
     }
 
-    public Player.Boost getBoost() {
+    public Sprite.Effect getBoost() {
         return boost;
     }
 
-    public Player.Boost collectBoost() {
-        Player.Boost temp = boost;
+    public Sprite.Effect collectBoost() {
+        Sprite.Effect temp = boost;
         boost = null;
         chargeTimer = new Timer.Task() {
             @Override
@@ -46,16 +47,16 @@ public class BoostPad extends Pad {
         Random rand = new Random();
         switch (rand.nextInt(4)) {
             case 0:
-                boost = Player.Boost.HOMING;
+                boost = Sprite.Effect.HOMING;
                 break;
             case 1:
-                boost = Player.Boost.SPEED;
+                boost = Sprite.Effect.SPEED;
                 break;
             case 2:
-                boost = Player.Boost.SHIELD;
+                boost = Sprite.Effect.SHIELD;
                 break;
             case 3:
-                boost = Player.Boost.DAMAGE;
+                boost = Sprite.Effect.DAMAGE;
                 break;
         }
     }

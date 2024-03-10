@@ -74,7 +74,7 @@ public class Magic extends Item{
                 setName("fireball");
                 setUseTime(0.5F);
                 setUseDelay(0.5F);
-                manaRequired = 5;
+                manaRequired = 1;
                 break;
             case LIGHNINGBOLT:
                 break;
@@ -153,5 +153,9 @@ public class Magic extends Item{
 
     public Element getElement() {
         return element;
+    }
+
+    public boolean equals(Object o) {
+        return o instanceof Magic && ((Magic) o).getMagicType().equals(this.magicType);
     }
 }

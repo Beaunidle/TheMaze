@@ -10,21 +10,22 @@ import java.util.Random;
 public class AreaAffect extends Decoration {
 
     public enum AffectType {
-        EXPLOSION,LIGHTNING,DAMAGE
+        EXPLOSION,LIGHTNING,DAMAGE,FIREBITE
     }
 
     private Circle boundingCircle = new Circle();
     private boolean finished = false;
-    private float damage;
+    private final float damage;
+    private final float knockback;
     private final Timer.Task expireTimer = new Timer.Task() {
         @Override
         public void run() {
             finish();
         }
     };
-    private AffectType affectType;
-    private String spriteName;
-    private Animal.AnimalType animalType;
+    private final AffectType affectType;
+    private final String spriteName;
+    private final Animal.AnimalType animalType;
 
     public AreaAffect(Vector2 pos, String name, float radius, float expires, AffectType type, String spriteName, Animal.AnimalType animalType, float damage) {
         super(pos, name, radius, radius);
@@ -34,6 +35,11 @@ public class AreaAffect extends Decoration {
         this.spriteName = spriteName;
         this.animalType = animalType;
         this.damage = damage;
+        if (type.equals(AffectType.DAMAGE) || type.equals(AffectType.FIREBITE)) {
+            knockback = 5;
+        } else {
+            knockback = 0;
+        }
 //        if (animalType != null && animalType.equals(Animal.AnimalType.SPIDER)) System.out.println("Damage area from: " + name);
         Timer.schedule(expireTimer, expires);
     }
@@ -53,6 +59,10 @@ public class AreaAffect extends Decoration {
 
     public float getDamage() {
         return damage;
+    }
+
+    public float getKnockback() {
+        return knockback;
     }
 
     public AffectType getAffectType() {

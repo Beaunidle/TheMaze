@@ -10,6 +10,12 @@ public class Fillable extends Item {
         filled = false;
     }
 
+    public Fillable(Fillable fillable) {
+        super(fillable.getItemType(), fillable.getDurability());
+        setHoldable(fillable.isHoldable());
+        this.filled = fillable.isFilled();
+    }
+
     public boolean isFilled() {
         return filled;
     }

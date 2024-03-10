@@ -38,6 +38,11 @@ public class TextureLoader {
         textureMap.put("cow", itemAtlas.findRegion("cow"));
         textureMap.put("spider", itemAtlas.findRegion("spider"));
         textureMap.put("spider-hiding", itemAtlas.findRegion("spider-hiding"));
+        textureMap.put("firebeast-01", itemAtlas.findRegion("firebeast-01"));
+        textureMap.put("firebeast-02", itemAtlas.findRegion("firebeast-02"));
+        textureMap.put("firebeast-03", itemAtlas.findRegion("firebeast-03"));
+        textureMap.put("firebeast-04", itemAtlas.findRegion("firebeast-04"));
+        textureMap.put("firebeast-05", itemAtlas.findRegion("firebeast-05"));
         textureMap.put("explodingBlockRed", itemAtlas.findRegion("explodingBlockRed"));
         textureMap.put("explodingBlockYellow", itemAtlas.findRegion("explodingBlockYellow"));
         textureMap.put("rubbleBlock", itemAtlas.findRegion("rubbleBlock"));
@@ -52,6 +57,8 @@ public class TextureLoader {
         textureMap.put("block", itemAtlas.findRegion("block"));
         textureMap.put("house", itemAtlas.findRegion("block"));
         textureMap.put("tipi", itemAtlas.findRegion("tipi"));
+        textureMap.put("dungeon-01", itemAtlas.findRegion("dungeon-01"));
+        textureMap.put("dungeon-02", itemAtlas.findRegion("dungeon-02"));
         textureMap.put("coal", itemAtlas.findRegion("coal"));
         textureMap.put("coal1", itemAtlas.findRegion("coal1"));
         textureMap.put("coal2", itemAtlas.findRegion("coal2"));
@@ -64,6 +71,10 @@ public class TextureLoader {
         textureMap.put("wood2", itemAtlas.findRegion("wood2"));
         textureMap.put("wood3", itemAtlas.findRegion("wood3"));
         textureMap.put("wood4", itemAtlas.findRegion("wood4"));
+        textureMap.put("firestone-01", itemAtlas.findRegion("firestone-01"));
+        textureMap.put("firestone-02", itemAtlas.findRegion("firestone-02"));
+        textureMap.put("firestone-03", itemAtlas.findRegion("firestone-03"));
+        textureMap.put("firestone-04", itemAtlas.findRegion("firestone-04"));
         textureMap.put("body-cow", itemAtlas.findRegion("body_cow"));
         textureMap.put("body-spider", itemAtlas.findRegion("body-spider"));
         textureMap.put("meat", itemAtlas.findRegion("meat"));
@@ -80,6 +91,19 @@ public class TextureLoader {
         textureMap.put("flint", itemAtlas.findRegion("flint"));
         textureMap.put("bed", itemAtlas.findRegion("bed"));
         textureMap.put("tile", itemAtlas.findRegion("tile"));
+        textureMap.put("dungeontile-01", itemAtlas.findRegion("dungeontile-01"));
+        textureMap.put("dungeontile-02", itemAtlas.findRegion("dungeontile-02"));
+        textureMap.put("firetile-01", itemAtlas.findRegion("firetile-01"));
+        textureMap.put("firetile-02", itemAtlas.findRegion("firetile-02"));
+        textureMap.put("fireCircle-01", itemAtlas.findRegion("fireCircle-01"));
+        textureMap.put("fireCircle-02", itemAtlas.findRegion("fireCircle-02"));
+        textureMap.put("fireCircle-03", itemAtlas.findRegion("fireCircle-03"));
+        textureMap.put("fireCircle-04", itemAtlas.findRegion("fireCircle-04"));
+        textureMap.put("statue-01", itemAtlas.findRegion("statue-01"));
+        textureMap.put("buttonTile-01-active", itemAtlas.findRegion("buttonTile-01-active"));
+        textureMap.put("buttonTile-01-inactive", itemAtlas.findRegion("buttonTile-01-inactive"));
+
+
         textureMap.put("floor", itemAtlas.findRegion("floor"));
         textureMap.put("floor2", itemAtlas.findRegion("floor2"));
         textureMap.put("floor3", itemAtlas.findRegion("floor3"));

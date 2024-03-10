@@ -13,7 +13,7 @@ import java.util.List;
 public class Block extends GameObject {
 
     public enum BlockType {
-        ENVIRONMENT,FILLABLE,GROWER,TILLED,WALL,BED,EXPLODABLE,BUILDING
+        ENVIRONMENT,FILLABLE,GROWER,TILLED,WALL,BED,EXPLODABLE,BUILDING,STATUE
     }
     static final float SIZE = 1f;
 
@@ -94,7 +94,7 @@ public class Block extends GameObject {
         if (durability < 0) {
             durability = 0;
         }
-        if (durability <= 0) System.out.println("Hiiiii");
+//        if (durability <= 0) System.out.println("Hiiiii");
     }
 
     public void increaseDurability(double hit) {

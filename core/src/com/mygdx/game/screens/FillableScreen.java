@@ -28,6 +28,7 @@ import com.mygdx.game.model.Inventory;
 import com.mygdx.game.model.World;
 import com.mygdx.game.model.environment.blocks.EnvironmentBlock;
 import com.mygdx.game.model.environment.blocks.FillableBlock;
+import com.mygdx.game.model.items.Consumable;
 import com.mygdx.game.model.items.Fillable;
 import com.mygdx.game.model.items.Item;
 import com.mygdx.game.model.items.Material;
@@ -120,13 +121,13 @@ public class FillableScreen extends InventoryScreen {
         }
 
         if (inventoryButtons.contains(selectedButton)) {
-            System.out.println("here inv");
+//            System.out.println("here inv");
             if (selectedButton.getItem() instanceof Material) {
 
                 Material material = (Material) selectedButton.getItem();
                 boolean campfire = fillableToShow.getFillableType().equals(FillableBlock.FillableType.CAMPFIRE);
                 if (!campfire || (material.getType().equals(Material.Type.WOOD) || material.getType().equals(Material.Type.MEAT))) {
-                    int filled = fillableToShow.getInput().addInventory(new Material(material));
+                    int filled = fillableToShow.getInput().addInventory(material);
                     if (filled > 0) {
                         getInventory().removeMaterial(material);
                         fillButton(selectedButton, null);
@@ -135,23 +136,23 @@ public class FillableScreen extends InventoryScreen {
             }
         }
         if (inputButtons.contains(selectedButton)) {
-            System.out.println("here input");
+//            System.out.println("here input");
             if (selectedButton.getItem() instanceof Material) {
                 Material material = (Material) selectedButton.getItem();
-                if (material.getType().equals(Material.Type.WOOD) || material.getType().equals(Material.Type.MEAT)) {
-                    int filled = getInventory().addInventory(new Material(material));
+//                if (material.getType().equals(Material.Type.WOOD) || material.getType().equals(Material.Type.MEAT)) {
+                    int filled = getInventory().addInventory(material);
                     if (filled > 0) {
                         fillableToShow.getInput().removeMaterial(material);
                         fillButton(selectedButton, null);
                     }
-                }
+//                }
             }
         }
         if (outputButtons.contains(selectedButton)) {
-            System.out.println("here here output");
+//            System.out.println("here here output");
             if (selectedButton.getItem() instanceof Material) {
                 Material material = (Material) selectedButton.getItem();
-                int filled = getInventory().addInventory(new Material(material));
+                int filled = getInventory().addInventory(material instanceof Consumable ? new Consumable(((Consumable) material).getConsumableType(), material.getQuantity()): new Material(material));
                 if (filled > 0) {
                     fillableToShow.getOutput().removeMaterial(material);
                     fillButton(selectedButton, null);

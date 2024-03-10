@@ -207,7 +207,7 @@ public class InventoryScreen extends ScreenAdapter implements InputProcessor {
                     Item item = (Item)inventoryObject;
                     button.setItem(item);
                     if (item instanceof Fillable && ((Fillable) item).isFilled()) {
-                        setButtonImage(button, "inv_full", selectable);
+                        setButtonImage(button, "inv_jarFull", selectable);
                     } else {
                         setButtonImage(button, item.getName(), selectable);
                     }
@@ -244,7 +244,7 @@ public class InventoryScreen extends ScreenAdapter implements InputProcessor {
                     Item item = (Item)inventoryObject;
                     button.setItem(item);
                     if (item instanceof Fillable && ((Fillable) item).isFilled()) {
-                        setButtonImage(button, "inv_full", selectable);
+                        setButtonImage(button, "inv_jarFull", selectable);
                     } else {
                         setButtonImage(button, item.getName(), selectable);
                     }
@@ -816,7 +816,7 @@ public class InventoryScreen extends ScreenAdapter implements InputProcessor {
                 Item item = (Item)inventoryObject;
                 button.setItem(item);
                 if (item instanceof Fillable && ((Fillable) item).isFilled()) {
-                    setButtonImage(button, "inv_full");
+                    setButtonImage(button, "inv_jarFull");
                 } else {
                     setButtonImage(button, item.getName());
                 }

@@ -3,12 +3,12 @@ package com.mygdx.game.model;
 public class Attributes {
 
     //todo map each attribute with the stats it increases and the activities that increase it. Start with Health
-    private float strength, vitality, adeptness, ruggedness, agility, dexterity, luck, will, intelligence, perception;
+    private float strength, vitality, aptitude, ruggedness, agility, dexterity, luck, will, intelligence, perception;
 
-    public Attributes(float vitality, float adeptness) {
+    public Attributes(float vitality, float aptitude) {
         this.strength = 1;
         this.vitality = vitality;
-        this.adeptness = adeptness;
+        this.aptitude = aptitude;
         this.ruggedness = 0.5F;
         this.agility = 1;
         this.dexterity = 1;
@@ -26,8 +26,8 @@ public class Attributes {
         System.out.println("Vitality is now " + vitality);
         System.out.println("Max health is: " + getMaxHealth());
     }
-    public void increaseAdeptness(float buff) {
-        adeptness += buff;
+    public void increaseAptitude(float buff) {
+        aptitude += buff;
     }
     public void increaseRuggedness(float buff) {
         ruggedness += buff;
@@ -57,12 +57,12 @@ public class Attributes {
     //determined by vitality and ruggedness
     public float getHealing() {
 //        System.out.println("Healing by: " + (ruggedness/4 + vitality/20));
-        return ruggedness/4 + vitality/20;
+        return ruggedness/4 + vitality/100;
     }
 
-    //determined by adeptness, will and intelligence
+    //determined by aptitude, will and intelligence
     public float getMaxMana() {
-        return adeptness;
+        return aptitude;
     }
     //determined by strength, agility and intelligence
     public float getHitPower() {

@@ -52,21 +52,23 @@ public class FillableBlock extends Block {
         this.recipeHolder = recipeHolder;
         setBlockType(Block.BlockType.FILLABLE);
 
-        recipes.addAll(recipeHolder.getRecipes(type));
+        if (recipeHolder != null) recipes.addAll(recipeHolder.getRecipes(type));
         switch (type) {
             case CAMPFIRE:
                 this.input = new Inventory(6);
                 this.output = new Inventory(6);
-                recipeSelect = false;
+                recipeSelect = true;
                 break;
             case BENCHHEALER:
             case STONEANVIL:
-                recipeSelect = true;
+                recipeSelect = false;
                 break;
             case TORCH:
+                toggleActive();
                 break;
             case CHEST:
                 this.input = new Inventory(20);
+                recipeSelect = true;
                 break;
         }
     }
@@ -117,11 +119,10 @@ public class FillableBlock extends Block {
     }
 
     public void startNewCycle() {
-        if (!recipeSelect) {
             //todo write method to select recipe for automatic bench. Maybe iterate through them all, in which case find an order
             Recipe recipe = recipes.get(0);
             if (materialToCook != null) {
-                output.addInventory(new Material(materialToCook));
+                output.addInventory(materialToCook instanceof Consumable ? new Consumable(((Consumable) materialToCook).getConsumableType(), materialToCook.getQuantity()) : new Material(materialToCook));
                 materialToCook = null;
             }
             if (input.checkMaterial(new Material(Material.Type.WOOD, 1))) {
@@ -148,7 +149,6 @@ public class FillableBlock extends Block {
                 toggleActive();
                 stopActiveTimer();
             }
-        }
     }
 
     public boolean isRecipeSelect() {

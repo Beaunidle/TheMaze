@@ -23,7 +23,7 @@ public class Throwable extends Item {
             case SPEAR:
                 setName("spear");
                 setUseDelay(0.5F);
-                setMaxPerStack(1);
+                setMaxPerStack(20);
                 break;
         }
     }

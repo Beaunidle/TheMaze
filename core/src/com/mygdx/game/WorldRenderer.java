@@ -26,6 +26,7 @@ import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.ai.CowAi;
+import com.mygdx.game.ai.FireBeast5Ai;
 import com.mygdx.game.model.Inventory;
 import com.mygdx.game.model.Recipe;
 import com.mygdx.game.model.environment.AnimalSpawn;
@@ -34,6 +35,7 @@ import com.mygdx.game.model.environment.blocks.Building;
 import com.mygdx.game.model.environment.blocks.EnvironmentBlock;
 import com.mygdx.game.model.environment.blocks.FillableBlock;
 import com.mygdx.game.model.environment.blocks.Grower;
+import com.mygdx.game.model.environment.blocks.Statue;
 import com.mygdx.game.model.environment.blocks.Wall;
 import com.mygdx.game.model.items.Fillable;
 import com.mygdx.game.model.items.Consumable;
@@ -59,6 +61,7 @@ import com.mygdx.game.model.pads.Pad;
 import com.mygdx.game.model.moveable.Player;
 import com.mygdx.game.model.World;
 import com.mygdx.game.utils.JoyStick;
+import com.mygdx.game.utils.Locator;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -102,8 +105,9 @@ public class WorldRenderer {
 
     private final SpriteBatch spriteBatch;
     private final boolean debug;
+    private Locator locator;
 
-    public WorldRenderer(World world, SpriteBatch spriteBatch, boolean debug, BitmapFont font, TextureLoader textureLoader) {
+    public WorldRenderer(World world, SpriteBatch spriteBatch, boolean debug, BitmapFont font, TextureLoader textureLoader, Locator locator) {
         this.world = world;
         this.textureLoader = textureLoader;
 
@@ -122,6 +126,7 @@ public class WorldRenderer {
         loadTextures();
         this.font = font;
         font.setColor(Color.BLACK);
+        this.locator = locator;
     }
 
     private void loadTextures() {
@@ -204,25 +209,33 @@ public class WorldRenderer {
         this.textCamera.update();
         spriteBatch.begin();
 //        spriteBatch.enableBlending();
+        boolean inDungeon = (bob.isInHouse() && world.getLevel().getBuildings().get(bob.getHouseNumber()).getBuildingType().equals(Building.BuildingType.DUNGEON));
         if (bob.isInHouse()) {
-            this.cam.position.x = 1000 * bob.getHouseNumber() + 5;
-            this.cam.position.y = 1000 * bob.getHouseNumber() + 5;
-            drawHouseBlocks(world.getLevel().getBuildings().get(bob.getHouseNumber()));
+            Building building = world.getLevel().getBuildings().get(bob.getHouseNumber());
+            this.cam.position.x = bob.getPosition().x;
+            this.cam.position.y = bob.getPosition().y;
+            drawHouseBlocks(building);
+            drawFloorPads(building);
+            drawStatues(building);
+            drawAreaAffects();
+            drawAnimals(inDungeon);
+            drawProjectiles();
         } else {
             drawFloor();
             drawBlocks();
             drawBoostPads();
             drawGunPads();
-            drawFloorPads();
+            drawFloorPads(null);
             drawBloodStains();
             drawAreaAffects();
             drawProjectiles();
-            drawAnimals();
+            drawAnimals(inDungeon);
             drawAis();
         }
         TextureRegion holdingFrame = drawBob();
-        if (world.isNightTime() || world.isDuskTillDawn()) {
-            drawDark(bob);
+        boolean drawDark = world.isNightTime() || world.isDuskTillDawn() || inDungeon;
+        if (drawDark) {
+            drawDark(bob, inDungeon);
         }
         drawHUD(bob, holdingFrame);
         if (world.getMoveJoystick() != null) drawJoystick(world.getMoveJoystick());
@@ -266,7 +279,7 @@ public class WorldRenderer {
         for (int i = building.getNumber() * 1000; i < building.getNumber() * 1000 + building.getInternalWidth(); i++) {
             for (int j = building.getNumber() * 1000; j < building.getNumber() * 1000 + building.getInternalHeight(); j++) {
                 //todo add tile texture
-                spriteBatch.draw(textureLoader.getRegion("tile"), i, j, Block.getSIZE(), Block.getSIZE());
+                spriteBatch.draw(textureLoader.getRegion(building.getBuildingType().equals(Building.BuildingType.DUNGEON) ? "dungeontile-01" : "tile"), i, j, Block.getSIZE(), Block.getSIZE());
             }
         }
         for(Block block : world.getDrawableHouseBlocks()) {
@@ -274,6 +287,12 @@ public class WorldRenderer {
                 spriteBatch.draw(textureLoader.getRegion(block.getName()), block.getPosition().x, block.getPosition().y, Block.getSIZE(), Block.getSIZE());
             } else {
                 switch (block.getBlockType()) {
+                    case ENVIRONMENT:
+                        Material material = ((EnvironmentBlock) block).getMaterial();
+                        if (block.getDurability() > 0 ) {
+                            spriteBatch.draw(textureLoader.getRegion(block.getName()), block.getPosition().x, block.getPosition().y, block.getBounds().getBoundingRectangle().width, block.getBounds().getBoundingRectangle().height);
+                        }
+                        break;
                     case WALL:
                         for (float rotation : ((Wall) block).getWalls().keySet()) {
                             Wall.WallType wall = ((Wall) block).getWalls().get(rotation);
@@ -284,18 +303,19 @@ public class WorldRenderer {
                         }
                         break;
                     case FILLABLE:
+                    case STATUE:
                         Polygon polygon = block.getBounds();
                         float rotation = polygon.getRotation();
                         Rectangle rectangle = polygon.getBoundingRectangle();
                         if (rotation == 90 || rotation == 270) {
-                            spriteBatch.draw(textureLoader.getRegion(block.getName()), polygon.getX(), polygon.getY(), polygon.getOriginX(), polygon.getOriginY(), polygon.getBoundingRectangle().height, polygon.getBoundingRectangle().width, 1F, 1F, rotation);
+                            spriteBatch.draw(textureLoader.getRegion(block.getName()), polygon.getX(), polygon.getY(), polygon.getOriginX(), polygon.getOriginY(), rectangle.height, rectangle.width, 1F, 1F, rotation);
                         }
                         else {
                             spriteBatch.draw(textureLoader.getRegion(block.getName()), polygon.getX(), polygon.getY(), polygon.getOriginX(), polygon.getOriginY(), polygon.getBoundingRectangle().width, polygon.getBoundingRectangle().height, 1F, 1F, rotation);
                         }
                         break;
                     default:
-                        spriteBatch.draw(textureLoader.getRegion(block.getName()), block.getPosition().x, block.getPosition().y, Block.getSIZE(), Block.getSIZE());
+                        spriteBatch.draw(textureLoader.getRegion(block.getName()), block.getPosition().x, block.getPosition().y, block.getBounds().getBoundingRectangle().width, block.getBounds().getBoundingRectangle().height);
                         break;
                 }
             }
@@ -310,94 +330,138 @@ public class WorldRenderer {
         }
     }
 
-    private void drawDark(Player player) {
+    private void drawDark(Player player, boolean inDungeon) {
         //todo make this a separate method getFires()
-        List<Block> campfires = populateCampfires(new ArrayList<>());
+        Building building = inDungeon ? world.getLevel().getBuildings().get(player.getHouseNumber()) : null;
+        List<Block> campfires = populateCampfires(new ArrayList<>(), building);
         List<Projectile> fireballs = populateProjectiles(new ArrayList<>());
         List<Sprite> burningSprites = populateBurningSprites(new ArrayList<>());
         List<AreaAffect> lightingAreas = populateAreaAffects(new ArrayList<>());
-
+        if (inDungeon) {
+            for (int i = building.getNumber() * 1000; i < building.getNumber() * 1000 + building.getInternalWidth(); i++) {
+                for (int j = building.getNumber() * 1000; j < building.getNumber() * 1000 + building.getInternalHeight(); j++) {
+                    //todo add tile texture
+//                    Vector2 tileCentre = new Vector2(i+0.5F, j+0.5F);
+//                    Circle shieldCircle = player.getShieldCircle();
+//                    boolean holdingFire = player.isHoldingFire();
+//                    boolean missFire = holdingFire && shieldCircle.contains(tileCentre);
+//                    boolean nearMissFire = !missFire && (holdingFire && new Circle(shieldCircle.x, shieldCircle.y, shieldCircle.radius + 2).contains(tileCentre));
+//                    if (!nearMissFire && !missFire && !holdingFire && new Circle(shieldCircle.x, shieldCircle.y, 2).contains(tileCentre)) nearMissFire = true;
+//
+//                    if(!missFire) {
+//                        Color color = spriteBatch.getColor();
+//                        float oldAlpha = color.a;
+//                        if (nearMissFire) {
+//                            color.a = -0.65F;
+//                        } else {
+//                            color.a =  0.85f;
+//                        }
+//                        spriteBatch.setColor(color);
+//                        spriteBatch.draw(textureLoader.getRegion("dark"), i, j, Block.getSIZE(), Block.getSIZE());
+//                        color.a = oldAlpha;
+//                        spriteBatch.setColor(color);
+//                    }
+                    drawDarkIfInView(player, i, j, campfires, fireballs, burningSprites, lightingAreas, building, true);
+                }
+            }
+        }
         for (int i = 0; i < world.getLevel().getWidth(); i++) {
             for (int j = 0; j < world.getLevel().getHeight(); j++) {
-
-                if (inView(new Vector2(i, j))) {
-                    //todo make separate effort, passing circle and i and j
-                    Vector2 tileCentre = new Vector2(i+0.5F, j+0.5F);
-                    Circle shieldCircle = player.getShieldCircle();
-                    boolean holdingFire = player.isHoldingFire();
-                    boolean missFire = holdingFire && shieldCircle.contains(tileCentre);
-                    boolean nearMissFire = !missFire && (holdingFire && new Circle(shieldCircle.x, shieldCircle.y, shieldCircle.radius + 2).contains(tileCentre));
-                    if (!nearMissFire && !missFire && !holdingFire && new Circle(shieldCircle.x, shieldCircle.y, 2).contains(tileCentre)) nearMissFire = true;
-
-                    if (!missFire) {
-                        for (Block block : campfires) {
-                            if (new Circle(block.getPosition().x, block.getPosition().y, 7).contains(tileCentre)) {
-                                missFire = true;
-                                break;
-                            } else if (new Circle(block.getPosition().x, block.getPosition().y, 9).contains(tileCentre)) {
-                                nearMissFire = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (!missFire) {
-                        for (Projectile fireball : fireballs) {
-                            if (new Circle(fireball.getPosition().x, fireball.getPosition().y, 5).contains(tileCentre)) {
-                                missFire = true;
-                                break;
-                            }else if (new Circle(fireball.getPosition().x, fireball.getPosition().y, 7).contains(tileCentre)) {
-                                nearMissFire = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (!missFire) {
-                        for (Sprite sprite : burningSprites) {
-                            if (new Circle(sprite.getPosition().x, sprite.getPosition().y, 5).contains(tileCentre)) {
-                                missFire = true;
-                                break;
-                            }else if (new Circle(sprite.getPosition().x, sprite.getPosition().y, 7).contains(tileCentre)) {
-                                nearMissFire = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (!missFire) {
-                        for (AreaAffect areaAffect : lightingAreas) {
-                            if (areaAffect.getBoundingCircle().contains(tileCentre)) {
-                                missFire = true;
-                                break;
-                            }else if (areaAffect.getBoundingCircle().contains(tileCentre)) {
-                                nearMissFire = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if(!missFire) {
-                        Color color = spriteBatch.getColor();
-                        float oldAlpha = color.a;
-                        if (nearMissFire) {
-                            color.a = -0.65F;
-                        } else {
-                            color.a = world.isNightTime() ? 0.85f : 0.65F;
-                        }
-                        spriteBatch.setColor(color);
-                        spriteBatch.draw(textureLoader.getRegion("dark"), i, j, Block.getSIZE(), Block.getSIZE());
-                        color.a = oldAlpha;
-                        spriteBatch.setColor(color);
-                    }
-                }
+                drawDarkIfInView(player, i, j, campfires, fireballs, burningSprites, lightingAreas, null, false);
             }
         }
     }
 
-    public List<Block> populateCampfires(List<Block> campfires) {
-        for (Block block : world.getDrawableBlocks((int) CAMERA_WIDTH, (int)CAMERA_HEIGHT)) {
-            if (block instanceof FillableBlock &&
-                    (((FillableBlock) block).getFillableType().equals(FillableBlock.FillableType.CAMPFIRE) || ((FillableBlock) block).getFillableType().equals(FillableBlock.FillableType.TORCH))
-                    && ((FillableBlock) block).isActive()) {
-                campfires.add((block));
+    public void drawDarkIfInView(Player player, int i, int j, List<Block> campfires, List<Projectile> fireballs, List<Sprite> burningSprites,
+                                 List<AreaAffect> lightingAreas, Building building, boolean inDungeon) {
+        if (inView(new Vector2(i, j))) {
+            //todo make separate effort, passing circle and i and j
+            Vector2 tileCentre = new Vector2(i+0.5F, j+0.5F);
+            Circle shieldCircle = player.getShieldCircle();
+            boolean holdingFire = player.isHoldingFire();
+            boolean missFire = holdingFire && shieldCircle.contains(tileCentre);
+            boolean nearMissFire = !missFire && (holdingFire && new Circle(shieldCircle.x, shieldCircle.y, shieldCircle.radius + 2).contains(tileCentre));
+            if (!nearMissFire && !missFire && !holdingFire && new Circle(shieldCircle.x, shieldCircle.y, 2).contains(tileCentre)) nearMissFire = true;
+
+            if (!missFire) {
+                for (Block block : campfires) {
+                    //todo add wallinbetween method so walls block light
+//                    if (locator.wallInbetween(tileCentre, block.getPosition(), building.getBlocks(), building.getNumber()*1000) == null) break;
+                    if (new Circle(block.getPosition().x, block.getPosition().y, 7).contains(tileCentre)) {
+                        missFire = true;
+                        break;
+                    } else if (new Circle(block.getPosition().x, block.getPosition().y, 9).contains(tileCentre)) {
+                        nearMissFire = true;
+                        break;
+                    }
+                }
+            }
+            if (!missFire) {
+                for (Projectile fireball : fireballs) {
+                    if (new Circle(fireball.getPosition().x, fireball.getPosition().y, 5).contains(tileCentre)) {
+                        missFire = true;
+                        break;
+                    }else if (new Circle(fireball.getPosition().x, fireball.getPosition().y, 7).contains(tileCentre)) {
+                        nearMissFire = true;
+                        break;
+                    }
+                }
+            }
+            if (!missFire) {
+                for (Sprite sprite : burningSprites) {
+                    if (new Circle(sprite.getPosition().x, sprite.getPosition().y, 5).contains(tileCentre)) {
+                        missFire = true;
+                        break;
+                    }else if (new Circle(sprite.getPosition().x, sprite.getPosition().y, 7).contains(tileCentre)) {
+                        nearMissFire = true;
+                        break;
+                    }
+                }
+            }
+            if (!missFire) {
+                for (AreaAffect areaAffect : lightingAreas) {
+                    if (areaAffect.getBoundingCircle().contains(tileCentre)) {
+                        missFire = true;
+                        break;
+                    }else if (areaAffect.getBoundingCircle().contains(tileCentre)) {
+                        nearMissFire = true;
+                        break;
+                    }
+                }
+            }
+
+            if(!missFire) {
+                Color color = spriteBatch.getColor();
+                float oldAlpha = color.a;
+                if (nearMissFire) {
+                    color.a = -0.65F;
+                } else {
+                    color.a = world.isNightTime() || inDungeon ? 0.85f : 0.65F;
+                }
+                spriteBatch.setColor(color);
+                spriteBatch.draw(textureLoader.getRegion("dark"), i, j, Block.getSIZE(), Block.getSIZE());
+                color.a = oldAlpha;
+                spriteBatch.setColor(color);
+            }
+        }
+    }
+
+    public List<Block> populateCampfires(List<Block> campfires, Building building) {
+        if (building != null) {
+            for (Block block : world.getDrawableHouseBlocks()) {
+                if (block instanceof FillableBlock &&
+                        (((FillableBlock) block).getFillableType().equals(FillableBlock.FillableType.CAMPFIRE) || ((FillableBlock) block).getFillableType().equals(FillableBlock.FillableType.TORCH))
+                        && ((FillableBlock) block).isActive()) {
+                    campfires.add((block));
+                }
+            }
+        } else {
+            for (Block block : world.getDrawableBlocks((int) CAMERA_WIDTH, (int)CAMERA_HEIGHT)) {
+                if (block instanceof FillableBlock &&
+                        (((FillableBlock) block).getFillableType().equals(FillableBlock.FillableType.CAMPFIRE) || ((FillableBlock) block).getFillableType().equals(FillableBlock.FillableType.TORCH))
+                        && ((FillableBlock) block).isActive()) {
+                    campfires.add((block));
+                }
             }
         }
         return campfires;
@@ -459,6 +523,7 @@ public class WorldRenderer {
                 case BED:
                 case FILLABLE:
                 case BUILDING:
+                case STATUE:
                     Polygon polygon = block.getBounds();
                     float rotation = polygon.getRotation();
                     Rectangle rectangle = polygon.getBoundingRectangle();
@@ -502,8 +567,9 @@ public class WorldRenderer {
         return new Circle(world.getBob().getCentrePosition().x, world.getBob().getCentrePosition().y, 25).contains(target);
     }
 
-    private void drawFloorPads() {
-        for (FloorPad floorPad : world.getLevel().getFloorPads()) {
+    private void drawFloorPads(Building building) {
+        List<FloorPad> floorPadsToDraw = building != null ? building.getFloorPads() : world.getLevel().getFloorPads();
+        for (FloorPad floorPad : floorPadsToDraw) {
             if (inView(floorPad.getPosition())) {
                 TextureRegion floorFrame = textureLoader.getRegion(floorPad.getName());
                 if (floorFrame != null) {
@@ -521,6 +587,26 @@ public class WorldRenderer {
         }
     }
 
+    private void drawStatues(Building building) {
+        List<Statue> statuesToDraw = building != null ? building.getStatues() : new ArrayList<>();
+        for (Statue statue : statuesToDraw) {
+            if (inView(statue.getPosition())) {
+                TextureRegion statueFrame = textureLoader.getRegion(statue.getName());
+                if (statueFrame != null) {
+                    Polygon polygon = statue.getBounds();
+                    float rotation = polygon.getRotation();
+                    Rectangle rectangle = polygon.getBoundingRectangle();
+                    if (rotation == 90 || rotation == 270) {
+                        spriteBatch.draw(statueFrame, polygon.getX(), polygon.getY(), polygon.getOriginX(), polygon.getOriginY(), rectangle.height, rectangle.width, 1F, 1F, rotation);
+                    }
+                    else {
+                        spriteBatch.draw(statueFrame, polygon.getX(), polygon.getY(), polygon.getOriginX(), polygon.getOriginY(), rectangle.width, rectangle.height, 1F, 1F, rotation);
+                    }
+                }
+            }
+        }
+    }
+
     private void drawBloodStains() {
         for (BloodStain bloodStain : world.getBloodStains()) {
             if (inView(bloodStain.getPosition())) {
@@ -532,7 +618,7 @@ public class WorldRenderer {
 
     private void drawAreaAffects() {
         for (AreaAffect areaAffect : world.getAreaAffects()) {
-            if (inView(areaAffect.getPosition())) {
+            if (!areaAffect.getName().isEmpty() && inView(areaAffect.getPosition())) {
                 if (!areaAffect.isFinished() && !areaAffect.getAffectType().equals(AreaAffect.AffectType.DAMAGE)) {
                     spriteBatch.draw(textureLoader.getRegion(areaAffect.getName()), areaAffect.getPosition().x - areaAffect.getWidth()/2, areaAffect.getPosition().y - areaAffect.getHeight()/2,areaAffect.getWidth()/2, areaAffect.getHeight()/2, areaAffect.getWidth(), areaAffect.getHeight(), 1F, 1F, 0, true);
                 }
@@ -599,7 +685,7 @@ public class WorldRenderer {
     private void drawHandItem(Player sprite, float rotation, Vector2 gridRef, float width, float height, TextureRegion textureToDraw) {
 //        Vector2 drawVector = getDrawVector(sprite, rotation, gridRef);
         Vector2 drawVector = new Vector2(sprite.getHitCircle().x, sprite.getHitCircle().y);
-        spriteBatch.draw(textureToDraw, drawVector.x, drawVector.y,0, 0, 1.5F, 1.5F, 1F, 1F, rotation);
+        spriteBatch.draw(textureToDraw, drawVector.x, drawVector.y,0, 0, width, height, 1F, 1F, rotation);
     }
 
     private void drawTargetCircle(Vector2 gridRef, float width, float height, TextureRegion textureToDraw) {
@@ -878,8 +964,8 @@ public class WorldRenderer {
                                 Swingable swingable = (Swingable) item;
                                 switch (swingable.getSwingableType()) {
                                     default:
-                                        itemWidth = bob.getWidth();
-                                        itemHeight = bob.getHeight();
+                                        itemWidth = 1.5F;
+                                        itemHeight = 1.5F;
                                         break;
                                 }
                                 break;
@@ -970,7 +1056,7 @@ public class WorldRenderer {
             }
         }
 
-        if (!bob.getBoost().equals(Player.Boost.NOTHING)) {
+        if (!bob.getBoost().equals(Sprite.Effect.NOTHING)) {
             TextureRegion boostFrame = null;
 
             switch (bob.getBoost()) {
@@ -1042,9 +1128,9 @@ public class WorldRenderer {
                             1, 1, aiPlayer.getRotation(), true);
                 }
 
-                if (!aiPlayer.getBoost().equals(Player.Boost.NOTHING)) {
+                if (!aiPlayer.getBoost().equals(Sprite.Effect.NOTHING)) {
 
-                    if (aiPlayer.getBoost() == Player.Boost.SHIELD) {
+                    if (aiPlayer.getBoost() == Sprite.Effect.SHIELD) {
                         TextureRegion shieldFrame = (shieldAnimation.getKeyFrame(aiPlayer.getStateTime(), true));
                         Circle circle = aiPlayer.getShieldCircle();
                         spriteBatch.draw(shieldFrame, circle.x - circle.radius / 2, circle.y - circle.radius / 2, 1, 1, 2F, 2, 2.00F, 2.00F, 0);
@@ -1086,40 +1172,31 @@ public class WorldRenderer {
         }
     }
 
-    private void drawAnimals() {
-        for (Animal animal : world.getAnimals()) {
-            if (inView(animal.getCentrePosition())) {
+    private void drawAnimals(boolean inDungeon) {
+        List<? extends Sprite> animals = inDungeon ? world.getLevel().getBuildings().get(world.getBob().getHouseNumber()).getSprites() : world.getAnimals();
+        for (Sprite sprite : animals) {
+            Animal animal = (Animal) sprite;
+            if (inView(sprite.getCentrePosition())) {
                 //draw the lives
-                Vector2 livesPos = animal.getCentrePosition();
+                Vector2 centrePos = animal.getCentrePosition();
 
 ////            if (animal.getLives() < animal.getMaxLives()) {
                 for (float i = 0; i < animal.getLives(); i++) {
-                    float xPos = livesPos.x - (i/5);
-                    float yPos = livesPos.y;
+                    float xPos = centrePos.x - (i/5);
+                    float yPos = centrePos.y;
                     spriteBatch.draw(textureLoader.getRegion("heart"), xPos, yPos, 1, 1, 0.2F, 0.2F, 0.5F, 0.5F, 0);
                 }
-////            }
-//            for (float i = 0; i < animal.getFood(); i++) {
-//                float xPos = livesPos.x - (i/2);
-//                float yPos = livesPos.y + 0.5F;
-//                spriteBatch.draw(textureLoader.getRegion("meat"), xPos, yPos, 1, 1, 1, 1, 0.5F, 0.5F, 0);
-//            }
-//            for (float i = 0; i < animal.getWater(); i++) {
-//                float xPos = livesPos.x - (i/2);
-//                float yPos = livesPos.y + 1;
-//                spriteBatch.draw(textureLoader.getRegion("inv_jarFull"), xPos, yPos, 1, 1, 1, 1, 0.5F, 0.5F, 0);
-//            }
 
-//            spriteBatch.setProjectionMatrix(textCamera.combined);
-//            font.setColor(Color.WHITE);
-//            if (world.getTime() != null) {
-//                font.draw(spriteBatch, animal.getName() + world.getTime(), textCamera.position.x + 180, textCamera.position.y + 135, 1, 1, true);
-//            }
-//            spriteBatch.setProjectionMatrix(cam.combined);
-                //draw the animal
-                spriteBatch.draw(textureLoader.getRegion(animal.getName()), animal.getPosition().x, animal.getPosition().y, animal.getWidth()/2, animal.getHeight()/2, animal.getWidth(), animal.getHeight(),
+                spriteBatch.draw(textureLoader.getRegion(sprite.getName()), animal.getPosition().x, animal.getPosition().y, animal.getWidth()/2, animal.getHeight()/2, animal.getWidth(), animal.getHeight(),
                         1, 1, animal.getRotation(), true);
 
+                if (animal.getAnimalType().equals(Animal.AnimalType.FIREBEAST5)) {
+                    FireBeast5Ai ai = (FireBeast5Ai) animal.getAi();
+                    if (animal.getHitPhase() > 0 && !ai.isSecondAttack()) {
+                        spriteBatch.draw(textureLoader.getRegion("fireCircle-01"), animal.getPosition().x - animal.getWidth()/2, animal.getPosition().y-animal.getHeight()/2
+                                ,1, 1, animal.getWidth()*2, animal.getHeight()*2, 1F, 1F, 0, true);
+                    }
+                }
                 if (animal.isOnfire()) {
                     //draw the animal flames
                     Random rand = new Random();

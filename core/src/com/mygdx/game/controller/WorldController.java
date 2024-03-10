@@ -2,9 +2,12 @@ package com.mygdx.game.controller;
 
 import static com.mygdx.game.model.environment.AreaAffect.AffectType.DAMAGE;
 import static com.mygdx.game.model.environment.AreaAffect.AffectType.EXPLOSION;
+import static com.mygdx.game.model.environment.AreaAffect.AffectType.FIREBITE;
 import static com.mygdx.game.model.environment.AreaAffect.AffectType.LIGHTNING;
 import static com.mygdx.game.model.items.Material.Type.CONSUMABLE;
+import static com.mygdx.game.model.items.Material.Type.FIRESTONE;
 import static com.mygdx.game.model.items.Material.Type.GRASS;
+import static com.mygdx.game.model.items.Swingable.SwingableType.PICK;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Game;
@@ -14,6 +17,7 @@ import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Timer;
 import com.mygdx.game.ai.CowAi;
+import com.mygdx.game.ai.FireBeast5Ai;
 import com.mygdx.game.model.GameObject;
 import com.mygdx.game.model.environment.AnimalSpawn;
 import com.mygdx.game.model.environment.Tilled;
@@ -22,6 +26,7 @@ import com.mygdx.game.model.environment.blocks.Building;
 import com.mygdx.game.model.environment.blocks.EnvironmentBlock;
 import com.mygdx.game.model.environment.blocks.FillableBlock;
 import com.mygdx.game.model.environment.blocks.Grower;
+import com.mygdx.game.model.environment.blocks.Statue;
 import com.mygdx.game.model.environment.blocks.Wall;
 import com.mygdx.game.model.items.Consumable;
 import com.mygdx.game.model.items.Fillable;
@@ -315,6 +320,7 @@ public class WorldController {
             baseTime = 0;
         }
 
+        boolean inDungeon = (bob.isInHouse() && world.getLevel().getBuildings().get(bob.getHouseNumber()).getBuildingType().equals(Building.BuildingType.DUNGEON));
         if (bob.getLives() <= 0) bob.setState(Sprite.State.DEAD);
         if (bob.getState().equals(Sprite.State.DEAD)) {
             processDeath(bob);
@@ -330,7 +336,7 @@ public class WorldController {
                     float damage = bob.getStrongHand() == null ? 1F : ((Swingable)bob.getStrongHand()).getDamage();
                     world.getAreaAffects().add(new AreaAffect(damageVector, "", bob.getHitCircle().radius, 0.1F, DAMAGE, bob.getName(), null, damage));
                 }
-                processInput();
+                processInput(inDungeon);
             }
         }
         for (AIPlayer aiPlayer : aiPlayers) {
@@ -355,166 +361,16 @@ public class WorldController {
 
             }
         }
-        ListIterator<Animal> animalIterator = world.getAnimals().listIterator();
-        while(animalIterator.hasNext()) {
-            Animal animal = animalIterator.next();
-            Vector2 pos = animal.getPosition();
-            if (pos.x < 5 || pos.x > 295 || pos.y < 5 || pos.y > 295) {
-                System.out.println("I am breaking the bounds of reality says " + animal.getDamageName() + ", " + animal.getPosition());
-                animal.die();
-                animalIterator.remove();
-                continue;
-            }
-            if (animal.getLives() <= 0) animal.setState(Sprite.State.DEAD);
-            if (animal.getState().equals(Player.State.DEAD)) {
-//                System.out.println("animal dead");
-
-                EnvironmentBlock meat = animal.getBody();
-                Vector2 meatPos = meat.getPosition();
-                if (meatPos.x > 2 && meatPos.x < 298 && meatPos.y > 2 && meatPos.y < 298 && world.getLevel().getBlock((int)meatPos.x, (int)meatPos.y) == null) {
-                    world.getBodies().add(meat);
-                    world.getLevel().getBlocks()[(int)meatPos.x][(int)meatPos.y] = meat;
-                }
-                animal.die();
-                System.out.println(animal.getDamageName() + " Dead. Population now " + animal.getSpawnPoint().getPopulation());
-                animalIterator.remove();
-            } else if (animal.getPosition().x < 0 || animal.getPosition().x > 300 || animal.getPosition().y < 0 || animal.getPosition().y > 300) {
-                animal.die();
-                animalIterator.remove();
-            } else {
-                animal.age();
-                animal.heal();
-                if (animal.getLastFoodPos() != null && animal.getViewCircle().contains(animal.getLastFoodPos())) {
-                    Block block = world.getLevel().getBlock((int) animal.getLastFoodPos().x,(int)animal.getLastFoodPos().y);
-                    if (!(block instanceof EnvironmentBlock && ((EnvironmentBlock) block).getMaterial().getType().equals(GRASS))) {
-                        animal.setLastFoodPos(null);
-                    }
-                }
-                if (!animal.isStaggered()) {
-                    if (animal.getTarget() == null && animal.getTargetSprite() == null) {
-                        if (animal.getState().equals(Sprite.State.THIRSTY)) {
-                            findNearbyMaterial(animal, null, FloorPad.Type.WATER, null);
-                        } else if ((animal.getState().equals(Sprite.State.HUNGRY))) {
-                            findNearbyMaterial(animal, new Material(GRASS, 1), null, null);
-                        } else if (animal.getState().equals(Sprite.State.HORNY)) {
-                            findNearbyMaterial(animal,null, null, Animal.AnimalType.COW);
-                        }
-                    }
-                    if (animal.getTargetSprite() != null) {
-                        if (animal.getIntent().equals(Sprite.Intent.MATING)) {
-                            System.out.println(animal.getDamageName() + " attempting to mate");
-                            Animal otherAnimal = (Animal) animal.getTargetSprite();
-                            if (animal.getPosition().dst(otherAnimal.getPosition()) < 2 && otherAnimal.getState().equals(Sprite.State.HORNY)) {
-                                System.out.println("We be mating :) " + animal.getDamageName() + " and " + otherAnimal.getDamageName());
-                                AnimalSpawn spawnPoint = animal.getSpawnPoint();
-                                Vector2 newPos = new Vector2(animal.getCentrePosition().x + 0.5F, animal.getPosition().y + 0.5F);
-                                int count = spawnPoint.getAnimalCount();
-                                Animal newAnimal = new Animal(newPos, animal.getName(), spawnPoint, animal.getAnimalType(), 1, 0.5F, animal.getRotationSpeed(), new CowAi(), 10, 6, 6, count, true);
-                                animalIterator.add(newAnimal);
-                                spawnPoint.addAnimalToSpawn(0);
-                                System.out.println(newAnimal.getDamageName() + " has been born");
-                                System.out.println("Cow population: " + world.getAnimals().size());
-                                animal.setBirthTime(System.currentTimeMillis());
-                                otherAnimal.setBirthTime(System.currentTimeMillis());
-                            }
-                            animal.setState(Sprite.State.IDLE);
-                            animal.setIntent(Sprite.Intent.SEARCHING);
-                            animal.setTargetSprite(null);
-                            animal.setTarget(null);
-                            animal.getAi().setTargetCoordinates(null);
-                            otherAnimal.setState(Sprite.State.IDLE);
-                            otherAnimal.setIntent(Sprite.Intent.SEARCHING);
-                            otherAnimal.setTargetSprite(null);
-                            otherAnimal.setTarget(null);
-                            otherAnimal.getAi().setTargetCoordinates(null);
-                        }
-                    }
-                    if (animal.getTarget() != null) {
-                        if (animal.getTarget() != null && animal.getIntent().equals(Sprite.Intent.DRINKING)) {
-                            FloorPad floorPad = world.getLevel().getPad((int) animal.getTarget().x,(int) animal.getTarget().y);
-                            if (floorPad != null && (floorPad.getType().equals(FloorPad.Type.WATERFLOW) || floorPad.getType().equals(FloorPad.Type.WATER))) {
-                                animal.drink(1);
-                                animal.setLastWaterPos(animal.getTarget());
-                                if (animal.getWater() >= animal.getMaxWater()) {
-                                    animal.setState(Sprite.State.IDLE);
-                                    animal.setTarget(null);
-                                    animal.setTurningAntiClockwise(false);
-                                    animal.setTurningClcokwise(false);
-                                    animal.getAi().setTargetCoordinates(null);
-                                }
-                            }
-                        }
-                        if (animal.getTarget() != null && animal.getIntent().equals(Sprite.Intent.EATING)) {
-                            Block block = world.getLevel().getBlock((int) animal.getTarget().x,(int) animal.getTarget().y);
-                            if (block instanceof EnvironmentBlock && ((EnvironmentBlock) block).getMaterial().getType().equals(GRASS)) {
-                                if (block.getDurability() > 0) {
-                                    animal.eat(((EnvironmentBlock)block).hit(null).get(0).getQuantity() * 0.5F);
-                                    animal.setLastFoodPos(animal.getTarget());
-                                    if (animal.getFood() >= animal.getMaxFood()) {
-                                        animal.setState(Sprite.State.IDLE);
-                                        animal.setTarget(null);
-                                        animal.setTurningAntiClockwise(false);
-                                        animal.setTurningClcokwise(false);
-                                        animal.getAi().setTargetCoordinates(null);
-                                    }
-                                }
-                                if (block.getDurability() <= 0){
-                                    world.getLevel().getBlocks()[(int) block.getPosition().x][(int) block.getPosition().y] = null;
-                                    animal.setTarget(null);
-                                    animal.setTurningAntiClockwise(false);
-                                    animal.setTurningClcokwise(false);
-                                }
-                            } else {
-                                animal.setTarget(null);
-                                animal.setTurningAntiClockwise(false);
-                                animal.setTurningClcokwise(false);
-                            }
-                            animal.setIntent(Sprite.Intent.SEARCHING);
-                        }
-                    }
-                    fillView(animal);
-                    animal.decide(delta, world.isNightTime(), bob, aiPlayers, world.getAnimals());
-                    Vector2 target = locator.wallInbetween(animal, animal.getTarget());
-                    if (target == null && animal.getLastFoodPos() != null)
-
-//                    System.out.println(animal.getName() + " at " + animal.getPosition());
-                    if (animal.getView().getBlockingWall() != null) {
-                        Block[] blockingWall = animal.getView().getBlockingWall();
-//                        for (int i = 0; i < blockingWall.length; i++) {
-//                            if (blockingWall[i] != null) System.out.println("Blocking block: " + blockingWall[i].getName() + ", " + blockingWall[i].getPosition());
-//                        }
-                    }
-//                    animal.getView().printView();
-                    if (animal.getTarget() != null && !animal.getTarget().equals(target)) {
-//                        System.out.println("old target: " + animal.getTarget());
-//                        System.out.println("new target: " + target);
-                        animal.setTarget(target);
-                        animal.getAi().setTargetCoordinates(null);
-                    }
-                }
-                if (animal.getHitPhase() != 0) {
-                    Vector2 damageVector = new Vector2(animal.getHitCircle().x, animal.getHitCircle().y);
-                    float damage = 1F;
-                    world.getAreaAffects().add(new AreaAffect(damageVector, animal.getDamageName(), animal.getHitCircle().radius, animal.getHitTime(), DAMAGE, animal.getName(), animal.getAnimalType(), damage));
-                    animal.hitPhaseIncrease(1);
-                }
-                processAnimalInput(animal, delta);
+        processGameSprites(world.getAnimals().iterator(), delta, false);
+        if (inDungeon) {
+            Building building = world.getLevel().getBuilding(bob.getHouseNumber());
+            if (building != null) {
+                processGameSprites(building.getSprites().iterator(), delta, true);
+                processStatues(building);
             }
         }
 
-        for (Grower grower : world.getLevel().getGrowers()) {
-            boolean nearWater = false;
-            for (FloorPad floorPad : world.getLevel().getFloorPads()) {
-                if (floorPad.getType().equals(FloorPad.Type.WATER) || floorPad.getType().equals(FloorPad.Type.WATERFLOW) || (floorPad.getType().equals(FloorPad.Type.IRRIGATION) && floorPad.isConnected())) {
-                    double dist = Math.sqrt(Math.pow((floorPad.getPosition().x - grower.getPosition().x), 2) + Math.pow((floorPad.getPosition().y - grower.getPosition().y), 2));
-                    if (dist < 3) {
-                        nearWater = true;
-                        break;
-                    }
-                }
-            }
-            grower.grow((nearWater ? 1.5F : 1));
-        }
+        processGrowers(world.getLevel().getGrowers());
 
         for (FloorPad irrigation : world.getLevel().getFloorPads()) {
             if (irrigation.getType().equals(FloorPad.Type.IRRIGATION) && irrigation.isNotify()) {
@@ -555,6 +411,14 @@ public class WorldController {
                 setAction(delta, animal);
             }
         }
+        Building building = world.getLevel().getBuilding(bob.getHouseNumber());
+        if (inDungeon && building != null) {
+            for (Sprite animal : building.getSprites()) {
+                if (!animal.getState().equals(Sprite.State.DEAD)) {
+                    setAction(delta, animal);
+                }
+            }
+        }
 
         //check all the moving sprites
         for (Sprite sprite : world.getMovementRects().keySet()) {
@@ -590,8 +454,8 @@ public class WorldController {
                     }
 
                     projectile.setVelocity(calculateVelocity(projectile.getSpeed() * delta, projectile.getRotation()));
-                    collisionDetector.checkProjectileCollisionWithBlocks(projectile, delta);
-                    collisionDetector.checkProjectileCollisionWithPlayers(projectile, delta);
+                    collisionDetector.checkProjectileCollisionWithBlocks(projectile, delta, building);
+                    collisionDetector.checkProjectileCollisionWithPlayers(projectile, delta, building);
 
                     projectile.getPosition().add(projectile.getVelocity().x, projectile.getVelocity().y);
                     projectile.setMomentum(projectile.getMomentum() - 5);
@@ -676,6 +540,209 @@ public class WorldController {
         }
     }
 
+    private void processGrowers(List<Grower> growers) {
+        for (Grower grower : growers) {
+            boolean nearWater = false;
+            for (FloorPad floorPad : world.getLevel().getFloorPads()) {
+                if (floorPad.getType().equals(FloorPad.Type.WATER) || floorPad.getType().equals(FloorPad.Type.WATERFLOW) || (floorPad.getType().equals(FloorPad.Type.IRRIGATION) && floorPad.isConnected())) {
+                    double dist = Math.sqrt(Math.pow((floorPad.getPosition().x - grower.getPosition().x), 2) + Math.pow((floorPad.getPosition().y - grower.getPosition().y), 2));
+                    if (dist < 3) {
+                        nearWater = true;
+                        break;
+                    }
+                }
+            }
+            grower.grow((nearWater ? 1.5F : 1));
+        }
+    }
+
+    private void processStatues(Building building) {
+        List<Statue> statues = building.getStatues();
+        for (Statue statue : statues) {
+            if (statue.isReady()) {
+                Projectile projectile = statue.shoot();
+                if (projectile != null) world.getProjectiles().add(projectile);
+                continue;
+            }
+            statue.count(1);
+        }
+    }
+    private void processGameSprites(Iterator<? extends Sprite> sprites, float delta, boolean dungeonSprites) {
+        while(sprites.hasNext()) {
+            Animal animal = (Animal)sprites.next();
+            Vector2 pos = animal.getPosition();
+            if (!dungeonSprites && (pos.x < 5 || pos.x > 295 || pos.y < 5 || pos.y > 295)) {
+//                System.out.println("I am breaking the bounds of reality says " + animal.getDamageName() + ", " + animal.getPosition());
+                animal.die();
+                sprites.remove();
+                continue;
+            }
+            if (animal.getLives() <= 0) animal.setState(Sprite.State.DEAD);
+            if (animal.getState().equals(Player.State.DEAD)) {
+//                System.out.println("animal dead");
+
+                EnvironmentBlock meat = animal.getBody();
+                if (meat != null) {
+                    Vector2 meatPos = meat.getPosition();
+                    if (meatPos.x > 2 && meatPos.x < 298 && meatPos.y > 2 && meatPos.y < 298 && world.getLevel().getBlock((int)meatPos.x, (int)meatPos.y) == null) {
+                        world.getBodies().add(meat);
+                        world.getLevel().getBlocks()[(int)meatPos.x][(int)meatPos.y] = meat;
+                    }
+                }
+                animal.die();
+                if (animal.getAnimalType().equals(Animal.AnimalType.FIREBEAST5) && animal.getSpawnPoint().getPopulation() == 0) {
+                    int offset = animal.getHouseNumber()*1000;
+                    world.getLevel().getBuilding(animal.getHouseNumber()).putBlock(28 + offset, 29 + offset, new EnvironmentBlock(new Vector2(25 + offset, 29 + offset), new Material(FIRESTONE, 1), null, 1, 0, 0, 0,true, PICK, 3, "firestone-04", 2, 2));
+                }
+                sprites.remove();
+            } else {
+                animal.age();
+                animal.heal();
+                if (animal.getLastFoodPos() != null && animal.getViewCircle().contains(animal.getLastFoodPos())) {
+                    Block block = world.getLevel().getBlock((int) animal.getLastFoodPos().x,(int)animal.getLastFoodPos().y);
+                    if (!(block instanceof EnvironmentBlock && ((EnvironmentBlock) block).getMaterial().getType().equals(GRASS))) {
+                        animal.setLastFoodPos(null);
+                    }
+                }
+                if (!animal.isStaggered()) {
+                    if (animal.getTarget() == null && animal.getTargetSprite() == null) {
+                        if (animal.getState().equals(Sprite.State.THIRSTY)) {
+                            findNearbyMaterial(animal, null, FloorPad.Type.WATER, null);
+                        } else if ((animal.getState().equals(Sprite.State.HUNGRY))) {
+                            findNearbyMaterial(animal, new Material(GRASS, 1), null, null);
+                        } else if (animal.getState().equals(Sprite.State.HORNY)) {
+                            findNearbyMaterial(animal,null, null, Animal.AnimalType.COW);
+                        }
+                    }
+                    if (animal.getTargetSprite() != null) {
+                        if (animal.getIntent().equals(Sprite.Intent.MATING)) {
+//                            System.out.println(animal.getDamageName() + " attempting to mate");
+                            Animal otherAnimal = (Animal) animal.getTargetSprite();
+                            if (animal.getPosition().dst(otherAnimal.getPosition()) < 2 && otherAnimal.getState().equals(Sprite.State.HORNY)) {
+//                                System.out.println("We be mating :) " + animal.getDamageName() + " and " + otherAnimal.getDamageName());
+                                AnimalSpawn spawnPoint = animal.getSpawnPoint();
+                                Vector2 newPos = new Vector2(animal.getCentrePosition().x + 0.5F, animal.getPosition().y + 0.5F);
+                                int count = spawnPoint.getAnimalCount();
+                                Animal newAnimal = new Animal(newPos, animal.getName(), spawnPoint, animal.getAnimalType(), 1, 0.5F, animal.getRotationSpeed(), new CowAi(), 10, 6, 6, count, true, animal.getHouseNumber(), new ArrayList<>());
+                                //todo fix sprite mating
+//                                sprites.add(newAnimal);
+                                spawnPoint.addAnimalToSpawn(0);
+//                                System.out.println(newAnimal.getDamageName() + " has been born");
+//                                System.out.println("Cow population: " + world.getAnimals().size());
+                                animal.setBirthTime(System.currentTimeMillis());
+                                otherAnimal.setBirthTime(System.currentTimeMillis());
+                            }
+                            animal.setState(Sprite.State.IDLE);
+                            animal.setIntent(Sprite.Intent.SEARCHING);
+                            animal.setTargetSprite(null);
+                            animal.setTarget(null);
+                            animal.getAi().setTargetCoordinates(null);
+                            otherAnimal.setState(Sprite.State.IDLE);
+                            otherAnimal.setIntent(Sprite.Intent.SEARCHING);
+                            otherAnimal.setTargetSprite(null);
+                            otherAnimal.setTarget(null);
+                            otherAnimal.getAi().setTargetCoordinates(null);
+                        }
+                    }
+                    if (animal.getTarget() != null) {
+                        if (animal.getIntent().equals(Sprite.Intent.DRINKING)) {
+                            FloorPad floorPad = world.getLevel().getPad((int) animal.getTarget().x,(int) animal.getTarget().y);
+                            if (floorPad != null && (floorPad.getType().equals(FloorPad.Type.WATERFLOW) || floorPad.getType().equals(FloorPad.Type.WATER))) {
+                                animal.drink(1);
+                                animal.setLastWaterPos(animal.getTarget());
+                                if (animal.getWater() >= animal.getMaxWater()) {
+                                    animal.setState(Sprite.State.IDLE);
+                                    animal.setTarget(null);
+                                    animal.setTurningAntiClockwise(false);
+                                    animal.setTurningClcokwise(false);
+                                    animal.getAi().setTargetCoordinates(null);
+                                }
+                            }
+                        }
+                        if (animal.getIntent().equals(Sprite.Intent.EATING)) {
+                            Block block = world.getLevel().getBlock((int) animal.getTarget().x,(int) animal.getTarget().y);
+                            if (block instanceof EnvironmentBlock && ((EnvironmentBlock) block).getMaterial().getType().equals(GRASS)) {
+                                if (block.getDurability() > 0) {
+                                    animal.eat(((EnvironmentBlock)block).hit(null).get(0).getQuantity() * 0.5F);
+                                    animal.setLastFoodPos(animal.getTarget());
+                                    if (animal.getFood() >= animal.getMaxFood()) {
+                                        animal.setState(Sprite.State.IDLE);
+                                        animal.setTarget(null);
+                                        animal.setTurningAntiClockwise(false);
+                                        animal.setTurningClcokwise(false);
+                                        animal.getAi().setTargetCoordinates(null);
+                                    }
+                                }
+                                if (block.getDurability() <= 0){
+                                    world.getLevel().getBlocks()[(int) block.getPosition().x][(int) block.getPosition().y] = null;
+                                    animal.setTarget(null);
+                                    animal.setTurningAntiClockwise(false);
+                                    animal.setTurningClcokwise(false);
+                                }
+                            } else {
+                                animal.setTarget(null);
+                                animal.setTurningAntiClockwise(false);
+                                animal.setTurningClcokwise(false);
+                            }
+                            animal.setIntent(Sprite.Intent.SEARCHING);
+                        }
+                    }
+                    fillView(animal);
+                    animal.decide(delta, world.isNightTime(), bob, aiPlayers, world.getAnimals());
+                    Vector2 target = locator.wallInbetween(animal.getPosition(), animal.getTarget(), animal.getView().getBlocks(), 0);
+                    if (target == null && animal.getLastFoodPos() != null)
+
+                        if (animal.getView().getBlockingWall() != null) {
+                            Block[] blockingWall = animal.getView().getBlockingWall();
+//                        for (int i = 0; i < blockingWall.length; i++) {
+//                            if (blockingWall[i] != null) System.out.println("Blocking block: " + blockingWall[i].getName() + ", " + blockingWall[i].getPosition());
+//                        }
+                        }
+                    if (animal.getTarget() != null && !animal.getTarget().equals(target)) {
+                        animal.setTarget(target);
+                        animal.getAi().setTargetCoordinates(null);
+                    }
+                }
+                if (animal.getHitPhase() != 0) {
+                    //todo animal.getWhatever
+                    Vector2 damageVector = new Vector2(animal.getHitCircle().x, animal.getHitCircle().y);
+                    float damage = 1F;
+                    if (animal.getAnimalType().equals(Animal.AnimalType.FIREBEAST5)) {
+                        FireBeast5Ai ai = (FireBeast5Ai) animal.getAi();
+                        if (ai.isSecondAttack()) {
+                            world.getProjectiles().add(new Projectile(animal.getCentrePosition(), animal.getRotation(), animal.getName(), 3, Projectile.ProjectileType.FIREBALL, 0, false));
+
+                            float bulletRot1 = animal.getRotation() - 15;
+                            if (bulletRot1 < 0) bulletRot1 = 360 + bulletRot1;
+                            float bulletRot2 = animal.getRotation() + 15;
+                            if (bulletRot2 > 360) bulletRot2 = bulletRot2 - 360;
+                            world.getProjectiles().add(new Projectile(animal.getCentrePosition(), bulletRot1, animal.getName(), 3, Projectile.ProjectileType.FIREBALL, 0, false));
+                            world.getProjectiles().add(new Projectile(animal.getCentrePosition(), bulletRot2, animal.getName(), 3, Projectile.ProjectileType.FIREBALL, 0, false));
+                            animal.hitPhaseIncrease(1);
+                        } else {
+                            world.getAreaAffects().add(new AreaAffect(damageVector, "", 2, animal.getHitTime(), FIREBITE, animal.getDamageName(), animal.getAnimalType(), 2));
+                            animal.hitPhaseIncrease(100);
+                        }
+                    } else if (animal.getAnimalType().equals(Animal.AnimalType.FIREBEAST4)) {
+                        world.getAreaAffects().add(new AreaAffect(damageVector, "fireCircle-03", 2, animal.getHitTime(), FIREBITE, animal.getDamageName(), animal.getAnimalType(), damage));
+                        animal.hitPhaseIncrease(10);
+                    }
+                    else if (animal.getAnimalType().equals(Animal.AnimalType.FIREBEAST3)) {
+                        world.getProjectiles().add(new Projectile(animal.getCentrePosition(), animal.getRotation(), animal.getName(), 3, Projectile.ProjectileType.FIREBALL, 0, false));
+                        animal.hitPhaseIncrease(1);
+                    }
+                    else if (animal.getAnimalType().equals(Animal.AnimalType.FIREBEAST2)) {
+                        world.getAreaAffects().add(new AreaAffect(damageVector, "fireCircle-01", animal.getHitCircle().radius, animal.getHitTime(), FIREBITE, animal.getDamageName(), animal.getAnimalType(), damage));
+                        animal.hitPhaseIncrease(1);
+                    } else {
+                        world.getAreaAffects().add(new AreaAffect(damageVector, animal.getDamageName(), animal.getHitCircle().radius, animal.getHitTime(), DAMAGE, animal.getName(), animal.getAnimalType(), damage));
+                        animal.hitPhaseIncrease(1);
+                    }
+                }
+                processAnimalInput(animal, delta);
+            }
+        }
+    }
     public void findNearbyMaterial(Sprite sprite, Material material, FloorPad.Type water, Animal.AnimalType animal) {
         if (animal != null) {
             for (Animal a : world.getAnimals()) {
@@ -801,13 +868,14 @@ public class WorldController {
 
         if (sprite instanceof Animal) {
             if (sprite.getVelocity().x > 10 || sprite.getVelocity().y > 10 || sprite.getVelocity().x < -10 || sprite.getVelocity().y < -10) {
-                System.out.println("Is this big?");
+//                System.out.println("Is this big?");
             }
         }
         boolean instanceOfPlayer = sprite instanceof Player;
         //apply world effects
         collisionDetector.checkPlayerCollisionWithFloorPads(sprite);
 
+        //todo need to make this work for sprites (not bob) that are inside buildings
         // checking collisions with the surrounding blocks depending on Bob's velocity
         collisionDetector.checkPlayerCollisionWithBlocks(delta, sprite);
 
@@ -840,7 +908,7 @@ public class WorldController {
     /**
      * Change Bob's state and parameters based on input controls
      **/
-    private void processInput() {
+    private void processInput(boolean inDungeon) {
         if (!bob.getState().equals(Player.State.DEAD)) {
 //            bob.whatsInFront();
             if (keys.get(Keys.INV)) {
@@ -876,9 +944,9 @@ public class WorldController {
                 bob.setLeftAcceleration(0F);
                 bob.setRightAcceleration(0F);
             } else if (keys.get(Keys.STRAFELEFT)) {
-                bob.setLeftAcceleration(bob.getBoost().equals(Player.Boost.SPEED) ? 8F : 4F);
+                bob.setLeftAcceleration(bob.getBoost().equals(Sprite.Effect.SPEED) ? 8F : 4F);
             } else if (keys.get(Keys.STRAFERIGHT)) {
-                bob.setRightAcceleration(bob.getBoost().equals(Player.Boost.SPEED) ? 8F : 4F);
+                bob.setRightAcceleration(bob.getBoost().equals(Sprite.Effect.SPEED) ? 8F : 4F);
             } else {
                 bob.setLeftAcceleration(0F);
                 bob.setRightAcceleration(0F);
@@ -887,11 +955,11 @@ public class WorldController {
             if (keys.get(Keys.UP)) {
                 // up is pressed
                 bob.setState(Player.State.MOVING);
-                bob.setAcceleration(bob.getBoost().equals(Player.Boost.SPEED) ? 8F : 4F);
+                bob.setAcceleration(bob.getBoost().equals(Sprite.Effect.SPEED) ? 8F : 4F);
             } else if (keys.get(Keys.DOWN)) {
                 // down is pressed
                 bob.setState(Player.State.MOVING);
-                bob.setAcceleration(bob.getBoost().equals(Player.Boost.SPEED) ? -8F : -4F);
+                bob.setAcceleration(bob.getBoost().equals(Sprite.Effect.SPEED) ? -8F : -4F);
             } else {
                 if (bob.getAcceleration() > 20 ) {
                     bob.setAcceleration(bob.getAcceleration() * 0.8F);
@@ -940,7 +1008,7 @@ public class WorldController {
             } else {
                 if (fireButtonTime != 0) {
                     long buttonPressTime = System.currentTimeMillis() - fireButtonTime;
-                    longPressFire(bob, buttonPressTime);
+                    longPressFire(bob, buttonPressTime, inDungeon);
                     fireButtonTime = 0;
                 }
             }
@@ -998,7 +1066,7 @@ public class WorldController {
             }
             if (dst > 25) {
                 bob.setState(Player.State.MOVING);
-                bob.setAcceleration(bob.getBoost().equals(Player.Boost.SPEED) ? 8F : 4F);
+                bob.setAcceleration(bob.getBoost().equals(Sprite.Effect.SPEED) ? 8F : 4F);
             }
 
         } else if (!Gdx.app.getType().equals(Application.ApplicationType.Desktop)) {
@@ -1040,12 +1108,12 @@ public class WorldController {
         return spritesToHit;
     }
 
-    public void longPressFire(Player player, Long buttonPressTime) {
+    public void longPressFire(Player player, Long buttonPressTime, boolean inDungeon) {
         boolean poweredUp = buttonPressTime > 800;
         if (!player.isUseDelayOn()) {
             List<Sprite> spritesToHit = getSpritesToHit(player);
 
-            GameObject[][] blocks = world.getLevel().getBlocks();
+            GameObject[][] blocks = inDungeon ? world.getLevel().getBuilding(player.getHouseNumber()).getBlocks() : world.getLevel().getBlocks();
             Point gridRef = player.getGridRef(player.getRotation(), player.getCentrePosition().x, player.getCentrePosition().y);
             if (player.getStrongHand() != null ) {
                 player.startUseTimer(player.getStrongHand().getUseTime());
@@ -1064,7 +1132,7 @@ public class WorldController {
                             handleUseMagic(player, poweredUp);
                             break;
                         case SWINGABLE:
-                            handleUseSwingable(player, item, blocks, gridRef, o, spritesToHit);
+                            handleUseSwingable(player, item, blocks, gridRef, o, spritesToHit, inDungeon);
                             break;
                         case PLACEABLE:
                             handleUsePlaceable(player, item, blocks, gridRef, o);
@@ -1128,7 +1196,7 @@ public class WorldController {
                             if (!player.isMaxHealth()) {
                                 player.increaseLife(magic.getEffect());
                                 player.useMana(magic.getManaRequired() + (poweredUp ? 2 : 0));
-                                player.setBoost(Player.Boost.HEALING, poweredUp ? 4 : 2);
+                                player.setBoost(Sprite.Effect.HEALING, poweredUp ? 4 : 2);
                             }
                             break;
                         default:
@@ -1139,7 +1207,7 @@ public class WorldController {
         }
     }
 
-    public void handleUseSwingable(Player player, Item item, GameObject[][] blocks, Point gridRef, Object o, List<Sprite> spritesToHit) {
+    public void handleUseSwingable(Player player, Item item, GameObject[][] blocks, Point gridRef, Object o, List<Sprite> spritesToHit, boolean inDungeon) {
         Swingable swingable = (Swingable) item;
 
         //find block ahead
@@ -1193,16 +1261,17 @@ public class WorldController {
         Placeable placeable = (Placeable) item;
 
         Block blockToPlace = null;
+        if (player.isInHouse())
         if (placeable.getPlaceableType().equals(Placeable.PlaceableType.WALL) || placeable.getPlaceableType().equals(Placeable.PlaceableType.DOOR)) {
             boolean isDoor = placeable.getPlaceableType().equals(Placeable.PlaceableType.DOOR);
             int rotation = placeable.getRotation();
             if (o instanceof Wall) {
                 if (!((Wall) o).isWallFull(rotation)) {
-                    ((Wall) o).addWall(Block.getSIZE(), Block.getSIZE()/4, rotation, isDoor);
+                    ((Wall) o).addWall(Block.getSIZE(), Block.getSIZE()/4, rotation, isDoor ? Wall.WallType.Type.DOOR : Wall.WallType.Type.WALL, false);
                     player.getStrongHand().setQuantity(player.getStrongHand().getQuantity() - 1);
                 }
             } else if (o == null) {
-                blockToPlace = new Wall(new Vector2(gridRef.x, gridRef.y), rotation, Block.getSIZE(), Block.getSIZE()/4, isDoor);
+                blockToPlace = new Wall(new Vector2(gridRef.x, gridRef.y), rotation, Block.getSIZE(), Block.getSIZE()/4, isDoor ? Wall.WallType.Type.DOOR : Wall.WallType.Type.WALL, false);
                 player.getStrongHand().setQuantity(player.getStrongHand().getQuantity() - 1);
             }
             if (player.getStrongHand().getQuantity() <= 0 && !player.getInventory().checkItem(new Placeable(Placeable.PlaceableType.WALL, 10))) {
@@ -1216,11 +1285,9 @@ public class WorldController {
                     blockToPlace = new Block(new Vector2(gridRef.x, gridRef.y), 10, placeable.getWidth(), rotation, Block.BlockType.BED);
                     player.setPersonalSpawn(new Vector2(gridRef.x, gridRef.y));
                     player.setSpawnHouse(player.getHouseNumber());
-                    System.out.println("Spawn point is being reset to " + player.getPersonalSpawn());
+//                    System.out.println("Spawn point is being reset to " + player.getPersonalSpawn());
                 } else if (placeable.getPlaceableType().equals(Placeable.PlaceableType.HOUSE)) {
-                    int nextNumber = world.getLevel().getBuildings().size() + 1;
-                    blockToPlace = new Building(new Vector2(gridRef.x, gridRef.y), 10, placeable.getWidth(), placeable.getHeight(), 0, placeable.getName(), 1, nextNumber);
-                    world.getLevel().getBuildings().put(nextNumber, (Building)blockToPlace);
+                    blockToPlace = world.getLevel().addBuilding(gridRef, placeable.getWidth(), placeable.getHeight(), placeable.getName(), Building.BuildingType.TIPI);
                 } else {
                     FillableBlock.FillableType fillableType = null;
                     String name = null;
@@ -1300,7 +1367,7 @@ public class WorldController {
                 projectile = new Projectile(player.getLeftHandPosition(45, player.getWidth()/2), player.getRotation(), player.getName(), 1, Projectile.ProjectileType.PEBBLE, 0, poweredUp);
                 break;
             case SPEAR:
-                projectile = new Projectile(new Vector2(player.getLeftHandPosition(140, player.getWidth()/2)), player.getRotation(), player.getName(), 2, Projectile.ProjectileType.SPEAR, 0, poweredUp);
+                projectile = new Projectile(new Vector2(player.getLeftHandPosition(140, player.getWidth()/2)), player.getRotation(), player.getName(), 4, Projectile.ProjectileType.SPEAR, 0, poweredUp);
                 break;
         }
         if (projectile != null) {
@@ -1339,6 +1406,9 @@ public class WorldController {
                     item.rotate();
                 }
             }
+            if (player.getStrongHand() != null && player.getStrongHand().getType().equals(FIRESTONE)) {
+                player.consume(player.getStrongHand());
+            }
         }
         //raise shield
         if (player.getWeakHand() != null && player.getWeakHand().getItemType().equals(Item.ItemType.SHIELD)) {
@@ -1371,13 +1441,14 @@ public class WorldController {
                         if (o instanceof Wall) {
                             Wall wallBlock = (Wall) o;
                             for (Wall.WallType wall : wallBlock.getWalls().values()) {
-                                if (wall != null && wall.isDoor()) {
-                                    if (player.isInHouse()) {
+                                if (wall != null) {
+                                    if (Wall.WallType.Type.DOOR.equals(wall.getWallType())) {
+                                         if (!wall.isLocked()) wall.toggleOpen();
+                                    }
+                                    if (Wall.WallType.Type.DUNGEON.equals(wall.getWallType())) {
                                         Building house = world.getLevel().getBuildings().get(player.getHouseNumber());
-                                        player.setPosition(new Vector2(house.getPosition().x,house.getPosition().y - 1));
                                         player.setHouseNumber(0);
-                                    } else {
-                                        wall.toggleOpen();
+                                        player.setPosition(new Vector2(house.getPosition().x,house.getPosition().y - 1));
                                     }
                                 }
                             }
@@ -1437,7 +1508,7 @@ public class WorldController {
         if (aiPlayer.getState() != Player.State.DEAD) {
             //todo targeting switched off for now
             aiPlayer.chooseTarget(bob, aiPlayers);
-            aiPlayer.setTarget(locator.wallInbetween(aiPlayer, aiPlayer.getTarget()));
+            aiPlayer.setTarget(locator.wallInbetween(aiPlayer.getPosition(), aiPlayer.getTarget(), aiPlayer.getView().getBlocks(), 0));
             if (aiPlayer.getTarget() == null && aiPlayer.getTargetSprite() != null) {
                 aiPlayer.ignore(aiPlayer.getTargetSprite().getName());
             }

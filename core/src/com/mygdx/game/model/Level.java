@@ -12,12 +12,14 @@ import com.mygdx.game.model.environment.blocks.Building;
 import com.mygdx.game.model.environment.blocks.ExplodableBlock;
 import com.mygdx.game.model.environment.SpawnPoint;
 import com.mygdx.game.model.environment.blocks.Grower;
+import com.mygdx.game.model.items.Placeable;
 import com.mygdx.game.model.items.Ranged;
 import com.mygdx.game.model.pads.BoostPad;
 import com.mygdx.game.model.pads.FloorPad;
 import com.mygdx.game.model.pads.GunPad;
 import com.mygdx.game.model.pads.Pad;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -72,6 +74,18 @@ public class Level {
 
     public Map<Integer, Building> getBuildings() {
         return buildings;
+    }
+
+    public Building getBuilding(int number) {
+        if (number <= 0) return null;
+        return buildings.get(number);
+    }
+
+    public Building addBuilding(Point gridRef, float width, float height, String name, Building.BuildingType buildingType) {
+        int nextNumber = buildings.size() + 1;
+        Building building = new Building(new Vector2(gridRef.x, gridRef.y), 10, width, height, 0, name, buildingType, nextNumber);
+        buildings.put(nextNumber, building);
+        return building;
     }
 
     public void setBuildings(Map<Integer, Building> buildings) {

@@ -37,10 +37,8 @@ public class SpiderAI extends AnimalAi {
                     Random rand = new Random();
                     if (shiftDirection == null) shiftDirection = rand.nextInt(3) > 1 ? "left" : "right";
                     if (shiftDirection.equals("left"))  {
-//                        System.out.println("shimmy to the left");
                         s.moveLeft();
                     } else {
-//                        System.out.println("shimmy to the right");
                         s.moveRight();
                     }
                 } else {
@@ -49,7 +47,7 @@ public class SpiderAI extends AnimalAi {
             }
         }
         if (s.getTarget() != null) {
-            if (moveToTarget(s, 1, s.getTarget(), true)) {
+            if (moveToTarget(s, 1, s.getTarget(), true, true)) {
                 if (!s.isUseDelayOn()) {
 //                        s.setIntent(AIPlayer.Intent.KILLING);
                     s.startUseDelayTimer(2F);
@@ -62,34 +60,5 @@ public class SpiderAI extends AnimalAi {
             s.setIntent(AIPlayer.Intent.SEARCHING);
         }
         return super.decide(delta, s, nightTime, player, aiPlayers, animals);
-    }
-
-    public void chooseTarget(Sprite s, Player player, List<AIPlayer> aiPlayers, List<Animal> animals) {
-
-        List<Sprite> potentialTargets = new ArrayList<>();
-        if (s.getViewCircle().contains(player.getCentrePosition())) potentialTargets.add(player);
-
-        for (AIPlayer aiPlayer : aiPlayers) {
-            if (!aiPlayer.getName().equals(s.getName())) {
-                if (s.getViewCircle().contains(aiPlayer.getCentrePosition()))potentialTargets.add(aiPlayer);
-            }
-        }
-
-        for (Animal animal : animals) {
-            if (!(s instanceof Animal && ((Animal) s).getAnimalType().equals(animal.getAnimalType())) && !animal.getName().equals(s.getName())) {
-                if (s.getViewCircle().contains(animal.getCentrePosition()))potentialTargets.add(animal);
-            }
-        }
-
-        if (potentialTargets.isEmpty()) {
-            s.setTargetSprite(null);
-            s.setTarget(null);
-//            s.getView().setBlockingWall(new Block[3]);
-        } else {
-            if (s.getTargetSprite() == null || rand.nextInt(1000) > 998)  {
-                s.setTargetSprite(potentialTargets.get(rand.nextInt(potentialTargets.size())));
-            }
-            s.setTarget(s.getTargetSprite().getCentrePosition());
-        }
     }
 }

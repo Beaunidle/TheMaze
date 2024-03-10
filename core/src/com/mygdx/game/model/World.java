@@ -1,5 +1,8 @@
 package com.mygdx.game.model;
 
+import static com.mygdx.game.model.items.Material.Type.FIRESTONE;
+import static com.mygdx.game.model.items.Swingable.SwingableType.PICK;
+
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
@@ -10,7 +13,9 @@ import com.mygdx.game.model.environment.blocks.Block;
 import com.mygdx.game.model.environment.BloodStain;
 import com.mygdx.game.model.environment.AreaAffect;
 import com.mygdx.game.model.environment.SpawnPoint;
+import com.mygdx.game.model.environment.blocks.Building;
 import com.mygdx.game.model.environment.blocks.EnvironmentBlock;
+import com.mygdx.game.model.items.Material;
 import com.mygdx.game.model.moveable.AIPlayer;
 import com.mygdx.game.model.moveable.Animal;
 import com.mygdx.game.model.moveable.Projectile;
@@ -226,9 +231,10 @@ public class World {
     public List<Block> getDrawableHouseBlocks() {
         List<Block> blocks = new ArrayList<>();
         Block block;
-        for (int col = 0; col < 10; col++) {
-            for (int row = 0; row < 10; row++) {
-                block = level.getBuildings().get(bob.getHouseNumber()).getBlock(col + bob.getHouseNumber()*1000,row + bob.getHouseNumber()*1000);
+        Building building = level.getBuildings().get(bob.getHouseNumber());
+        for (int col = 0; col < building.getInternalWidth(); col++) {
+            for (int row = 0; row < building.getInternalHeight(); row++) {
+                block = building.getBlock(col + bob.getHouseNumber()*1000,row + bob.getHouseNumber()*1000);
                 if (block != null) {
                     blocks.add(block);
                 }
@@ -250,7 +256,10 @@ public class World {
         Random rand = new Random();
         int rando = rand.nextInt(spawnPoints.size());
         SpawnPoint sp = spawnPoints.get(rando);
-        bob = new Player(new Vector2(sp.getPosition()), "player", 5F, recipeHolder);
+//        getLevel().getBlocks()[55][35] = new EnvironmentBlock(new Vector2(55, 35), new Material(FIRESTONE, 1), null, 1, 0, 0, 0,true, PICK, 3, "firestone-04", 2, 2);
+//        bob = new Player(new Vector2(sp.getPosition()), "player", 15F, recipeHolder, 0, new ArrayList<>());
+        getLevel().getBuildings().get(1).initSprites();
+        bob = new Player(new Vector2(1025, 1018), "player", 15F, recipeHolder, 1, new ArrayList<>());
         numbers.add(rando);
 
         for (int i = 0; i < spawnPoints.size() -1; i++) {
@@ -258,7 +267,7 @@ public class World {
                 rando = rand.nextInt(spawnPoints.size());
             }
             sp = spawnPoints.get(rando);
-            AIPlayers.add(new AIPlayer(new Vector2(sp.getPosition()), "ai-0" + i, recipeHolder));
+            AIPlayers.add(new AIPlayer(new Vector2(sp.getPosition()), "ai-0" + i, recipeHolder, 0));
             numbers.add(rando);
         }
         for (AnimalSpawn animalSpawn : getLevel().getAnimalSpawnPoints()) {

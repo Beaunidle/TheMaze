@@ -15,7 +15,7 @@ public class Wall extends Block{
     private final Map<Float, WallType> walls;
     private boolean wallFull;
 
-    public Wall(Vector2 pos, int rotation, float width, float height, boolean door) {
+    public Wall(Vector2 pos, int rotation, float width, float height, WallType.Type wallType, boolean locked) {
         super(pos, 20);
         setBlockType(BlockType.WALL);
         walls = new HashMap<>();
@@ -23,13 +23,13 @@ public class Wall extends Block{
         walls.put(180f, null);
         walls.put(270f, null);
         walls.put(0f, null);
-        addWall(width, height, rotation, door);
+        addWall(width, height, rotation, wallType, locked);
 //        setBounds(new Polygon(new float[]{0, 0, width, height, width, 0, 0, height}));
 //        this.getBounds().setPosition(pos.x, pos.y);
 //        this.rotation = rotation;
     }
 
-    public void addWall(float width, float height, float rotation, boolean door) {
+    public void addWall(float width, float height, float rotation, WallType.Type wallType, boolean locked) {
 
         Polygon polygon;
         if (rotation >= 45 && rotation < 135) {
@@ -45,7 +45,7 @@ public class Wall extends Block{
             polygon = new Polygon(new float[]{0, 0, width, 0, width, height, 0, height});
             polygon.setPosition(getPosition().x, getPosition().y);
         }
-        walls.put(rotation, new WallType(door, polygon));
+        walls.put(rotation, new WallType(wallType, polygon, locked));
     }
 
     public List<Material> hit() {
@@ -72,27 +72,34 @@ public class Wall extends Block{
 
     public static class WallType {
 
-        private final boolean door;
-        private boolean open;
+        public enum Type {
+            WALL,DOOR,DUNGEON
+        }
+        //todo this can be better
+        private final Type wallType;
+        private boolean open, locked;
         private Polygon bounds;
 
-        public WallType(boolean door, Polygon bounds) {
-            this.door = door;
+        public WallType(Type wallType, Polygon bounds, boolean locked) {
+            this.wallType = wallType;
             this.bounds = bounds;
             open = false;
+            this.locked = locked;
         }
 
-        public boolean isDoor() {
-            return door;
+        public Type getWallType() {
+            return wallType;
         }
 
         public boolean isOpen() {
             return open;
         }
 
-        public void setOpen(boolean open) {
-            this.open = open;
-        }
+        public void toggleOpen() { open = !open; }
+
+        public boolean isLocked() { return locked; }
+
+        public void toggleLocked() { locked = !locked; }
 
         public Polygon getBounds() {
             return bounds;
@@ -102,13 +109,8 @@ public class Wall extends Block{
             this.bounds = bounds;
         }
 
-        public void toggleOpen() {
-
-            open = !open;
-        }
-
         public String getName() {
-            if (isDoor()) {
+            if (Type.DOOR.equals(wallType)) {
                 if (isOpen()) {
                     return "dooropen";
                 } else {

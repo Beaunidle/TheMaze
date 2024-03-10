@@ -81,6 +81,7 @@ public class GameScreen implements Screen, InputProcessor {
                 int houseNumber = ((Building) block).getNumber();
                 world.getBob().setHouseNumber(houseNumber);
                 world.getBob().setPosition(new Vector2(houseNumber*1000 + (float)Math.floor(((Building) block).getInternalWidth()/2F), houseNumber*1000 + 1));
+                ((Building) block).initSprites();
                 getController().setFillableToShow(null);
             } else if (block instanceof  FillableBlock) {
                 FillableBlock fillableBlock = (FillableBlock) block;
@@ -110,7 +111,7 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public void show() {
 //        Gdx.input.setCursorCatched(true);
-        renderer = new WorldRenderer(world, spriteBatch, false, font, textureLoader);
+        renderer = new WorldRenderer(world, spriteBatch, false, font, textureLoader, locator);
         controller = new WorldController(world, game);
         controller.leftReleased();
         controller.rightReleased();

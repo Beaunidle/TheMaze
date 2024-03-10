@@ -93,13 +93,13 @@ public class Locator {
         return  deg;
     }
 
-    public Vector2 wallInbetween(Sprite player, Vector2 target) {
+    public Vector2 wallInbetween(Vector2 position, Vector2 target, Block[][] blocks, int offset) {
 
         if (target == null) return null;
-        Vector2 position = player.getCentrePosition();
-        View view = player.getView();
-        Block[][] blocks = view.getBlocks();
-        Block[] block = view.getFreshBlockingWall();
+//        View view = player.getView();
+//        Block[][] blocks = view.getBlocks();
+//        Block[] block = view.getFreshBlockingWall();
+        Block[] block = new Block[3];
 
         float dst = target.dst(position);
         if (dst <= 1) return null;
@@ -117,7 +117,7 @@ public class Locator {
                 for (int i = 0; i < block.length; i++) {
                     if (block[i] != null && !block[i].isColibible()) block[i] = null;
                 }
-                view.setBlockingWall(block);
+//                view.setBlockingWall(block);
                 if (block[1] != null) {
 //                    System.out.println("Block distance: " + target.dst(block[1].getPosition()));
                     for (int i = 3; i >= 0; i--) {
@@ -147,7 +147,7 @@ public class Locator {
                 for (int i = 0; i < block.length; i++) {
                     if (block[i] != null && !block[i].isColibible()) block[i] = null;
                 }
-                view.setBlockingWall(block);
+//                view.setBlockingWall(block);
                 if (block[1] != null) {
                     for (int i = 3; i >= 0; i--) {
                         if (blocks[j][i] == null) {
@@ -177,7 +177,7 @@ public class Locator {
                 for (int i = 0; i < block.length; i++) {
                     if (block[i] != null && !block[i].isColibible()) block[i] = null;
                 }
-                view.setBlockingWall(block);
+//                view.setBlockingWall(block);
                 if (block[1] != null) {
                     for (int i = 3; i >= 0; i--) {
                         if (blocks[j][i] == null) return new Vector2(position.x - 1.5F, position.y + 3);
@@ -200,7 +200,7 @@ public class Locator {
                 for (int i = 0; i < block.length; i++) {
                     if (block[i] != null && !block[i].isColibible()) block[i] = null;
                 }
-                view.setBlockingWall(block);
+//                view.setBlockingWall(block);
                 if (block[1] != null) {
                     for (int i = 3; i >= 0; i--) {
                         if (blocks[j][i] == null) return new Vector2(position.x - 1.5F , position.y - 3);

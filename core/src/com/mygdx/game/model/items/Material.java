@@ -3,7 +3,7 @@ package com.mygdx.game.model.items;
 public class Material {
 
     public enum Type {
-        COAL, STONE, WOOD, ITEM, MEAT, CONSUMABLE, GRASS, STICK, COPPER, FLINT, BONE, SCAPULA,BONEFRAGMENT
+        COAL,STONE,WOOD,ITEM,MEAT,CONSUMABLE,GRASS,STICK,COPPER,FLINT,BONE,SCAPULA,BONEFRAGMENT,FIRESTONE
     }
 
     private String name;
@@ -45,6 +45,12 @@ public class Material {
         baseDamage = 0;
         baseDurability = 0;
         switch (type) {
+            case FIRESTONE:
+                name = "firestone-03";
+                mineable = true;
+                holdable = true;
+                maxPerStack = 1;
+                break;
             case COAL:
                 name = "coal";
                 mineable = true;
@@ -91,8 +97,10 @@ public class Material {
                 setName("fragment_bone");
                 setHoldable(false);
                 setMaxPerStack(10);
+                break;
         }
     }
+
     public String getName() {
         return name;
     }

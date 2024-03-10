@@ -19,7 +19,7 @@ import java.util.Map;
 public class Animal extends Sprite {
 
     public enum AnimalType {
-        COW,SPIDER
+        COW,SPIDER,FIREBEAST1,FIREBEAST2,FIREBEAST3,FIREBEAST4,FIREBEAST5
     }
 
     private final AnimalType animalType;
@@ -27,8 +27,8 @@ public class Animal extends Sprite {
     private final AnimalSpawn spawn;
     private final String damageName;
 
-    public Animal(Vector2 position, String name, AnimalSpawn spawn, AnimalType animalType, float width, float height, float rotationSpeed, AnimalAi animalAi, int lives, int food, int water, int count, boolean child) {
-        super(position, width, height, lives, 0, food, water, name);
+    public Animal(Vector2 position, String name, AnimalSpawn spawn, AnimalType animalType, float width, float height, float rotationSpeed, AnimalAi animalAi, int lives, int food, int water, int count, boolean child, int houseNumber, List<Effect> immunities) {
+        super(position, width, height, lives, 0, food, water, name, houseNumber, immunities);
         this.animalType = animalType;
         this.ai = animalAi;
         this.spawn = spawn;
@@ -40,6 +40,26 @@ public class Animal extends Sprite {
                 break;
             case SPIDER:
                 damageName = "spider" + count;
+                setHitTime(0.1F);
+                break;
+            case FIREBEAST1:
+                damageName = "firebeast1" + count;
+                setHitTime(1F);
+                break;
+            case FIREBEAST2:
+                damageName = "firebeast2" + count;
+                setHitTime(0.1F);
+                break;
+            case FIREBEAST3:
+                damageName = "firebeast3" + count;
+                setHitTime(1F);
+                break;
+            case FIREBEAST4:
+                damageName = "firebeast4" + count;
+                setHitTime(1F);
+                break;
+            case FIREBEAST5:
+                damageName = "firebeast5" + count;
                 setHitTime(0.1F);
                 break;
             default:
@@ -54,7 +74,11 @@ public class Animal extends Sprite {
     }
 
     public void die() {
-        spawn.setPopulation(spawn.getPopulation() - 1);
+        if (spawn != null) {
+//            spawn.setPopulation(spawn.getPopulation() - 1);
+            spawn.reducePopulation(1);
+        }
+
     }
 
     public Vector2 getSpawn() {
@@ -100,16 +124,21 @@ public class Animal extends Sprite {
     }
 
     public void updateHitCircle() {
-        getHitCircle().setRadius(0.5f);
+        getHitCircle().setRadius(0.25f);
 
-        if (getHitPhase() == 0 || getTarget() == null) getHitCircle().setRadius(0.0001F);
+        if (getHitPhase() == 0 || getTarget() == null) {
+            getHitCircle().setRadius(0.0001F);
+        }
         Vector2 gridRef = getCentrePosition();
         float rotation = getRotation();
 
+        if (getHitPhase() == 1 && getTarget() != null) {
+//            System.out.println("Whats up");
+        }
         if (rotation < 0) rotation = rotation + 360;
         if (rotation > 360) rotation = rotation - 360;
-        float x = gridRef.x + (float)(getWidth() * Math.cos(rotation * Math.PI/180));
-        float y = gridRef.y + (float)(getHeight() * Math.sin(rotation * Math.PI/180));
+        float x = gridRef.x + (float)(Math.cos(rotation * Math.PI/180));
+        float y = gridRef.y + (float)(Math.sin(rotation * Math.PI/180));
         getHitCircle().setPosition(new Vector2(x, y));
     }
 

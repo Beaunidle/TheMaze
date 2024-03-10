@@ -2,6 +2,7 @@ package com.mygdx.game.controller;
 
 import static com.mygdx.game.model.environment.AreaAffect.AffectType.DAMAGE;
 import static com.mygdx.game.model.environment.AreaAffect.AffectType.EXPLOSION;
+import static com.mygdx.game.model.environment.AreaAffect.AffectType.FIREBITE;
 
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Polygon;
@@ -67,7 +68,8 @@ class CollisionDetector {
         }
 
         // get the block(s) bob can collide with
-        populateCollidableBlocks(startX, startY, endX, endY, player);
+        Building building = player.isInHouse() ? world.getLevel().getBuildings().get(player.getHouseNumber()) : null;
+        populateCollidableBlocks(startX, startY, endX, endY, building);
         populateCollidableSprites(player);
 
         //todo lets check a simulation of both
@@ -131,7 +133,7 @@ class CollisionDetector {
             startY = endY = (int) Math.floor(boundingRect.getY() + player.getHeight() + player.getVelocity().y);
         }
 
-        populateCollidableBlocks(startX, startY, endX, endY, player);
+        populateCollidableBlocks(startX, startY, endX, endY, building);
 
         playerRect.setPosition(player.getPosition().x, player.getPosition().y + player.getVelocity().y);
 
@@ -199,7 +201,7 @@ class CollisionDetector {
     /**
      * Collision checking
      **/
-    void checkProjectileCollisionWithBlocks(Projectile projectile, float delta) {
+    void checkProjectileCollisionWithBlocks(Projectile projectile, float delta, Building building) {
 
         projectile.setSpeed(projectile.getSpeed() * delta);
         // Obtain the rectangle from the pool instead of instantiating it
@@ -224,7 +226,7 @@ class CollisionDetector {
             }
 
             // get the block(s) bob can collide with
-            populateCollidableBlocks(startX, startY, endX, endY, null);
+            populateCollidableBlocks(startX, startY, endX, endY, building);
 
             // simulate player's movement on the X
             bulletRect.setPosition(projectile.getPosition().x + projectile.getSpeed(), projectile.getPosition().y);
@@ -266,7 +268,7 @@ class CollisionDetector {
 
             //todo make sure projectiles don't go funny when player is in house
             // also sort out the damn naming in this class, it should be sprite, not player
-            populateCollidableBlocks(startX, startY, endX, endY, null);
+            populateCollidableBlocks(startX, startY, endX, endY, building);
 
             bulletRect.setPosition(projectile.getPosition().x, projectile.getPosition().y + projectile.getSpeed());
 
@@ -292,7 +294,7 @@ class CollisionDetector {
         projectile.setSpeed(projectile.getSpeed() * (1/delta));
     }
 
-     void checkProjectileCollisionWithPlayers(Projectile projectile, float delta) {
+     void checkProjectileCollisionWithPlayers(Projectile projectile, float delta, Building building) {
         projectile.setSpeed(projectile.getSpeed() * delta);
         // set the rectangle to bullet's bounding box
         Polygon bulletRect = new Polygon(new float[]{0, 0, projectile.getWidth(), projectile.getHeight(), projectile.getWidth(), 0, 0, projectile.getHeight()});
@@ -307,6 +309,11 @@ class CollisionDetector {
             }
             for (Animal animal : world.getAnimals()) {
                 if (checkSpriteWithBullet(animal, projectile, bulletRect)) return;
+            }
+            if (building != null) {
+                for (Sprite animal : building.getSprites()) {
+                    if (checkSpriteWithBullet(animal, projectile, bulletRect)) return;
+                }
             }
             if (checkSpriteWithBullet(bob, projectile, bulletRect)) return;
 
@@ -324,6 +331,11 @@ class CollisionDetector {
             for (Animal animal : world.getAnimals()) {
                 if (checkSpriteWithBullet(animal, projectile, bulletRect)) return;
             }
+            if (building != null) {
+                for (Sprite animal : building.getSprites()) {
+                    if (checkSpriteWithBullet(animal, projectile, bulletRect)) return;
+                }
+            }
             if (checkSpriteWithBullet(bob, projectile, bulletRect)) return;
 
             // reset the collision box's position on Y
@@ -337,7 +349,7 @@ class CollisionDetector {
             if (!projectile.getPlayerName().equals(sprite.getName())) {
                 if (sprite instanceof Player) {
                     Player player = (Player) sprite;
-                    if (player.getBoost().equals(Player.Boost.SHIELD) && Intersector.overlaps(player.getShieldCircle(), bulletRect.getBoundingRectangle())) {
+                    if (player.getBoost().equals(Sprite.Effect.SHIELD) && Intersector.overlaps(player.getShieldCircle(), bulletRect.getBoundingRectangle())) {
                         if (projectile.isExplosive()) {
                             world.getAreaAffects().add(new AreaAffect(new Vector2(projectile.getPosition().x, projectile.getPosition().y), projectile.getName(), 2, 2, EXPLOSION, projectile.getPlayerName(), null, 2));
                             projectile.setSpeed(0);
@@ -352,9 +364,10 @@ class CollisionDetector {
                         world.getAreaAffects().add(new AreaAffect(new Vector2(projectile.getPosition().x, projectile.getPosition().y), projectile.getPlayerName(), 2, 2, EXPLOSION, projectile.getPlayerName(), null, 2));
                         projectile.startExplodeTimer();
                     }
-                    sprite.isShot(projectile.getPlayerName(), projectile.getDamage());
                     if (projectile.getProjectileType().equals(Projectile.ProjectileType.FIREBALL)) {
-                        sprite.setAlight(3F);
+                        sprite.setAlight(projectile.getDamage());
+                    } else {
+                        sprite.isShot(projectile.getPlayerName(), projectile.getDamage());
                     }
                     return true;
                 }
@@ -365,25 +378,26 @@ class CollisionDetector {
 
     void checkPlayerCollisionWithAreaAffects(Sprite sprite) {
 
-        @SuppressWarnings("NewApi")
         List<AreaAffect> damageAffects = world.getAreaAffects().stream().filter(ae -> ae.getAffectType().equals(DAMAGE)).collect(Collectors.toList());
 //        if (!damageAffects.isEmpty()) System.out.println(damageAffects.size());
         for (AreaAffect areaAffect : world.getAreaAffects()) {
-            boolean immune = sprite instanceof Player && ((Player) sprite).getBoost().equals(Player.Boost.SHIELD) && !sprite.isInjured();
+            boolean immune = sprite instanceof Player && ((Player) sprite).getBoost().equals(Sprite.Effect.SHIELD) && !sprite.isInjured();
             if (!immune && Intersector.overlaps(areaAffect.getBoundingCircle(), sprite.getBounds().getBoundingRectangle())) {
                 if (!locator.wallInbetweenExplosion(sprite, areaAffect.getPosition())) {
                     switch (areaAffect.getAffectType()) {
+                        case EXPLOSION:
                         case LIGHTNING:
                             sprite.isShot(areaAffect.getName(), 2.5F);
                             break;
-                        case EXPLOSION:
-                            sprite.isShot(areaAffect.getName(), 2.5F);
-                            break;
                         case DAMAGE:
+                        case FIREBITE:
                             Vector2 distance = new Vector2(sprite.getCentrePosition()).sub(areaAffect.getPosition());
                             float hitRotation = locator.getAngle(distance);
-                            immune = sprite.getName().equals(areaAffect.getSpriteName()) || (sprite instanceof Animal && ((Animal) sprite).getAnimalType().equals(areaAffect.getAnimalType()));
-                            if (!immune) sprite.hit(areaAffect.getSpriteName(), areaAffect.getDamage(), hitRotation, areaAffect.getPosition());
+                            immune = sprite.isInjured() || sprite.getName().equals(areaAffect.getSpriteName()) || (sprite instanceof Animal && ((Animal) sprite).getAnimalType().equals(areaAffect.getAnimalType()));
+                            if (!immune) {
+                                sprite.hit(areaAffect.getSpriteName(), areaAffect.getDamage(), hitRotation, areaAffect.getPosition(), areaAffect.getKnockback());
+                                if (areaAffect.getAffectType().equals(FIREBITE)) sprite.setAlight(3F);
+                            }
                             break;
                     }
                 }
@@ -393,7 +407,7 @@ class CollisionDetector {
 
     void checkPlayerCollisionWithBoosts(Player player) {
         for (BoostPad boostPad : world.getLevel().getBoostPads()) {
-            if (boostPad.getBoost() != null && player.getBoost().equals(Player.Boost.NOTHING) &&
+            if (boostPad.getBoost() != null && player.getBoost().equals(Sprite.Effect.NOTHING) &&
                     Intersector.overlapConvexPolygons(player.getBounds(), boostPad.getBounds())) {
                 player.setBoost(boostPad.collectBoost(), 10);
             }
@@ -402,7 +416,8 @@ class CollisionDetector {
 
     void checkPlayerCollisionWithFloorPads(Sprite player) {
 
-        for (FloorPad floorPad : world.getLevel().getFloorPads()) {
+        List<FloorPad> floorPadsToCheck = player.isInHouse() ? world.getLevel().getBuildings().get(player.getHouseNumber()).getFloorPads() : world.getLevel().getFloorPads();
+        for (FloorPad floorPad : floorPadsToCheck) {
             if (Intersector.overlapConvexPolygons(floorPad.getBounds(), player.getBounds())) {
                 float movespeed = 0.5f;
                 switch (floorPad.getType()) {
@@ -427,10 +442,19 @@ class CollisionDetector {
                     case SPIKE:
                         player.isShot("Spike Floor", 1F);
                         break;
+                    case LAVA:
+                    case FIRE:
+//                        player.isShot("Lava", 1);
+                        player.setAlight(3);
+                        break;
                     case SLIME:
                     case WATER:
                         player.getVelocity().x = player.getVelocity().x * 0.85F;
                         player.getVelocity().y = player.getVelocity().y * 0.85F;
+                        break;
+                    case TRIGGER:
+                        floorPad.trigger(player.isInHouse() ? world.getLevel().getBuilding(player.getHouseNumber()) : null);
+                        break;
                 }
             }
         }
@@ -458,17 +482,16 @@ class CollisionDetector {
     /**
      * populate the collidable array with the blocks found in the enclosing coordinates
      **/
-    private void populateCollidableBlocks(int startX, int startY, int endX, int endY, Sprite sprite) {
+    private void populateCollidableBlocks(int startX, int startY, int endX, int endY, Building building) {
         collidable.clear();
-        if (sprite != null && sprite.isInHouse()) {
-            Building house = world.getLevel().getBuildings().get(sprite.getHouseNumber());
+        if (building != null) {
             for (int x = startX-3; x <= endX+3; x++) {
                 for (int y = startY-3; y <= endY+3; y++) {
-                    if (x >= house.getNumber()*1000
-                            && x < house.getNumber() * 1000 + house.getInternalWidth()
-                            && y >= house.getNumber()*1000
-                            && y < house.getNumber() *1000 + house.getInternalHeight()) {
-                        Block block = house.getBlock(x,y);
+                    if (x >= building.getNumber()*1000
+                            && x < building.getNumber() * 1000 + building.getInternalWidth()
+                            && y >= building.getNumber()*1000
+                            && y < building.getNumber() *1000 + building.getInternalHeight()) {
+                        Block block = building.getBlock(x,y);
                         boolean colidible = block != null && block.isColibible();
                         if (colidible) collidable.add(block);
                     }

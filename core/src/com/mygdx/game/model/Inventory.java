@@ -2,6 +2,7 @@ package com.mygdx.game.model;
 
 import com.mygdx.game.model.environment.blocks.Wall;
 import com.mygdx.game.model.items.Consumable;
+import com.mygdx.game.model.items.Fillable;
 import com.mygdx.game.model.items.Item;
 import com.mygdx.game.model.items.Magic;
 import com.mygdx.game.model.items.Material;
@@ -44,8 +45,9 @@ public class Inventory {
     public int addInventory(Object object) {
         if (object instanceof Consumable) {
             return addConsumableToInventory(new Consumable(((Consumable) object).getConsumableType(), ((Consumable) object).getQuantity()));
-        }
-        if (object instanceof  Swingable) {
+        } else if (object instanceof Fillable) {
+            return addFillableToInventory(new Fillable((Fillable) object));
+        } else if (object instanceof  Swingable) {
             return addSwingableToInventory((Swingable) object);
         } else if (object instanceof Placeable) {
             return addPlacableToInventory(new Placeable(((Placeable) object).getPlaceableType(), ((Placeable) object).getQuantity()));
@@ -162,6 +164,39 @@ public class Inventory {
                 Integer newSlot = findEmptySlot();
                 if (newSlot != null) {
                     slots.put(newSlot, consumable);
+                    return 2;
+                }
+            }
+        }
+        return 0;
+    }
+
+    public Integer addFillableToInventory(Fillable fillable) {
+        int excess = 0;
+        Integer slotToFill = findAvailableMaterialSlot(fillable);
+        if (slotToFill == null) {
+            Integer newSlot = findEmptySlot();
+            if (newSlot != null) {
+                slots.put(newSlot, fillable);
+                return 2;
+            } else {
+                return 0;
+            }
+        }
+        Material inventoryMaterial = (Material)slots.get(slotToFill);
+        if (inventoryMaterial.getQuantity() < inventoryMaterial.getMaxPerStack()) {
+            inventoryMaterial.setQuantity(inventoryMaterial.getQuantity() + fillable.getQuantity());
+            if (inventoryMaterial.getQuantity() > inventoryMaterial.getMaxPerStack()) {
+                excess = inventoryMaterial.getQuantity() - inventoryMaterial.getMaxPerStack();
+                inventoryMaterial.setQuantity(inventoryMaterial.getMaxPerStack());
+            }
+            if (excess == 0) {
+                return 1;
+            } else {
+                fillable.setQuantity(excess);
+                Integer newSlot = findEmptySlot();
+                if (newSlot != null) {
+                    slots.put(newSlot, fillable);
                     return 2;
                 }
             }

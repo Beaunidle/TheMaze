@@ -5,6 +5,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.model.environment.AnimalSpawn;
 import com.mygdx.game.model.environment.blocks.Block;
+import com.mygdx.game.model.environment.blocks.Building;
 import com.mygdx.game.model.environment.blocks.EnvironmentBlock;
 import com.mygdx.game.model.environment.blocks.Grower;
 import com.mygdx.game.model.environment.blocks.Wall;
@@ -20,6 +21,7 @@ import com.mygdx.game.model.pads.GunPad;
 import com.mygdx.game.model.Level;
 import com.mygdx.game.model.environment.SpawnPoint;
 
+import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -75,13 +77,16 @@ public class LevelLoader {
                     spawnCount++;
                     break;
                 case "COW":
-                    level.getAnimalSpawnPoints().add(new AnimalSpawn(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), 6, COW, 15, 30));
+                    level.getAnimalSpawnPoints().add(new AnimalSpawn(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), 6, COW, 15, 30, 0));
                     break;
                 case "SPIDER":
-                    level.getAnimalSpawnPoints().add(new AnimalSpawn(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), 15, SPIDER, 30, 30));
+                    level.getAnimalSpawnPoints().add(new AnimalSpawn(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), 15, SPIDER, 30, 30, 0));
                     break;
                 case "BLOCK":
                     level.getBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = new Block(new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), "block");
+                    break;
+                case "DUNGEON":
+                    level.getBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = level.addBuilding(new Point(Integer.parseInt(values[1]), Integer.parseInt(values[2])), 2, 2, "dungeon-02", Building.BuildingType.DUNGEON);
                     break;
 //                case "HOUSEBLOCK":
 //                    level.getHouseBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = new Block(new Vector2(Integer.parseInt(values[1])  + 1000, Integer.parseInt(values[2])  + 1000), "block");
@@ -212,13 +217,13 @@ public class LevelLoader {
                     level.getBoostPads().add(new BoostPad("boostpad", new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2]))));
                     break;
                 case "SPIKE":
-                    level.getFloorPads().add(new FloorPad("padSpike", new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), FloorPad.Type.SPIKE));
+                    level.getFloorPads().add(new FloorPad("padSpike", new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), FloorPad.Type.SPIKE, null));
                     break;
                 case "SLIME":
-                    level.getFloorPads().add(new FloorPad("slime", new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), FloorPad.Type.SLIME));
+                    level.getFloorPads().add(new FloorPad("slime", new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), FloorPad.Type.SLIME, null));
                     break;
                 case "WATER":
-                    FloorPad water = new FloorPad("padSticky", new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), FloorPad.Type.WATER);
+                    FloorPad water = new FloorPad("padSticky", new Vector2(Integer.parseInt(values[1]), Integer.parseInt(values[2])), FloorPad.Type.WATER, null);
                     level.getFloorPads().add(water);
                     level.getBlocks()[Integer.parseInt(values[1])][Integer.parseInt(values[2])] = water;
                     break;

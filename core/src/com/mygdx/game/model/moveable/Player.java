@@ -18,6 +18,7 @@ import com.mygdx.game.model.items.Ranged;
 import com.mygdx.game.model.items.Item;
 import com.mygdx.game.model.items.Material;
 import com.mygdx.game.model.items.Swingable;
+import com.mygdx.game.model.items.Throwable;
 import com.mygdx.game.model.pads.FloorPad;
 import com.mygdx.game.utils.RecipeHolder;
 
@@ -29,14 +30,11 @@ public class Player extends Sprite {
     public enum Action {
         IDLE, SWINGTOOL, SWINGSWORD
     }
-    public enum Boost {
-        HOMING, SPEED, DAMAGE, SHIELD, HEALING, NOTHING
-    }
 
     private Material strongHand;
     private Item weakHand;
     private Item torso;
-    private Boost boost;
+    private Effect boost;
     private Action action = Action.IDLE;
     private Ranged ranged;
     private final Inventory inventory;
@@ -71,8 +69,8 @@ public class Player extends Sprite {
     private boolean blocking;
     private boolean slotMoving;
 
-    public Player(Vector2 position, String name, float lives, RecipeHolder recipeHolder) {
-        super(position, 0.70F, 0.70F, lives, 10, 5, 5, name);
+    public Player(Vector2 position, String name, float lives, RecipeHolder recipeHolder, int houseNumber, List<Effect> immunities) {
+        super(position, 0.70F, 0.70F, lives, 0, 5, 5, name, houseNumber, immunities);
         shieldCircle = new Circle(getCentrePosition().x, getCentrePosition().y, 5F);
         setHitCircle(new Circle(getLeftHandPosition(45, getWidth()), 0.5F));
         leftHanded = true;//!(this instanceof AIPlayer);
@@ -98,20 +96,26 @@ public class Player extends Sprite {
 //        toolBelt.addInventory(new Swingable(Swingable.SwingableType.HOE, 10, new Material(BONE, 1)));
 //        toolBelt.addInventory(new Swingable(Swingable.SwingableType.HAMMER, 10, new Material(STONE, 1)));
 //        toolBelt.addInventory(new Swingable(Swingable.SwingableType.CLUB, 10, new Material(BONE, 1)));
-//        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.CAMPFIRE, 10));
-        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.STONEANVIL, 10));
+        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.CAMPFIRE, 10));
+        inventory.addInventory(new Material(MEAT, 20));
+        inventory.addInventory(new Material(WOOD, 20));
+
+        toolBelt.addInventory(new Throwable(Throwable.ThrowableType.SPEAR, 20));
         toolBelt.addInventory(new Placeable(Placeable.PlaceableType.TORCH, 10));
-        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
-        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
+//        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
+        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.CHEST, 10));
 //        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.HOUSE, 10));
 //        for (int i = 0; i < 100; i++) {
-//            inventory.addInventory(new Placeable(Placeable.PlaceableType.WALL, 10));
+            inventory.addInventory(new Placeable(Placeable.PlaceableType.DOOR, 10));
 //        }
         toolBelt.addInventory(new Placeable(Placeable.PlaceableType.BED, 10));
-        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.BED, 10));
+//        toolBelt.addInventory(new Placeable(Placeable.PlaceableType.BED, 10));
 //        inventory.addInventory(new Material(COPPER, 20));
 //        inventory.addInventory(new Material(FLINT, 20));
 //        inventory.addInventory(new Material(Material.Type.WOOD, 10));
+//        inventory.addInventory(new Fillable(Item.ItemType.JAR, 20));
+//        inventory.addInventory(new Fillable(Item.ItemType.JAR, 20));
+//        inventory.addInventory(new Fillable(Item.ItemType.JAR, 20));
 //        inventory.addInventory(new Fillable(Item.ItemType.JAR, 20));
 
         //todo work out how spells can be unlocked
@@ -119,7 +123,7 @@ public class Player extends Sprite {
 //        spells.add(new Magic(Projectile.ProjectileType.FIREBALL));
 //        spells.add(new Magic(3, Magic.Element.ELECTRIC));
 //        spells.add(new Magic(5, "healing"));
-//        strongHand = spells.get(0);
+//        strongHand = new Fillable(Item.ItemType.JAR, 20);
 //        weakHand = (Item)inventory.getSlots().get(1);
 //        torso = (Item)inventory.getSlots().get(2);
         recipes = recipeHolder.getHandRecipes();
@@ -154,7 +158,7 @@ public class Player extends Sprite {
         return recipes;
     }
 
-    public void setBoost(Boost boost, float delay) {
+    public void setBoost(Effect boost, float delay) {
         this.boost = boost;
         boostTimer = new Timer.Task() {
             @Override
@@ -166,14 +170,26 @@ public class Player extends Sprite {
         Timer.schedule(boostTimer, delay);
     }
 
+    public void consume(Material material) {
+        if (material.getType().equals(Material.Type.FIRESTONE)) {
+            Magic fireball = new Magic(Projectile.ProjectileType.FIREBALL);
+            increaseAptitude(1);
+            setStrongHand(null);
+            if (!spells.contains(fireball)) {
+                spells.add(fireball);
+                setStrongHand(fireball);
+            }
+        }
+    }
+
     public Polygon getBlockRectangle() { return  blockRectangle;}
 
     public Circle getShieldCircle() {
         return shieldCircle;
     }
 
-    public Player.Boost getBoost() {
-        return boost == null ? Player.Boost.NOTHING : boost;
+    public Sprite.Effect getBoost() {
+        return boost == null ? Sprite.Effect.NOTHING : boost;
     }
 
     public Ranged getGun() {
@@ -199,7 +215,7 @@ public class Player extends Sprite {
             startBulletTimer(ranged.getFiringRate() * 0.25F);
             float x = getCentrePosition().x + (float)(getWidth()/2 * Math.cos(rot * Math.PI/180));
             float y = getCentrePosition().y + (float)(getHeight()/2 * Math.sin(rot * Math.PI/180));
-            projectiles.addAll(ranged.fire(new Vector2(x, y), rot, getName(), getBoost().equals(Boost.HOMING), getBoost().equals(Boost.DAMAGE), Projectile.ProjectileType.BULLET));
+            projectiles.addAll(ranged.fire(new Vector2(x, y), rot, getName(), getBoost().equals(Effect.HOMING), getBoost().equals(Effect.DAMAGE), Projectile.ProjectileType.BULLET));
         }
         return projectiles;
     }
@@ -220,7 +236,8 @@ public class Player extends Sprite {
         this.shieldCircle.setPosition(getCentrePosition().x, getCentrePosition().y);
         setInjured(false);
         setStaggered(false);
-//        this.setBoost(Boost.SHIELD);
+        setOnfire(false);
+//        this.setBoost(Effect.SHIELD);
         setState(State.IDLE);
 //        System.out.println("respawn finished");
     }
@@ -328,7 +345,7 @@ public class Player extends Sprite {
 
     public void updateHitCircle() {
         //todo here is where to think about stab/swing/lunge ect
-        getHitCircle().setRadius(0.75f);
+        getHitCircle().setRadius(0.25f);
 
         Vector2 gridRef = getCentrePosition();
         float rotation = getRotation();

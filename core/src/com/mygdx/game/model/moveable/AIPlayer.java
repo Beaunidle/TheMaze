@@ -16,8 +16,8 @@ public class AIPlayer extends Player {
     private String ignore;
     private final PlayerAi ai;
 
-    public AIPlayer(Vector2 position, String name, RecipeHolder recipeHolder) {
-        super(position, name, 30, recipeHolder);
+    public AIPlayer(Vector2 position, String name, RecipeHolder recipeHolder, int houseNumber) {
+        super(position, name, 30, recipeHolder, 0, new ArrayList<>());
         ai = new PlayerAi();
     }
 

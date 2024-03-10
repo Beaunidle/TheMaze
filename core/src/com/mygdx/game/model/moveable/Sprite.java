@@ -7,10 +7,12 @@ import com.badlogic.gdx.utils.Timer;
 import com.mygdx.game.model.Attributes;
 import com.mygdx.game.model.GameObject;
 import com.mygdx.game.model.items.Consumable;
+import com.mygdx.game.model.items.Material;
 import com.mygdx.game.utils.Locator;
 import com.mygdx.game.utils.View;
 
 import java.awt.Point;
+import java.util.List;
 
 public class Sprite extends GameObject {
 
@@ -20,6 +22,10 @@ public class Sprite extends GameObject {
 
     public enum Intent {
         SEARCHING, HOMEWARD, HOMING, KILLING, FLEEING, EATING, DRINKING, MATING
+    }
+
+    public enum Effect {
+        FIRE, ELECTRIC, POISON, SLOW, HOMING, SPEED, DAMAGE, SHIELD, HEALING, NOTHING
     }
 
     private float height;
@@ -52,6 +58,7 @@ public class Sprite extends GameObject {
     private Intent intent = Intent.SEARCHING;
     private long birthTime;
     private boolean child;
+    private List<Effect> immunities;
 
     private float maxWater, maxFood;
     private float lives, food, water, mana;
@@ -61,17 +68,18 @@ public class Sprite extends GameObject {
     private final Timer.Task ageTimer;
     private final Timer.Task dodgeTimer;
     private final Timer.Task staggaredTimer;
-    private Timer.Task onFireTimer;
+    private final Timer.Task onFireTimer;
 
     private boolean comboTimerOn;
     private boolean useTimerOn;
     private boolean useDelayOn;
 
-    private int houseNumber = 0;
+    private int houseNumber;
     private boolean injured, healing, aging, dodging, staggered, onfire;
     private String killedBy;
     private int rotateBy = 0;
     private Attributes attributes;
+
 
     private final Timer.Task hitTimer = new Timer.Task() {
         @Override
@@ -101,7 +109,7 @@ public class Sprite extends GameObject {
         }
     };
 
-    public Sprite(Vector2 position, float width, float height, float lives, float adeptness, float food, float water, String name) {
+    public Sprite(Vector2 position, float width, float height, float lives, float aptitude, float food, float water, String name, int houseNumber, List<Effect> immunities) {
         super(name, position, new Polygon(new float[]{0, 0, width, 0, width, height, 0, height}));
         birthTime = System.currentTimeMillis();
         getBounds().setOrigin(width/2, height/2);
@@ -111,7 +119,8 @@ public class Sprite extends GameObject {
         hitCircle = new Circle(getCentrePosition(), 5F);
         collideCircle = new Circle(getCentrePosition(), 2.5F);
         collideCircle.setPosition(getCentrePosition());
-        attributes = new Attributes(lives, adeptness);
+        attributes = new Attributes(lives, aptitude);
+        this.houseNumber = houseNumber;
 
         this.width = width;
         this.height = height;
@@ -168,6 +177,8 @@ public class Sprite extends GameObject {
                 stopOnFireTimer();
             }
         };
+
+        this.immunities = immunities;
     }
 
     public float getHeight() {
@@ -380,6 +391,10 @@ public class Sprite extends GameObject {
         this.collideCircle = collideCircle;
     }
 
+    public List<Effect> getImmunities() {
+        return immunities;
+    }
+
     public void  hitPhaseIncrease(int numberOfHits) {
         if (hitTimer.isScheduled()) hitTimer.cancel();
         hitPhase ++;
@@ -497,6 +512,10 @@ public class Sprite extends GameObject {
     public void moveForward() {
 //        setState(State.MOVING);
         setAcceleration(3.5F);
+    }
+
+    public void moveBackward() {
+        setAcceleration(-3.5F);
     }
 
     public void moveLeft() {
@@ -647,6 +666,9 @@ public class Sprite extends GameObject {
         }
     }
 
+    public void increaseAptitude(float buff) {
+        attributes.increaseAptitude(buff);
+    }
 
     public void isShot(String name, float damage) {
         if (!injured) {
@@ -662,7 +684,7 @@ public class Sprite extends GameObject {
                 dead(name);
                 return;
             }
-            Timer.schedule(injuredTimer, 0.26F);
+            Timer.schedule(injuredTimer, 0.5F);
         }
     }
 
@@ -674,7 +696,7 @@ public class Sprite extends GameObject {
         return(0);
     }
 
-    public void hit(String name, float damage, float hitRotation, Vector2 hitPosition) {
+    public void hit(String name, float damage, float hitRotation, Vector2 hitPosition, float knockback) {
         if (!injured && !staggered) {
             float block = checkBlock(hitPosition);
             block = block + checkArmour();
@@ -687,16 +709,16 @@ public class Sprite extends GameObject {
                 return;
             }
             this.hitPosition = hitPosition;
-            acceleration = -damage/2;
+            acceleration = -knockback;
             injured = true;
-//            staggered = true;
+            staggered = true;
             Timer.schedule(injuredTimer, 0.5F);
-//            Timer.schedule(staggaredTimer, 0.25F);
+            Timer.schedule(staggaredTimer, 0.25F);
         }
     }
 
     public void setAlight(float burningTime) {
-        if (!onfire) {
+        if (!onfire && !immunities.contains(Effect.FIRE)) {
             onfire = true;
             Timer.schedule(onFireTimer, burningTime);
         }
@@ -709,7 +731,7 @@ public class Sprite extends GameObject {
 
     public void heal() {
         if (!healing) {
-            if (onfire) lives = lives - 4;
+            if (onfire) lives = lives - 2;
             if (food > 0 && water > 0) {
                 float maxLives = getMaxHealth();
                 if (lives < maxLives) {

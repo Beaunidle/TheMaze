@@ -1,8 +1,15 @@
 package com.mygdx.game.model.pads;
 
+import static com.mygdx.game.model.environment.blocks.Wall.WallType.Type.DOOR;
+
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Timer;
+import com.mygdx.game.model.GameObject;
+import com.mygdx.game.model.environment.AnimalSpawn;
+import com.mygdx.game.model.environment.blocks.Building;
+import com.mygdx.game.model.environment.blocks.FillableBlock;
 import com.mygdx.game.model.environment.blocks.Irrigation;
+import com.mygdx.game.model.environment.blocks.Wall;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,7 +19,7 @@ import java.util.Random;
 public class FloorPad extends Pad {
 
     public enum Type {
-        SPIKE, SLIME, MOVE, WATER, WATERFLOW, IRRIGATION
+        FIRE,LAVA,SPIKE, SLIME, MOVE, WATER, WATERFLOW, IRRIGATION, TRIGGER
     }
 
     public enum Connection {
@@ -27,8 +34,10 @@ public class FloorPad extends Pad {
     private List<Connection> connections;
     private boolean notify, notifyTiming;
     private boolean straightPiece = true;
+    private List<GameObject> triggerObjects;
+    private boolean active = false;
 
-    public FloorPad(String name, Vector2 pos, Type type) {
+    public FloorPad(String name, Vector2 pos, Type type, List<GameObject> triggerObjects) {
         super(name, pos);
         this.type = type;
         notifyTimer = new Timer.Task() {
@@ -37,6 +46,7 @@ public class FloorPad extends Pad {
                 notifyTimerStop();
             }
         };
+        this.triggerObjects = triggerObjects;
     }
 
     public FloorPad(String name, Vector2 pos, Type type, int rotation) {
@@ -175,6 +185,28 @@ public class FloorPad extends Pad {
         }
     }
 
+    public void trigger(Building building) {
+        if (!active) {
+            if (triggerObjects != null) {
+                for (GameObject triggerObject : triggerObjects) {
+                    if (triggerObject instanceof Wall) {
+                        for (Wall.WallType wallType : ((Wall) triggerObject).getWalls().values()) {
+                            if (wallType != null && wallType.getWallType().equals(DOOR)) wallType.toggleLocked();
+                        }
+                    }
+                    if (triggerObject instanceof FillableBlock && ((FillableBlock) triggerObject).getFillableType().equals(FillableBlock.FillableType.TORCH)) {
+                        ((FillableBlock) triggerObject).toggleActive();
+                    }
+                    if (triggerObject instanceof AnimalSpawn) {
+                        if (building != null) {
+                            building.triggerAnimalSpawn((AnimalSpawn) triggerObject);
+                        }
+                    }
+                }
+            }
+            active = true;
+        }
+    }
     public String getName() {
         StringBuilder padString = new StringBuilder();
         padString.append(super.getName());
@@ -192,6 +224,9 @@ public class FloorPad extends Pad {
             Random rand = new Random();
             int num = rand.nextInt(3) + 1;
             padString.append(1);
+        }
+        if (type.equals(Type.TRIGGER)) {
+            padString.append("-").append(active ? "active" : "inactive");
         }
         return padString.toString();
     }
